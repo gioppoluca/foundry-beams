@@ -28,8 +28,10 @@ Install it as a Foundry VTT module from within the module section.
 
 ### Make Walls Reflective
 
-1. Edit any wall and click the **"Mirror"** button in its header.
-2. When a beam hits this wall, it will reflect based on the wall's angle.
+1. Edit any wall and find the section where to opt for making the wall
+   1. a mirror (all sides become a mirror) 
+   2. reactive to beam (will execute the macro names in the input field)
+
 
 ### Automatically Generated Regions (v12)
 
@@ -44,20 +46,20 @@ Other modules can interact via:
 const beams = game.modules.get("foundry-beams").api;
 
 // Enable/Disable
-await beams.enableBeamByUUID("SceneID.TokenID");
-await beams.disableBeamByUUID("SceneID.TokenID");
+await beams.enableBeamById("Token.id");
+await beams.disableBeamById("Token.id");
 
 // Set color
-await beams.updateBeamColorByUUID("SceneID.TokenID", "#ff00ff");
+await beams.updateBeamColorById("Token.id", "#ff00ff");
 
 // Get state
-const state = await beams.getBeamStateByUUID("SceneID.TokenID");
+const state = await beams.getBeamStateById("Token.id");
 
 // Rotate beam
-await beams.rotateBeamByUUID("SceneID.TokenID", 90);
+await beams.rotateBeamById("Token.id", 90);
 
 // Generate region
-await beams.createRegionFromBeam("TokenID", "hazard");
+await beams.createRegionFromBeam("Token.id", "hazard");
 
 // Remove regions
-await beams.deleteBeamRegions("TokenID");
+await beams.deleteBeamRegions("Token.id");
