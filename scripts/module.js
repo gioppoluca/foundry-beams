@@ -1,5 +1,5 @@
 // module.js (refactored with detailed comments and debug console output)
-
+import * as BeamAPI from './beams-api.js';
 import { toggleBeam, updateBeam, beams } from "./beamManager.js";
 
 Hooks.once("init", () => {
@@ -27,8 +27,9 @@ Hooks.once("init", () => {
   };
 });
 
-Hooks.on("ready", () => {
-  console.log("[foundry-beams] Module fully ready.");
+Hooks.once("ready", () => {
+  game.modules.get("foundry-beams").api = BeamAPI;
+  console.log("[foundry-beams] API registered");
 });
 
 Hooks.on("renderWallConfig", (app, html, data) => {
