@@ -17,11 +17,12 @@ Hooks.once("init", () => {
     };
   };
   CONFIG.Wall.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
-    fields["flags.foundry-beams.beam"] = {
+    fields["flags.foundry-beams.mirror"] = {
       type: Object,
       default: {
         isMirror: false,
-        isReactor: false
+        isReactive: false,
+        macro: ""
       }
     };
   };
@@ -62,8 +63,12 @@ Hooks.on("renderWallConfig", (app, html, data) => {
         <input type="checkbox" name="flags.foundry-beams.mirror.isMirror" ${mirrorData.isMirror ? "checked" : ""}/>
       </div>
       <div class="form-group">
-        <label>Is reactor</label>
-        <input type="checkbox" name="flags.foundry-beams.mirror.isReactor" ${mirrorData.isReactor ? "checked" : ""}/>
+        <label>Is reactive</label>
+        <input type="checkbox" name="flags.foundry-beams.mirror.isReactive" ${mirrorData.isReactive ? "checked" : ""}/>
+      </div>
+      <div class="form-group">
+        <label>Macro for reactive</label>
+        <input type="string" name="flags.foundry-beams.mirror.macro" value="${mirrorData.macro ?? ""}" />
       </div>
     </fieldset>
   `;

@@ -1,0 +1,1 @@
+export const MOD_NAME = "foundry-beams";
