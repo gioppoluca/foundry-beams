@@ -1,0 +1,169 @@
+// module.js (refactored with detailed comments and debug console output)
+
+import { toggleBeam, updateBeam, beams } from "./beamManager.js";
+
+Hooks.once("init", () => {
+  console.log("[foundry-beams] Initializing module and schema injection...");
+
+  // Inject default beam flag schema into token config
+  CONFIG.Token.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
+    fields["flags.foundry-beams.beam"] = {
+      type: Object,
+      default: {
+        enabled: false,
+        width: 30,
+        colorHex: "#ffe699"
+      }
+    };
+  };
+  CONFIG.Wall.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
+    fields["flags.foundry-beams.beam"] = {
+      type: Object,
+      default: {
+        isMirror: false,
+        isReactor: false
+      }
+    };
+  };
+});
+
+Hooks.on("ready", () => {
+  console.log("[foundry-beams] Module fully ready.");
+});
+
+Hooks.on("renderWallConfig", (app, html, data) => {
+//      html = html[0] ?? html;
+
+  const mirrorData = foundry.utils.getProperty(app.object, "flags.foundry-beams.mirror") ?? {};
+  console.log(mirrorData)
+  console.log(app);
+  console.log(`[foundry-beams] Rendering WallConfig UI for wall: ${app.object.id}`);
+  //console.log(html);
+  //html.find("nav.sheet-tabs").append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
+
+  //html.find(".sheet-tabs").append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
+ let footer = html.find("footer");
+  //let firstNav = html.querySelector("nav.sheet-tabs.tabs:first");
+  //let vTabsheet =  html.querySelector(`.sheet-tabs`);
+		//		let vprevTab = html.querySelector(`div[data-tab="basic"]`);
+  //let firstChild = form.children().first();
+  //console.log(form.children());
+  //console.log(firstChild);
+  //console.log(firstNav);
+  //console.log(vTabsheet);
+  //console.log(vprevTab);
+  //vTabsheet.append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
+  //console.log(form)
+  const tabContent = `
+    <fieldset class="beam-group" data-tab="beam">
+      <div class="form-group">
+        <label>Is mirror</label>
+        <input type="checkbox" name="flags.foundry-beams.mirror.isMirror" ${mirrorData.isMirror ? "checked" : ""}/>
+      </div>
+      <div class="form-group">
+        <label>Is reactor</label>
+        <input type="checkbox" name="flags.foundry-beams.mirror.isReactor" ${mirrorData.isReactor ? "checked" : ""}/>
+      </div>
+    </fieldset>
+  `;
+
+ // let lastChild = form.children().last();
+ // console.log(lastChild)
+  footer.before(tabContent);
+ //vprevTab.append(tabContent)
+app.setPosition({ height: "auto" });
+});
+
+Hooks.on("renderTokenConfig", (app, html, data) => {
+  const beamData = foundry.utils.getProperty(app.object, "flags.foundry-beams.beam") ?? {};
+
+  console.log(`[foundry-beams] Rendering TokenConfig UI for token: ${app.object.name}`);
+
+  // Add Beam tab button to token config tabs
+  html.find(".sheet-tabs").append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
+
+  // Append custom beam config form elements into the config form
+  let form = html.find("form");
+  const tabContent = `
+    <div class="tab" data-tab="beam">
+      <div class="form-group">
+        <label>Enable Beam</label>
+        <input type="checkbox" name="flags.foundry-beams.beam.enabled" ${beamData.enabled ? "checked" : ""}/>
+      </div>
+      <div class="form-group">
+        <label>Beam Width (px)</label>
+        <input type="number" name="flags.foundry-beams.beam.width" value="${beamData.width ?? 30}" min="1"/>
+      </div>
+      <div class="form-group">
+        <label>Beam Color</label>
+        <input type="color" name="flags.foundry-beams.beam.colorHex" value="${beamData.colorHex ?? "#ffe699"}"/>
+      </div>
+    </div>
+  `;
+  form.append(tabContent);
+});
+
+// Watch for token updates and react based on beam flags or movement
+Hooks.on("updateToken", (tokenDoc, updateData) => {
+  const token = tokenDoc;
+  if (!token) return;
+
+  const beamConfig = token.getFlag("foundry-beams", "beam");
+  const isEnabled = beamConfig?.enabled === true;
+  const beamExists = beams.has(token.id);
+
+  console.log(`[foundry-beams] Token updated: ${token.name}`);
+  console.log(`[foundry-beams] Beam flag enabled: ${isEnabled}, Beam already exists: ${beamExists}`);
+
+  // Handle enabling the beam
+  if (isEnabled && !beamExists) {
+    console.log(`[foundry-beams] Scheduling beam creation for ${token.name}`);
+    Hooks.once("refreshToken", (refreshed) => {
+      if (refreshed.id === token.id) {
+        console.log(`[foundry-beams] Creating beam after refresh for ${token.name}`);
+        toggleBeam(token, true);
+      }
+    });
+  }
+
+  // Handle disabling the beam
+  if (!isEnabled && beamExists) {
+    console.log(`[foundry-beams] Scheduling beam destruction for ${token.name}`);
+    Hooks.once("refreshToken", (refreshed) => {
+      if (refreshed.id === token.id) {
+        console.log(`[foundry-beams] Destroying beam after refresh for ${token.name}`);
+        toggleBeam(token, false);
+      }
+    });
+  }
+
+  // If the token has moved or rotated, update the beam geometry
+  const moved = "x" in updateData || "y" in updateData || "rotation" in updateData;
+  if (isEnabled && moved) {
+    console.log(`[foundry-beams] Scheduling beam update due to token motion: ${token.name}`);
+    Hooks.once("refreshToken", (refreshed) => {
+      if (refreshed.id === token.id) {
+        requestAnimationFrame(() => {
+          console.log(`[foundry-beams] Updating beam geometry after refresh for ${token.name}`);
+          console.log(refreshed);
+          updateBeam(refreshed, updateData); // <--- pass the updateData
+        });
+      }
+    });
+  }
+});
+
+// Restore beams on scene load if tokens already have them enabled
+Hooks.on("canvasReady", () => {
+  console.log("[foundry-beams] Canvas ready. Checking tokens for beam restoration...");
+  console.log(beams);
+
+  for (const token of canvas.tokens.placeables) {
+    const beamConfig = token.document.getFlag("foundry-beams", "beam");
+    if (beamConfig?.enabled) {
+      console.log(`[foundry-beams] Restoring beam for ${token.name}`);
+      toggleBeam(token, true);
+    }
+  }
+});
+
