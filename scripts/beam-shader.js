@@ -63,6 +63,7 @@ export function createBasicShaderBeam({ start, dx, dy, length, config }) {
   const color = hexToRGB(config.colorHex ?? "#ffe699");
   const blur = new PIXI.filters.BlurFilter();
   blur.blur = 4; // increase for more softness
+  /*
   const glow = new PIXI.filters.GlowFilter({
     distance: 15,
     outerStrength: 2,
@@ -70,6 +71,7 @@ export function createBasicShaderBeam({ start, dx, dy, length, config }) {
     color: 0xffe699,
     quality: 0.5
   });
+  */
   const shader = new PIXI.Filter(null, `
     precision mediump float;
 
@@ -108,7 +110,7 @@ void main() {
   });
 
   //beam.filters = [shader];
-  beam.filters = [blur, glow];
+  beam.filters = [blur];
   container.addChild(beam);
   container.position.set(start.x, start.y);
   container.rotation = Math.atan2(dy, dx);
