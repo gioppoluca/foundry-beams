@@ -145,12 +145,21 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
 });
 
 // Restore beams on scene load if tokens already have them enabled
-Hooks.on("canvasReady", () => {
+Hooks.on("canvasReady", (canvas) => {
   if (isDebugActive) console.log("[foundry-beams] Canvas ready. Checking tokens for beam restoration...");
   if (isDebugActive) console.log(beams);
 
-  for (const token of canvas.tokens.placeables) {
+  // All sensors in scene
+  let all_beams = canvas.tokens.placeables.filter((tok) => {
+    return tok.document.getFlag(MOD_NAME, "beam");
+  });
+
+  console.log("canvasready")
+  console.log(all_beams)
+
+  for (const token of all_beams) {
     const beamConfig = token.document.getFlag(MOD_NAME, "beam");
+    if (isDebugActive) console.log(beamConfig);
     if (beamConfig?.enabled) {
       if (isDebugActive) console.log(`[foundry-beams] Restoring beam for ${token.name}`);
       toggleBeam(token, true);
