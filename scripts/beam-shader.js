@@ -61,6 +61,7 @@ export function createBasicShaderBeam({ start, dx, dy, length, config }) {
   beam.blendMode = PIXI.BLEND_MODES.ADD;
 
   const color = hexToRGB(config.colorHex ?? "#ffe699");
+  beam.tint = color;
   const blur = new PIXI.filters.BlurFilter();
   blur.blur = 4; // increase for more softness
   /*
