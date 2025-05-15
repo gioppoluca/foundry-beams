@@ -34,28 +34,11 @@ Hooks.once("ready", () => {
 });
 
 Hooks.on("renderWallConfig", (app, html, data) => {
-//      html = html[0] ?? html;
-
   const mirrorData = foundry.utils.getProperty(app.object, "flags.foundry-beams.mirror") ?? {};
   console.log(mirrorData)
   console.log(app);
   console.log(`[foundry-beams] Rendering WallConfig UI for wall: ${app.object.id}`);
-  //console.log(html);
-  //html.find("nav.sheet-tabs").append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
-
-  //html.find(".sheet-tabs").append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
- let footer = html.find("footer");
-  //let firstNav = html.querySelector("nav.sheet-tabs.tabs:first");
-  //let vTabsheet =  html.querySelector(`.sheet-tabs`);
-		//		let vprevTab = html.querySelector(`div[data-tab="basic"]`);
-  //let firstChild = form.children().first();
-  //console.log(form.children());
-  //console.log(firstChild);
-  //console.log(firstNav);
-  //console.log(vTabsheet);
-  //console.log(vprevTab);
-  //vTabsheet.append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
-  //console.log(form)
+  let footer = html.find("footer");
   const tabContent = `
     <fieldset class="beam-group" data-tab="beam">
       <div class="form-group">
@@ -73,11 +56,11 @@ Hooks.on("renderWallConfig", (app, html, data) => {
     </fieldset>
   `;
 
- // let lastChild = form.children().last();
- // console.log(lastChild)
+  // let lastChild = form.children().last();
+  // console.log(lastChild)
   footer.before(tabContent);
- //vprevTab.append(tabContent)
-app.setPosition({ height: "auto" });
+  //vprevTab.append(tabContent)
+  app.setPosition({ height: "auto" });
 });
 
 Hooks.on("renderTokenConfig", (app, html, data) => {

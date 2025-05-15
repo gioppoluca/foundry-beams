@@ -1,4 +1,4 @@
-// foundry-beams-api-refactored.js — API for external control of beam tokens (by token.id only)
+// beams-api.js — API for external control of beam tokens (by token.id only)
 
 import { toggleBeam, updateBeam } from './beamManager.js';
 

@@ -4,24 +4,6 @@ import { reactiveMacro } from './beams-macro.js';
 
 export const beams = new Map(); // token.id -> { containers[], config }
 
-// Fragment shader code with directional fading based on normal vector
-const fragmentShaderCode = `
-  precision mediump float;
-  varying vec2 vTextureCoord;
-  uniform float uTime;
-  uniform vec3 uColor;
-  uniform float uIntensity;
-  uniform vec2 uNormal;
-
-  void main() {
-    vec2 centered = vTextureCoord - vec2(0.5);
-    float dist = abs(dot(centered, uNormal));
-    float pulse = 0.5 + 0.5 * sin(uTime * 4.0);
-    float alpha = smoothstep(0.5, 0.0, dist) * pulse * uIntensity;
-    gl_FragColor = vec4(uColor * alpha, alpha);
-  }
-`;
-
 
 let shaderTickerRegistered = false;
 function startShaderAnimation() {
@@ -209,11 +191,3 @@ export function destroyBeam(token) {
     console.log(`[foundry-beams] Beam fully destroyed for ${token.name}`);
 }
 
-function hexToRGB(hex) {
-    const bigint = parseInt(hex.replace("#", ""), 16);
-    return [
-        ((bigint >> 16) & 255) / 255,
-        ((bigint >> 8) & 255) / 255,
-        (bigint & 255) / 255
-    ];
-}
