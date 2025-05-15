@@ -61,6 +61,15 @@ export function createBasicShaderBeam({ start, dx, dy, length, config }) {
   beam.blendMode = PIXI.BLEND_MODES.ADD;
 
   const color = hexToRGB(config.colorHex ?? "#ffe699");
+  const blur = new PIXI.filters.BlurFilter();
+  blur.blur = 4; // increase for more softness
+  const glow = new PIXI.filters.GlowFilter({
+    distance: 15,
+    outerStrength: 2,
+    innerStrength: 0,
+    color: 0xffe699,
+    quality: 0.5
+  });
   const shader = new PIXI.Filter(null, `
     precision mediump float;
 
@@ -92,12 +101,14 @@ void main() {
     // Final color
     gl_FragColor = base * vec4(beamColor, beam * alphaMult);
 }
-  `, { time: 0,
-            beamColor: [1.0, 1.0, 0.5],
-            alphaMult: 0.6,
-        });
+  `, {
+    time: 0,
+    beamColor: [1.0, 1.0, 0.5],
+    alphaMult: 0.6,
+  });
 
-  beam.filters = [shader];
+  //beam.filters = [shader];
+  beam.filters = [blur, glow];
   container.addChild(beam);
   container.position.set(start.x, start.y);
   container.rotation = Math.atan2(dy, dx);
