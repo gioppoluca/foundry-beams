@@ -1,3 +1,4 @@
+import { MOD_NAME } from "./beams-const.js";
 // Beam Manager-normal-fade with support for switching between basic and normal-fade shader beam rendering
 
 export function createNormalBasedShaderBeam({ start, dx, dy, length, normal, config }) {

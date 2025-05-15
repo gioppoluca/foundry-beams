@@ -1,3 +1,4 @@
+import { MOD_NAME } from "./beams-const.js";
 // module.js (refactored with detailed comments and debug console output)
 import * as BeamAPI from './beams-api.js';
 import { toggleBeam, updateBeam, beams } from "./beamManager.js";
@@ -29,7 +30,7 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
-  game.modules.get("foundry-beams").api = BeamAPI;
+  game.modules.get(MOD_NAME).api = BeamAPI;
   console.log("[foundry-beams] API registered");
 });
 
@@ -97,7 +98,7 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
   const token = tokenDoc;
   if (!token) return;
 
-  const beamConfig = token.getFlag("foundry-beams", "beam");
+  const beamConfig = token.getFlag(MOD_NAME, "beam");
   const isEnabled = beamConfig?.enabled === true;
   const beamExists = beams.has(token.id);
 
@@ -148,7 +149,7 @@ Hooks.on("canvasReady", () => {
   console.log(beams);
 
   for (const token of canvas.tokens.placeables) {
-    const beamConfig = token.document.getFlag("foundry-beams", "beam");
+    const beamConfig = token.document.getFlag(MOD_NAME, "beam");
     if (beamConfig?.enabled) {
       console.log(`[foundry-beams] Restoring beam for ${token.name}`);
       toggleBeam(token, true);

@@ -1,3 +1,4 @@
+import { MOD_NAME } from "./beams-const.js";
 // beams-api.js — API for external control of beam tokens (by token.id only)
 
 import { toggleBeam, updateBeam } from './beamManager.js';
@@ -19,9 +20,9 @@ export async function updateBeamColorById(tokenId, colorHex) {
   const token = resolveValidBeamTokenById(tokenId);
   if (!token) return;
 
-  const flag = token.getFlag("foundry-beams", "beam") || {};
+  const flag = token.getFlag(MOD_NAME, "beam") || {};
   flag.colorHex = colorHex;
-  await token.setFlag("foundry-beams", "beam", flag);
+  await token.setFlag(MOD_NAME, "beam", flag);
 
   if (flag.enabled) updateBeam(token);
 }
@@ -30,7 +31,7 @@ export async function updateBeamColorById(tokenId, colorHex) {
 export function getBeamStateById(tokenId) {
   const token = resolveValidBeamTokenById(tokenId);
   if (!token) return null;
-  const flag = token.getFlag("foundry-beams", "beam") || {};
+  const flag = token.getFlag(MOD_NAME, "beam") || {};
   return {
     enabled: !!flag.enabled,
     colorHex: flag.colorHex || "#ffe699"
@@ -42,7 +43,7 @@ export async function rotateBeamById(tokenId, degrees) {
   const token = resolveValidBeamTokenById(tokenId);
   if (!token) return;
   await token.document.update({ rotation: degrees });
-  const flag = token.getFlag("foundry-beams", "beam") || {};
+  const flag = token.getFlag(MOD_NAME, "beam") || {};
   if (flag.enabled) updateBeam(token);
 }
 
@@ -58,7 +59,7 @@ function resolveValidBeamTokenById(tokenId) {
     console.warn(`[foundry-beams] Token not found on canvas: ${tokenId}`);
     return null;
   }
-  const flag = token.document.getFlag("foundry-beams", "beam");
+  const flag = token.document.getFlag(MOD_NAME, "beam");
   if (!flag) {
     console.warn(`[foundry-beams] Token ${token.name} does not have beam flags configured.`);
     return null;

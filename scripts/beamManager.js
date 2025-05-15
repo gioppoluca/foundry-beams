@@ -1,3 +1,4 @@
+import { MOD_NAME } from "./beams-const.js";
 // beamManager.js — updated to support directional shader lighting with segment normal vector
 import { buildBeamSegment } from './beam-shader.js';
 import { reactiveMacro } from './beams-macro.js';
@@ -22,7 +23,7 @@ function startShaderAnimation() {
 
 
 export async function toggleBeam(token, forceEnable = null) {
-    const flag = token.getFlag("foundry-beams", "beam") || {};
+    const flag = token.getFlag(MOD_NAME, "beam") || {};
     const isEnabled = forceEnable !== null ? forceEnable : !flag.enabled;
     console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`);
 
@@ -32,7 +33,7 @@ export async function toggleBeam(token, forceEnable = null) {
         destroyBeam(token);
     }
 
-    await token.setFlag("foundry-beams", "beam", { ...flag, enabled: isEnabled });
+    await token.setFlag(MOD_NAME, "beam", { ...flag, enabled: isEnabled });
 }
 
 export function createBeam(token, config = {}) {
@@ -134,7 +135,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         // added to solve the imprecision in the collision
         if (collisionElement == null) break;
 
-        const mirror = edgeData?.object?.document.getFlag("foundry-beams", "mirror")
+        const mirror = edgeData?.object?.document.getFlag(MOD_NAME, "mirror")
         console.log(mirror)
         // looking id the wall is a reactive
         const isReactive = mirror?.isReactive ?? false;
