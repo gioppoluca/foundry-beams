@@ -1,3 +1,4 @@
+import { isDebugActive } from "./module.js";
 import { MOD_NAME } from "./beams-const.js";
 // beamManager.js — updated to support directional shader lighting with segment normal vector
 import { buildBeamSegment } from './beam-shader.js';
@@ -9,7 +10,7 @@ export const beams = new Map(); // token.id -> { containers[], config }
 let shaderTickerRegistered = false;
 function startShaderAnimation() {
     if (shaderTickerRegistered) return;
-    console.log("[foundry-beams] Starting shader ticker");
+    if (isDebugActive) console.log("[foundry-beams] Starting shader ticker");
     canvas.app.ticker.add((delta) => {
         for (const beam of beams.values()) {
             for (const segment of beam.containers) {
@@ -25,7 +26,7 @@ function startShaderAnimation() {
 export async function toggleBeam(token, forceEnable = null) {
     const flag = token.getFlag(MOD_NAME, "beam") || {};
     const isEnabled = forceEnable !== null ? forceEnable : !flag.enabled;
-    console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`);
+    if (isDebugActive) console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`);
 
     if (isEnabled) {
         createBeam(token, flag);
@@ -37,7 +38,7 @@ export async function toggleBeam(token, forceEnable = null) {
 }
 
 export function createBeam(token, config = {}) {
-    console.log(`[foundry-beams] Creating beam for ${token.name}`);
+    if (isDebugActive) console.log(`[foundry-beams] Creating beam for ${token.name}`);
     beams.set(token.id, { containers: [], config });
     updateBeam(token);
     startShaderAnimation();
@@ -64,7 +65,7 @@ export function updateBeam(token, override = {}) {
     const origin = { x: x + w / 2, y: y + h / 2 };
     const segments = computeBeamSegmentsWithNormals(origin, rotation * Math.PI / 180, 99999);
 
-    console.log(`[foundry-beams] updateBeam - Drawing ${segments.length} beam segment(s) for ${token.name}`);
+    if (isDebugActive) console.log(`[foundry-beams] updateBeam - Drawing ${segments.length} beam segment(s) for ${token.name}`);
     let useNormalShader = config.useNormalShader ?? false; // set this in config if desired
     useNormalShader = false;
 
@@ -106,7 +107,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
             mode: "all",
             type: "light"
         });
-        console.log(collisions);
+        if (isDebugActive) console.log(collisions);
         if (collisions.length == 0) break;
         // here we need to get the first element of the array
         let collisionElement = collisions.shift();
@@ -121,17 +122,17 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         }
         let endPoint = collisionElement ?? dest;
         const edgeData = collisionElement.edges.values().next().value;
-        console.log(edgeData);
+        if (isDebugActive) console.log(edgeData);
 
         const dx = endPoint.x - currentPoint.x;
         const dy = endPoint.y - currentPoint.y;
         console.log(`dx: ${dx} | dy: ${dy} `)
         const length = Math.hypot(dx, dy);
-        console.log(length);
+        if (isDebugActive) console.log(length);
         const normal = [-dy / length, dx / length];
 
         segments.push({ start: currentPoint, end: endPoint, dx, dy, length, normal });
-        console.log("after wall check");
+        if (isDebugActive) console.log("after wall check");
         // added to solve the imprecision in the collision
         if (collisionElement == null) break;
 
@@ -172,13 +173,13 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         const ry = incident.y - 2 * dot * normalW.y;
 
         direction = Math.atan2(ry, rx);
-        console.log(`[foundry-beams] Reflection #${bounces + 1} at mirror.  in: ${direction.toFixed(3)} `);
+        if (isDebugActive) console.log(`[foundry-beams] Reflection #${bounces + 1} at mirror.  in: ${direction.toFixed(3)} `);
 
         //direction = reflection;
         console.log(direction)
         currentPoint = endPoint;
         bounces++;
-        console.log(`[foundry-beams] Beam reflected at mirror wall. Bounce #${bounces}, new angle: ${direction}`);
+        if (isDebugActive) console.log(`[foundry-beams] Beam reflected at mirror wall. Bounce #${bounces}, new angle: ${direction}`);
 
     }
 
@@ -189,6 +190,6 @@ export function destroyBeam(token) {
     if (!beam) return;
     for (const { container } of beam.containers) container.destroy({ children: true });
     beams.delete(token.id);
-    console.log(`[foundry-beams] Beam fully destroyed for ${token.name}`);
+    if (isDebugActive) console.log(`[foundry-beams] Beam fully destroyed for ${token.name}`);
 }
 

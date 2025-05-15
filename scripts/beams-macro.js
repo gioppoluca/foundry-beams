@@ -1,3 +1,4 @@
+import { isDebugActive } from "./module.js";
 import { MOD_NAME } from "./beams-const.js";
 
 export async function reactiveMacro(macro_name) {

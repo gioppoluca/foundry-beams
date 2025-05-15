@@ -1,10 +1,11 @@
+export const isDebugActive = true;
 import { MOD_NAME } from "./beams-const.js";
 // module.js (refactored with detailed comments and debug console output)
 import * as BeamAPI from './beams-api.js';
 import { toggleBeam, updateBeam, beams } from "./beamManager.js";
 
 Hooks.once("init", () => {
-  console.log("[foundry-beams] Initializing module and schema injection...");
+  if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
 
   // Inject default beam flag schema into token config
   CONFIG.Token.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
@@ -31,14 +32,14 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
   game.modules.get(MOD_NAME).api = BeamAPI;
-  console.log("[foundry-beams] API registered");
+  if (isDebugActive) console.log("[foundry-beams] API registered");
 });
 
 Hooks.on("renderWallConfig", (app, html, data) => {
   const mirrorData = foundry.utils.getProperty(app.object, "flags.foundry-beams.mirror") ?? {};
   console.log(mirrorData)
-  console.log(app);
-  console.log(`[foundry-beams] Rendering WallConfig UI for wall: ${app.object.id}`);
+  if (isDebugActive) console.log(app);
+  if (isDebugActive) console.log(`[foundry-beams] Rendering WallConfig UI for wall: ${app.object.id}`);
   let footer = html.find("footer");
   const tabContent = `
     <fieldset class="beam-group" data-tab="beam">
@@ -67,7 +68,7 @@ Hooks.on("renderWallConfig", (app, html, data) => {
 Hooks.on("renderTokenConfig", (app, html, data) => {
   const beamData = foundry.utils.getProperty(app.object, "flags.foundry-beams.beam") ?? {};
 
-  console.log(`[foundry-beams] Rendering TokenConfig UI for token: ${app.object.name}`);
+  if (isDebugActive) console.log(`[foundry-beams] Rendering TokenConfig UI for token: ${app.object.name}`);
 
   // Add Beam tab button to token config tabs
   html.find(".sheet-tabs").append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
@@ -102,15 +103,15 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
   const isEnabled = beamConfig?.enabled === true;
   const beamExists = beams.has(token.id);
 
-  console.log(`[foundry-beams] Token updated: ${token.name}`);
-  console.log(`[foundry-beams] Beam flag enabled: ${isEnabled}, Beam already exists: ${beamExists}`);
+  if (isDebugActive) console.log(`[foundry-beams] Token updated: ${token.name}`);
+  if (isDebugActive) console.log(`[foundry-beams] Beam flag enabled: ${isEnabled}, Beam already exists: ${beamExists}`);
 
   // Handle enabling the beam
   if (isEnabled && !beamExists) {
-    console.log(`[foundry-beams] Scheduling beam creation for ${token.name}`);
+    if (isDebugActive) console.log(`[foundry-beams] Scheduling beam creation for ${token.name}`);
     Hooks.once("refreshToken", (refreshed) => {
       if (refreshed.id === token.id) {
-        console.log(`[foundry-beams] Creating beam after refresh for ${token.name}`);
+        if (isDebugActive) console.log(`[foundry-beams] Creating beam after refresh for ${token.name}`);
         toggleBeam(token, true);
       }
     });
@@ -118,10 +119,10 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
 
   // Handle disabling the beam
   if (!isEnabled && beamExists) {
-    console.log(`[foundry-beams] Scheduling beam destruction for ${token.name}`);
+    if (isDebugActive) console.log(`[foundry-beams] Scheduling beam destruction for ${token.name}`);
     Hooks.once("refreshToken", (refreshed) => {
       if (refreshed.id === token.id) {
-        console.log(`[foundry-beams] Destroying beam after refresh for ${token.name}`);
+        if (isDebugActive) console.log(`[foundry-beams] Destroying beam after refresh for ${token.name}`);
         toggleBeam(token, false);
       }
     });
@@ -130,12 +131,12 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
   // If the token has moved or rotated, update the beam geometry
   const moved = "x" in updateData || "y" in updateData || "rotation" in updateData;
   if (isEnabled && moved) {
-    console.log(`[foundry-beams] Scheduling beam update due to token motion: ${token.name}`);
+    if (isDebugActive) console.log(`[foundry-beams] Scheduling beam update due to token motion: ${token.name}`);
     Hooks.once("refreshToken", (refreshed) => {
       if (refreshed.id === token.id) {
         requestAnimationFrame(() => {
-          console.log(`[foundry-beams] Updating beam geometry after refresh for ${token.name}`);
-          console.log(refreshed);
+          if (isDebugActive) console.log(`[foundry-beams] Updating beam geometry after refresh for ${token.name}`);
+          if (isDebugActive) console.log(refreshed);
           updateBeam(refreshed, updateData); // <--- pass the updateData
         });
       }
@@ -145,13 +146,13 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
 
 // Restore beams on scene load if tokens already have them enabled
 Hooks.on("canvasReady", () => {
-  console.log("[foundry-beams] Canvas ready. Checking tokens for beam restoration...");
-  console.log(beams);
+  if (isDebugActive) console.log("[foundry-beams] Canvas ready. Checking tokens for beam restoration...");
+  if (isDebugActive) console.log(beams);
 
   for (const token of canvas.tokens.placeables) {
     const beamConfig = token.document.getFlag(MOD_NAME, "beam");
     if (beamConfig?.enabled) {
-      console.log(`[foundry-beams] Restoring beam for ${token.name}`);
+      if (isDebugActive) console.log(`[foundry-beams] Restoring beam for ${token.name}`);
       toggleBeam(token, true);
     }
   }

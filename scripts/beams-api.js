@@ -1,3 +1,4 @@
+import { isDebugActive } from "./module.js";
 import { MOD_NAME } from "./beams-const.js";
 // beams-api.js — API for external control of beam tokens (by token.id only)
 
@@ -54,7 +55,7 @@ export async function rotateBeamById(tokenId, degrees) {
  */
 function resolveValidBeamTokenById(tokenId) {
   const token = canvas.tokens.get(tokenId);
-  console.log(token);
+  if (isDebugActive) console.log(token);
   if (!token) {
     console.warn(`[foundry-beams] Token not found on canvas: ${tokenId}`);
     return null;
