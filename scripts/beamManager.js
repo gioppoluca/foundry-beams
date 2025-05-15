@@ -3,6 +3,7 @@ import { MOD_NAME } from "./beams-const.js";
 // beamManager.js — updated to support directional shader lighting with segment normal vector
 import { buildBeamSegment } from './beam-shader.js';
 import { reactiveMacro } from './beams-macro.js';
+import { createRegionFromSegments } from './beams-region.js';
 
 export const beams = new Map(); // token.id -> { containers[], config }
 
@@ -24,7 +25,7 @@ function startShaderAnimation() {
 
 
 export async function toggleBeam(token, forceEnable = null) {
-    const flag = token.getFlag(MOD_NAME, "beam") || {};
+    const flag = token.document.getFlag(MOD_NAME, "beam") || {};
     const isEnabled = forceEnable !== null ? forceEnable : !flag.enabled;
     if (isDebugActive) console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`);
 
@@ -34,7 +35,7 @@ export async function toggleBeam(token, forceEnable = null) {
         destroyBeam(token);
     }
 
-    await token.setFlag(MOD_NAME, "beam", { ...flag, enabled: isEnabled });
+    await token.document.setFlag(MOD_NAME, "beam", { ...flag, enabled: isEnabled });
 }
 
 export function createBeam(token, config = {}) {
@@ -45,8 +46,10 @@ export function createBeam(token, config = {}) {
 }
 
 
-export function updateBeam(token, override = {}) {
+export function updateBeam(token, override = null) {
     const existing = beams.get(token.id);
+    console.log("UPDATEBEAM")
+    console.log(existing)
     if (!existing) {
         console.warn(`[foundry-beams] Cannot update beam for ${token.name} — no beam container set`);
         return;
@@ -54,25 +57,41 @@ export function updateBeam(token, override = {}) {
 
     for (const { container } of existing.containers) container.destroy({ children: true });
     existing.containers = [];
-
+let containersForRegions = [];
     const config = existing.config;
-    const x = override.x ?? token.x;
-    const y = override.y ?? token.y;
-    const w = override.width ?? token.w;
-    const h = override.height ?? token.h;
-    const rotation = override.rotation ?? token.rotation;
+    // rotation, X and Y must always be red on the document since in the placeable it is not ready
+    const x = override?.x ?? token.document.x;
+    const y = override?.y ?? token.document.y;
+    const rotation = override?.rotation ?? token.document.rotation;
+    // W and H are present in the placeable
+    const w = override?.width ?? token.w;
+    const h = override?.height ?? token.h;
+    
+    console.log(override)
+    console.log(override?.x)
+    console.log(token?.x)
+    console.log(`x: ${x}| y: ${y} | w: ${w}| h: ${h}| ret: ${rotation}`)
+    console.log(token)
 
     const origin = { x: x + w / 2, y: y + h / 2 };
+    console.log(origin)
     const segments = computeBeamSegmentsWithNormals(origin, rotation * Math.PI / 180, 99999);
 
     if (isDebugActive) console.log(`[foundry-beams] updateBeam - Drawing ${segments.length} beam segment(s) for ${token.name}`);
     let useNormalShader = config.useNormalShader ?? false; // set this in config if desired
     useNormalShader = false;
+        console.log("|||segments")
+        console.log(segments)
 
     for (const segment of segments) {
         const { container, filter } = buildBeamSegment({ segment, config, useNormalShader });
+        console.log("|||CONTAINER")
+        console.log(container)
+        console.log(container.children[0].vertexData)
+        
         canvas.effects.addChild(container);
         existing.containers.push({ container, filter });
+        containersForRegions.push(container);
 
         // Add marker at the segment's end (excluding last one)
         //    if (i < segments.length - 1) {
@@ -90,6 +109,7 @@ export function updateBeam(token, override = {}) {
     }
     console.log(beams)
     console.log(existing)
+    createRegionFromSegments(segments, token);
 }
 
 // normal vector per segment
