@@ -1,4 +1,9 @@
 # foundry-beams
+- ![](https://img.shields.io/badge/Foundry-v12-informational)
+- ![Latest Release Download Count](https://img.shields.io/github/downloads/gioppoluca/foundry-beams/latest/module.zip)
+- ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Ffoundry-beams&colorB=4aa94a)
+
+# WARNING - This module is still an alpha release in full development - wait until this message is removed to use it properly ... but if you want to have a glimpse of it and share some hints you are welcome
 
 A Foundry VTT module that lets tokens emit animated, glowing beam segments — with support for reflections, shader effects, regions, and module API integration.
 
