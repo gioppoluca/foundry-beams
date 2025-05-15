@@ -4,6 +4,7 @@ import { MOD_NAME } from "./beams-const.js";
 import { buildBeamSegment } from './beam-shader.js';
 import { reactiveMacro } from './beams-macro.js';
 import { createRegionFromSegments } from './beams-region.js';
+import { getTokensAlongSegment } from "./beams-util.js";
 
 export const beams = new Map(); // token.id -> { containers[], config }
 
@@ -45,6 +46,13 @@ export function createBeam(token, config = {}) {
     startShaderAnimation();
 }
 
+function findHitTokens(segment, token){
+    let hitTokens = getTokensAlongSegment(segment.start, segment.end, token);
+    console.log("findHitTokens")
+    console.log(hitTokens)
+    return hitTokens
+}
+
 
 export function updateBeam(token, override = null) {
     const existing = beams.get(token.id);
@@ -83,6 +91,8 @@ let containersForRegions = [];
         console.log("|||segments")
         console.log(segments)
 
+    let hitTokens = []
+
     for (const segment of segments) {
         const { container, filter } = buildBeamSegment({ segment, config, useNormalShader });
         console.log("|||CONTAINER")
@@ -105,10 +115,12 @@ let containersForRegions = [];
         marker.y = endY;
         canvas.effects.addChild(marker);
         existing.containers.push({ container: marker });
+        hitTokens = hitTokens.concat(findHitTokens(segment, token))
         //  }
     }
     console.log(beams)
-    console.log(existing)
+    console.log("hittokens||||||||")
+    console.log(hitTokens)
     createRegionFromSegments(segments, token);
 }
 
@@ -127,6 +139,11 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
             mode: "all",
             type: "light"
         });
+        const collidedTk = CONFIG.Canvas.polygonBackends.move.testCollision(currentPoint, dest, { type: "sight", mode: "all" });
+
+        console.log("collidedTk")
+        console.log(collidedTk)
+
         if (isDebugActive) console.log(collisions);
         if (collisions.length == 0) break;
         // here we need to get the first element of the array
