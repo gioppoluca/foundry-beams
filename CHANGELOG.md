@@ -1,4 +1,9 @@
 
+## [0.1.1] - 2025-06-03
+### :bug: Bug Fixes
+- [`b4929a1`](https://github.com/gioppoluca/foundry-beams/commit/b4929a1be4524219389834269b772df0b50d688d) - not changing color accordingly to settings, offset from token center *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [0.1.0] - 2025-06-03
 ### :sparkles: New Features
 - [`a7ddb4a`](https://github.com/gioppoluca/foundry-beams/commit/a7ddb4a91601108af4caeb0559af016df52affeb) - token interaction *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -31,3 +36,4 @@
 [0.0.4]: https://github.com/gioppoluca/foundry-beams/compare/0.0.3...0.0.4
 [0.0.5]: https://github.com/gioppoluca/foundry-beams/compare/0.0.4...0.0.5
 [0.1.0]: https://github.com/gioppoluca/foundry-beams/compare/0.0.5...0.1.0
+[0.1.1]: https://github.com/gioppoluca/foundry-beams/compare/0.1.0...0.1.1
