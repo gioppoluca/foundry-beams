@@ -1,4 +1,13 @@
 
+## [0.1.0] - 2025-06-03
+### :sparkles: New Features
+- [`a7ddb4a`](https://github.com/gioppoluca/foundry-beams/commit/a7ddb4a91601108af4caeb0559af016df52affeb) - token interaction *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`20945d1`](https://github.com/gioppoluca/foundry-beams/commit/20945d1145514e7021ecabb53bcc09f39c05d5f8) - Enable/Disable does not work with macro, closes [#12](https://github.com/gioppoluca/foundry-beams/pull/12) *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`8d3fbec`](https://github.com/gioppoluca/foundry-beams/commit/8d3fbec449a1cccffb39d51902e57fbd864ecd06) - Beam not appearing without site reload / design looks strange. closes [#11](https://github.com/gioppoluca/foundry-beams/pull/11),[#13](https://github.com/gioppoluca/foundry-beams/pull/13) *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [0.0.5] - 2025-05-15
 ### :bug: Bug Fixes
 - [`929f895`](https://github.com/gioppoluca/foundry-beams/commit/929f8956a2e60d46b6444c0c9b09f62266edaa87) - closes Properly manage color [#8](https://github.com/gioppoluca/foundry-beams/pull/8) *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -21,3 +30,4 @@
 [0.0.3]: https://github.com/gioppoluca/foundry-beams/compare/0.0.2...0.0.3
 [0.0.4]: https://github.com/gioppoluca/foundry-beams/compare/0.0.3...0.0.4
 [0.0.5]: https://github.com/gioppoluca/foundry-beams/compare/0.0.4...0.0.5
+[0.1.0]: https://github.com/gioppoluca/foundry-beams/compare/0.0.5...0.1.0
