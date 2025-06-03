@@ -66,17 +66,22 @@ Hooks.on("renderWallConfig", (app, html, data) => {
 });
 
 Hooks.on("renderTokenConfig", (app, html, data) => {
-  const beamData = foundry.utils.getProperty(app.object, "flags.foundry-beams.beam") ?? {};
+  const beamData = foundry.utils.getProperty(app.token, "flags.foundry-beams.beam") ?? {};
 
-  if (isDebugActive) console.log(`[foundry-beams] Rendering TokenConfig UI for token: ${app.object.name}`);
+  console.log(app)
+  console.log(html)
+  console.log(beamData)
+  if (isDebugActive) console.log(`[foundry-beams] Rendering TokenConfig UI for token: ${app.token.name}`);
 
   // Add Beam tab button to token config tabs
-  html.find(".sheet-tabs").append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
+  // html.find(".sheet-tabs").append(`<a class="item" data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
+  app.form.querySelector('.sheet-tabs').insertAdjacentHTML('beforeend', `<a class="item" data-action="tab" data-group="sheet"  data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
 
   // Append custom beam config form elements into the config form
-  let form = html.find("form");
+  //let form = html.find("form");
+  const dataGroup = game.release.generation < 13 ? "main" : "sheet";
   const tabContent = `
-    <div class="tab" data-tab="beam">
+    <div class="tab scrollable" data-group="${dataGroup}" data-tab="beam" data-application-part="beam">
       <div class="form-group">
         <label>Enable Beam</label>
         <input type="checkbox" name="flags.foundry-beams.beam.enabled" ${beamData.enabled ? "checked" : ""}/>
@@ -91,7 +96,9 @@ Hooks.on("renderTokenConfig", (app, html, data) => {
       </div>
     </div>
   `;
-  form.append(tabContent);
+
+  //form.append(tabContent);
+  app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
 });
 
 // Watch for token updates and react based on beam flags or movement
@@ -115,6 +122,7 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
         toggleBeam(token, true);
       }
     });
+    //toggleBeam(token, true);
   }
 
   // Handle disabling the beam
@@ -126,6 +134,7 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
         toggleBeam(token, false);
       }
     });
+    //toggleBeam(token, false);
   }
 
   // If the token has moved or rotated, update the beam geometry
@@ -162,7 +171,8 @@ Hooks.on("canvasReady", (canvas) => {
     if (isDebugActive) console.log(beamConfig);
     if (beamConfig?.enabled) {
       if (isDebugActive) console.log(`[foundry-beams] Restoring beam for ${token.name}`);
-      toggleBeam(token, true);
+      console.log(token)
+      toggleBeam(token.document, true);
     }
   }
 });

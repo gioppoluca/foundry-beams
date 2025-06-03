@@ -3,7 +3,7 @@ import { MOD_NAME } from "./beams-const.js";
 // beamManager.js — updated to support directional shader lighting with segment normal vector
 import { buildBeamSegment } from './beam-shader.js';
 import { reactiveMacro } from './beams-macro.js';
-import { createRegionFromSegments } from './beams-region.js';
+import { createRegionFromSegments, deleteBeamRegions } from './beams-region.js';
 import { getTokensAlongSegment } from "./beams-util.js";
 
 export const beams = new Map(); // token.id -> { containers[], config }
@@ -26,17 +26,25 @@ function startShaderAnimation() {
 
 
 export async function toggleBeam(token, forceEnable = null) {
-    const flag = token.document.getFlag(MOD_NAME, "beam") || {};
+    console.log(token)
+    // the toggleBean receives a TokenDocument
+    // const flag = token.document.getFlag(MOD_NAME, "beam") || {};
+    const flag = token.getFlag(MOD_NAME, "beam") || {};
+    // if it is already enabled there is no sens in doing it again
+//    if (flag.enabled === forceEnable)
+//        return;
     const isEnabled = forceEnable !== null ? forceEnable : !flag.enabled;
     if (isDebugActive) console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`);
 
     if (isEnabled) {
-        createBeam(token, flag);
+        // we need to pass the token and not the TokenDocument
+        createBeam(token.object, flag);
     } else {
-        destroyBeam(token);
+        destroyBeam(token.object);
     }
 
-    await token.document.setFlag(MOD_NAME, "beam", { ...flag, enabled: isEnabled });
+    // await token.document.setFlag(MOD_NAME, "beam", { ...flag, enabled: isEnabled });
+    await token.setFlag(MOD_NAME, "beam", { ...flag, enabled: isEnabled });
 }
 
 export function createBeam(token, config = {}) {
@@ -46,7 +54,7 @@ export function createBeam(token, config = {}) {
     startShaderAnimation();
 }
 
-function findHitTokens(segment, token){
+function findHitTokens(segment, token) {
     let hitTokens = getTokensAlongSegment(segment.start, segment.end, token);
     console.log("findHitTokens")
     console.log(hitTokens)
@@ -57,6 +65,7 @@ function findHitTokens(segment, token){
 export function updateBeam(token, override = null) {
     const existing = beams.get(token.id);
     console.log("UPDATEBEAM")
+    console.log(token)
     console.log(existing)
     if (!existing) {
         console.warn(`[foundry-beams] Cannot update beam for ${token.name} — no beam container set`);
@@ -65,7 +74,7 @@ export function updateBeam(token, override = null) {
 
     for (const { container } of existing.containers) container.destroy({ children: true });
     existing.containers = [];
-let containersForRegions = [];
+    let containersForRegions = [];
     const config = existing.config;
     // rotation, X and Y must always be red on the document since in the placeable it is not ready
     const x = override?.x ?? token.document.x;
@@ -74,7 +83,7 @@ let containersForRegions = [];
     // W and H are present in the placeable
     const w = override?.width ?? token.w;
     const h = override?.height ?? token.h;
-    
+
     console.log(override)
     console.log(override?.x)
     console.log(token?.x)
@@ -88,8 +97,8 @@ let containersForRegions = [];
     if (isDebugActive) console.log(`[foundry-beams] updateBeam - Drawing ${segments.length} beam segment(s) for ${token.name}`);
     let useNormalShader = config.useNormalShader ?? false; // set this in config if desired
     useNormalShader = false;
-        console.log("|||segments")
-        console.log(segments)
+    console.log("|||segments")
+    console.log(segments)
 
     let hitTokens = []
 
@@ -98,7 +107,7 @@ let containersForRegions = [];
         console.log("|||CONTAINER")
         console.log(container)
         console.log(container.children[0].vertexData)
-        
+
         canvas.effects.addChild(container);
         existing.containers.push({ container, filter });
         containersForRegions.push(container);
@@ -225,6 +234,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
 export function destroyBeam(token) {
     const beam = beams.get(token.id);
     if (!beam) return;
+    deleteBeamRegions(token);
     for (const { container } of beam.containers) container.destroy({ children: true });
     beams.delete(token.id);
     if (isDebugActive) console.log(`[foundry-beams] Beam fully destroyed for ${token.name}`);

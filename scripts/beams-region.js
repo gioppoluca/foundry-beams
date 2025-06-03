@@ -13,7 +13,7 @@ export async function createRegionFromSegments(segments, token) {
     for (const segment of segments) {
         console.log(segment)
         const vertexData = getRectanglePointsFromSegment(segment, width)
-console.log("vertexdata")
+        console.log("vertexdata")
         console.log(vertexData)
         shapes.push({ type: "polygon", points: vertexData })
         //allPoints.push(...vertexData)
@@ -139,11 +139,22 @@ function buildRectangleVertices(start, dx, dy, length, width) {
 /**
  * Remove all regions created by a beam from a token.
  */
-export async function deleteBeamRegions(tokenId) {
+export async function deleteBeamRegions(token) {
+    /*
     const regions = canvas.scene.regions.filter(r => r.getFlag("foundry-beams", "fromToken") === tokenId);
     const idsToDelete = regions.map(r => r.id);
     if (idsToDelete.length > 0) {
         await canvas.scene.deleteEmbeddedDocuments("Region", idsToDelete);
         console.log(`[foundry-beams] Deleted ${idsToDelete.length} beam regions for token ID ${tokenId}`);
+    }
+*/
+    const regionName = `Beam-${token.name}-Region`;
+    let region = game.scenes.viewed.regions.getName(regionName)
+    console.log(region)
+    // await region.delete();
+    if (region) {
+        const res = await canvas.scene.deleteEmbeddedDocuments("Region", [region.id]);
+        console.log(res)
+        console.log(`[foundry-beams] Deleted region for token ${token.name}`);
     }
 }
