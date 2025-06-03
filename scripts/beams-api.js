@@ -6,19 +6,19 @@ import { toggleBeam, updateBeam } from './beamManager.js';
 
 /** Enable a beam for a token by ID */
 export async function enableBeamById(tokenId) {
-  const token = resolveValidBeamTokenById(tokenId);
+  const token = await resolveValidBeamTokenById(tokenId);
   if (token) await toggleBeam(token, true);
 }
 
 /** Disable a beam for a token by ID */
 export async function disableBeamById(tokenId) {
-  const token = resolveValidBeamTokenById(tokenId);
+  const token = await resolveValidBeamTokenById(tokenId);
   if (token) await toggleBeam(token, false);
 }
 
 /** Update beam color for a token by ID */
 export async function updateBeamColorById(tokenId, colorHex) {
-  const token = resolveValidBeamTokenById(tokenId);
+  const token = await resolveValidBeamTokenById(tokenId);
   if (!token) return;
 
   const flag = token.getFlag(MOD_NAME, "beam") || {};
@@ -29,8 +29,8 @@ export async function updateBeamColorById(tokenId, colorHex) {
 }
 
 /** Get beam state (enabled + color) by token ID */
-export function getBeamStateById(tokenId) {
-  const token = resolveValidBeamTokenById(tokenId);
+export async function getBeamStateById(tokenId) {
+  const token = await resolveValidBeamTokenById(tokenId);
   if (!token) return null;
   const flag = token.getFlag(MOD_NAME, "beam") || {};
   return {
@@ -40,30 +40,61 @@ export function getBeamStateById(tokenId) {
 }
 
 /** Rotate the beam by setting the token's rotation */
-export async function rotateBeamById(tokenId, degrees) {
-  const token = resolveValidBeamTokenById(tokenId);
+export async function rotateBeamByIdTo(tokenId, degrees) {
+  const token = await resolveValidBeamTokenById(tokenId);
   if (!token) return;
-  await token.document.update({ rotation: degrees });
   const flag = token.getFlag(MOD_NAME, "beam") || {};
-  if (flag.enabled) updateBeam(token);
+//  await token.update({ rotation: degrees });
+  if (flag.enabled) {
+    await token.update({ rotation: degrees });
+  //  updateBeam(token);
+  }
 }
+
+/** Rotate the beam by setting the token's rotation */
+export async function rotateBeamByIdOf(tokenId, degrees) {
+  const token = await resolveValidBeamTokenById(tokenId);
+  if (!token) return;
+  const flag = token.getFlag(MOD_NAME, "beam") || {};
+//  await token.update({ rotation: degrees });
+  if (flag.enabled) {
+    await token.update({ rotation: token.rotation + degrees });
+  //  updateBeam(token);
+  }
+}
+
+/** Toggle the beam (enable/disable) by token ID */
+export async function toggleBeamById(tokenId) {
+  const token = await resolveValidBeamTokenById(tokenId);
+  if (!token) return;
+
+  const flag = token.getFlag(MOD_NAME, "beam") || {};
+  const newState = !flag.enabled;
+
+  //  await token.setFlag(MOD_NAME, "beam", { ...flag, enabled: newState });
+
+  await toggleBeam(token, newState);
+}
+
 
 /**
  * Resolves token instance from ID and ensures it has beam configuration
  * @param {string} tokenId
  * @returns {Token|null}
  */
-function resolveValidBeamTokenById(tokenId) {
-  const token = canvas.tokens.get(tokenId);
+async function resolveValidBeamTokenById(tokenId) {
+  //const token = canvas.tokens.get(tokenId);
+  const token = await fromUuid(tokenId);
   if (isDebugActive) console.log(token);
   if (!token) {
     console.warn(`[foundry-beams] Token not found on canvas: ${tokenId}`);
     return null;
   }
-  const flag = token.document.getFlag(MOD_NAME, "beam");
+  const flag = token.getFlag(MOD_NAME, "beam");
   if (!flag) {
     console.warn(`[foundry-beams] Token ${token.name} does not have beam flags configured.`);
     return null;
   }
-  return token.document;
+  return token;
 }
+
