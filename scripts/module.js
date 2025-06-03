@@ -14,6 +14,7 @@ Hooks.once("init", () => {
       default: {
         enabled: false,
         width: 30,
+        offset: 30,
         colorHex: "#ffe699"
       }
     };
@@ -89,6 +90,10 @@ Hooks.on("renderTokenConfig", (app, html, data) => {
       <div class="form-group">
         <label>Beam Width (px)</label>
         <input type="number" name="flags.foundry-beams.beam.width" value="${beamData.width ?? 30}" min="1"/>
+      </div>
+      <div class="form-group">
+        <label>Beam Offset (px)</label>
+        <input type="number" name="flags.foundry-beams.beam.offset" value="${beamData.offset ?? 30}" min="1"/>
       </div>
       <div class="form-group">
         <label>Beam Color</label>

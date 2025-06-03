@@ -31,8 +31,8 @@ export async function toggleBeam(token, forceEnable = null) {
     // const flag = token.document.getFlag(MOD_NAME, "beam") || {};
     const flag = token.getFlag(MOD_NAME, "beam") || {};
     // if it is already enabled there is no sens in doing it again
-//    if (flag.enabled === forceEnable)
-//        return;
+    //    if (flag.enabled === forceEnable)
+    //        return;
     const isEnabled = forceEnable !== null ? forceEnable : !flag.enabled;
     if (isDebugActive) console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`);
 
@@ -66,6 +66,7 @@ export function updateBeam(token, override = null) {
     const existing = beams.get(token.id);
     console.log("UPDATEBEAM")
     console.log(token)
+    const beamConfig = token.document.getFlag(MOD_NAME, "beam");
     console.log(existing)
     if (!existing) {
         console.warn(`[foundry-beams] Cannot update beam for ${token.name} — no beam container set`);
@@ -75,7 +76,8 @@ export function updateBeam(token, override = null) {
     for (const { container } of existing.containers) container.destroy({ children: true });
     existing.containers = [];
     let containersForRegions = [];
-    const config = existing.config;
+    let config = existing.config;
+    config.colorHex = beamConfig.colorHex;
     // rotation, X and Y must always be red on the document since in the placeable it is not ready
     const x = override?.x ?? token.document.x;
     const y = override?.y ?? token.document.y;
@@ -92,7 +94,7 @@ export function updateBeam(token, override = null) {
 
     const origin = { x: x + w / 2, y: y + h / 2 };
     console.log(origin)
-    const segments = computeBeamSegmentsWithNormals(origin, rotation * Math.PI / 180, 99999);
+    const segments = computeBeamSegmentsWithNormals(origin, rotation * Math.PI / 180, 99999, beamConfig.offset ?? 0);
 
     if (isDebugActive) console.log(`[foundry-beams] updateBeam - Drawing ${segments.length} beam segment(s) for ${token.name}`);
     let useNormalShader = config.useNormalShader ?? false; // set this in config if desired
@@ -108,7 +110,9 @@ export function updateBeam(token, override = null) {
         console.log(container)
         console.log(container.children[0].vertexData)
 
+        container.zIndex = -1;
         canvas.effects.addChild(container);
+        canvas.effects.sortChildren();
         existing.containers.push({ container, filter });
         containersForRegions.push(container);
 
@@ -134,7 +138,7 @@ export function updateBeam(token, override = null) {
 }
 
 // normal vector per segment
-function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance) {
+function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance, beamOffset) {
     const segments = [];
     let currentPoint = origin;
     let direction = initialDirectionRad;
@@ -154,7 +158,9 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         console.log(collidedTk)
 
         if (isDebugActive) console.log(collisions);
-        if (collisions.length == 0) break;
+        if (collisions.length == 0) {
+            break;
+        }
         // here we need to get the first element of the array
         let collisionElement = collisions.shift();
         // if it is the same edge as the previous it means that there is an imprecision in the testCollision and I'm bouncing on the same wall
@@ -163,7 +169,16 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         }
         // now we are sure we are on the next wall; that should be either a wall or the outerbound or null
         if (collisionElement.edges.values().next().value.type == "outerBounds") {
-            // if it is outerbound I need to keep the wall but stop bouncing
+            // if it is outerbound I need to keep the wall but stop bouncing but BEFORE if first bounce> OFFSET
+            if (bounces === 0) {
+                // it is the first segment
+                currentPoint = {
+                    x: origin.x + Math.cos(direction) * beamOffset,
+                    y: origin.y + Math.sin(direction) * beamOffset
+                };
+                console.log(`BEAM DIRECTION RAD: ${direction}`);
+                console.log(`OFFSET POINT: x=${currentPoint.x}, y=${currentPoint.y}`);
+            }
             bounces = maxBounces;
         }
         let endPoint = collisionElement ?? dest;
@@ -173,9 +188,21 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         const dx = endPoint.x - currentPoint.x;
         const dy = endPoint.y - currentPoint.y;
         console.log(`dx: ${dx} | dy: ${dy} `)
-        const length = Math.hypot(dx, dy);
+        let length = Math.hypot(dx, dy);
         if (isDebugActive) console.log(length);
         const normal = [-dy / length, dx / length];
+
+        // offset of the starting segment)
+        if (bounces === 0) {
+            // it is the first segment
+            currentPoint = {
+                x: origin.x + Math.cos(direction) * beamOffset,
+                y: origin.y + Math.sin(direction) * beamOffset
+            };
+            length -= beamOffset
+            console.log(`BEAM DIRECTION RAD: ${direction}`);
+            console.log(`OFFSET POINT: x=${currentPoint.x}, y=${currentPoint.y}`);
+        }
 
         segments.push({ start: currentPoint, end: endPoint, dx, dy, length, normal });
         if (isDebugActive) console.log("after wall check");
@@ -191,7 +218,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
             reactiveMacro(mirror?.macro);
         }
 
-        // looking id the wall is a mirror
+        // looking if the wall is a mirror
         const isMirror = mirror?.isMirror ?? false;
         if (!isMirror) break;
         lastCollisionEdgeId = edgeData.id;
