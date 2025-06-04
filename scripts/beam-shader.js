@@ -58,7 +58,12 @@ export function createBasicShaderBeam({ start, dx, dy, length, config }) {
   beam.anchor.set(0, 0.5);
   beam.width = length;
   beam.height = config.width;
-  beam.blendMode = PIXI.BLEND_MODES.ADD;
+//  beam.blendMode = PIXI.BLEND_MODES.ADD;
+container.zIndex = 9000;
+container.sortableChildren = true;
+
+  beam.blendMode = PIXI.BLEND_MODES.ADD;  // or .NORMAL, .ADD, .MAX_COLOR
+  container.blendMode = PIXI.BLEND_MODES.ADD;  // or .NORMAL, .ADD, .MAX_COLOR
 
   const color = hexToRGB(config.colorHex ?? "#ffe699");
   beam.tint = color;

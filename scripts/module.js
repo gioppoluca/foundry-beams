@@ -6,7 +6,6 @@ import { toggleBeam, updateBeam, beams } from "./beamManager.js";
 
 Hooks.once("init", () => {
   if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
-
   // Inject default beam flag schema into token config
   CONFIG.Token.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
     fields["flags.foundry-beams.beam"] = {

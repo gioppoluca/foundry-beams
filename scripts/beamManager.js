@@ -110,9 +110,18 @@ export function updateBeam(token, override = null) {
         console.log(container)
         console.log(container.children[0].vertexData)
 
-        container.zIndex = -1;
-        canvas.effects.addChild(container);
-        canvas.effects.sortChildren();
+        //container.zIndex = -1;
+//        canvas.effects.addChild(container);
+        canvas.lighting.addChild(container);
+        //canvas.stage.addChild(container);
+//        canvas.tokens.addChild(container);
+//        canvas.beams.addBeam(container)
+//        canvas.effects.sortChildren();
+//canvas.tokens.sortableChildren = true;
+//canvas.stage.sortableChildren = true;
+//canvas.effects.sortableChildren = true;
+canvas.lighting.sortableChildren = true;
+
         existing.containers.push({ container, filter });
         containersForRegions.push(container);
 
