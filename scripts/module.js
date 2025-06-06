@@ -14,6 +14,7 @@ Hooks.once("init", () => {
         enabled: false,
         width: 30,
         offset: 30,
+        hasRegion: false,
         colorHex: "#ffe699"
       }
     };
@@ -65,6 +66,27 @@ Hooks.on("renderWallConfig", (app, html, data) => {
   app.setPosition({ height: "auto" });
 });
 
+// this function could go to the proper file
+async function regionConfig(token) {
+  console.log("regionConfig");
+  const regionName = `Beam-${token.name}-Region`;
+  let region = game.scenes.viewed.regions.getName(regionName)
+  if (!region) {
+    const regionData = {
+      shapes: [],
+      name: `Beam-${token.name}-Region`,
+      visibility: 2,
+      x: 0,
+      y: 0
+    };
+    //    const region = await RegionDocument.create(regionData, { parent: canvas.scene });
+    console.log(regionData)
+    region = (await canvas.scene.createEmbeddedDocuments("Region", [regionData]))[0];
+  }
+  let renderedConfig = await (new foundry.applications.sheets.RegionConfig({ document: region }).render({ force: true }));
+  renderedConfig.element.querySelector('section.tab.region-behaviors').classList += ' active';
+}
+
 Hooks.on("renderTokenConfig", (app, html, data) => {
   const beamData = foundry.utils.getProperty(app.token, "flags.foundry-beams.beam") ?? {};
 
@@ -98,11 +120,19 @@ Hooks.on("renderTokenConfig", (app, html, data) => {
         <label>Beam Color</label>
         <input type="color" name="flags.foundry-beams.beam.colorHex" value="${beamData.colorHex ?? "#ffe699"}"/>
       </div>
+      <div class="form-group">
+        <label>Activate region on beam?</label>
+        <input type="checkbox" name="flags.foundry-beams.beam.hasRegion" ${beamData.hasRegion ? "checked" : ""}/>
+      </div>
+      <div class="form-group">
+        <button id="regionConfigButton" >Configure Region</button>
+      </div>
     </div>
   `;
 
   //form.append(tabContent);
   app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
+  app.form.querySelector('#regionConfigButton')?.addEventListener('click', () => {regionConfig(app.token)});
 });
 
 // Watch for token updates and react based on beam flags or movement

@@ -143,7 +143,9 @@ canvas.lighting.sortableChildren = true;
     console.log(beams)
     console.log("hittokens||||||||")
     console.log(hitTokens)
+    if(beamConfig.hasRegion){
     createRegionFromSegments(segments, token);
+    }
 }
 
 // normal vector per segment
