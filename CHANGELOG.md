@@ -1,4 +1,14 @@
 
+## [1.0.0] - 2025-06-06
+### :sparkles: New Features
+- [`2cfa9bf`](https://github.com/gioppoluca/foundry-beams/commit/2cfa9bf221feb9aafdfae321c62cb69a6c172e02) - adding compendium examples *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`c767543`](https://github.com/gioppoluca/foundry-beams/commit/c76754332fe5809d22bdfee9b428ad9ce7ef1041) - added optional region generation *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`da82ada`](https://github.com/gioppoluca/foundry-beams/commit/da82adad3dfe5614ad68620621d918ea55494334) - adding some compendium for examples *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`2bb97bd`](https://github.com/gioppoluca/foundry-beams/commit/2bb97bd209506e39a5d06c6eae1a76333fdf993e) - problem with vision based of the beams, now beam on light layer *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [0.1.1] - 2025-06-03
 ### :bug: Bug Fixes
 - [`b4929a1`](https://github.com/gioppoluca/foundry-beams/commit/b4929a1be4524219389834269b772df0b50d688d) - not changing color accordingly to settings, offset from token center *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -37,3 +47,4 @@
 [0.0.5]: https://github.com/gioppoluca/foundry-beams/compare/0.0.4...0.0.5
 [0.1.0]: https://github.com/gioppoluca/foundry-beams/compare/0.0.5...0.1.0
 [0.1.1]: https://github.com/gioppoluca/foundry-beams/compare/0.1.0...0.1.1
+[1.0.0]: https://github.com/gioppoluca/foundry-beams/compare/0.1.1...1.0.0
