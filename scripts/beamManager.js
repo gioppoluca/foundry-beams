@@ -1,6 +1,5 @@
 import { isDebugActive } from "./module.js";
 import { MOD_NAME } from "./beams-const.js";
-// beamManager.js — updated to support directional shader lighting with segment normal vector
 import { buildBeamSegment } from './beam-shader.js';
 import { reactiveMacro } from './beams-macro.js';
 import { createRegionFromSegments, deleteBeamRegions } from './beams-region.js';
@@ -67,7 +66,7 @@ export function updateBeam(token, override = null) {
     console.log("UPDATEBEAM")
     console.log(token)
     const beamConfig = token.document.getFlag(MOD_NAME, "beam");
-    console.log(existing)
+    // console.log(existing)
     if (!existing) {
         console.warn(`[foundry-beams] Cannot update beam for ${token.name} — no beam container set`);
         return;
@@ -93,34 +92,34 @@ export function updateBeam(token, override = null) {
     console.log(token)
 
     const origin = { x: x + w / 2, y: y + h / 2 };
-    console.log(origin)
+    // console.log(origin)
     const segments = computeBeamSegmentsWithNormals(origin, rotation * Math.PI / 180, 99999, beamConfig.offset ?? 0);
 
     if (isDebugActive) console.log(`[foundry-beams] updateBeam - Drawing ${segments.length} beam segment(s) for ${token.name}`);
     let useNormalShader = config.useNormalShader ?? false; // set this in config if desired
     useNormalShader = false;
-    console.log("|||segments")
-    console.log(segments)
+    // console.log("|||segments")
+    // console.log(segments)
 
     let hitTokens = []
 
     for (const segment of segments) {
         const { container, filter } = buildBeamSegment({ segment, config, useNormalShader });
-        console.log("|||CONTAINER")
-        console.log(container)
-        console.log(container.children[0].vertexData)
+        // console.log("|||CONTAINER")
+        // console.log(container)
+        // console.log(container.children[0].vertexData)
 
         //container.zIndex = -1;
-//        canvas.effects.addChild(container);
+        //        canvas.effects.addChild(container);
         canvas.lighting.addChild(container);
         //canvas.stage.addChild(container);
-//        canvas.tokens.addChild(container);
-//        canvas.beams.addBeam(container)
-//        canvas.effects.sortChildren();
-//canvas.tokens.sortableChildren = true;
-//canvas.stage.sortableChildren = true;
-//canvas.effects.sortableChildren = true;
-canvas.lighting.sortableChildren = true;
+        //        canvas.tokens.addChild(container);
+        //        canvas.beams.addBeam(container)
+        //        canvas.effects.sortChildren();
+        //canvas.tokens.sortableChildren = true;
+        //canvas.stage.sortableChildren = true;
+        //canvas.effects.sortableChildren = true;
+        canvas.lighting.sortableChildren = true;
 
         existing.containers.push({ container, filter });
         containersForRegions.push(container);
@@ -140,11 +139,11 @@ canvas.lighting.sortableChildren = true;
         hitTokens = hitTokens.concat(findHitTokens(segment, token))
         //  }
     }
-    console.log(beams)
-    console.log("hittokens||||||||")
-    console.log(hitTokens)
-    if(beamConfig.hasRegion){
-    createRegionFromSegments(segments, token);
+    //    console.log(beams)
+    //    console.log("hittokens||||||||")
+    //    console.log(hitTokens)
+    if (beamConfig.hasRegion) {
+        createRegionFromSegments(segments, token);
     }
 }
 

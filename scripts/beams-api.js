@@ -44,23 +44,29 @@ export async function rotateBeamByIdTo(tokenId, degrees) {
   const token = await resolveValidBeamTokenById(tokenId);
   if (!token) return;
   const flag = token.getFlag(MOD_NAME, "beam") || {};
-//  await token.update({ rotation: degrees });
+  //  await token.update({ rotation: degrees });
   if (flag.enabled) {
     await token.update({ rotation: degrees });
-  //  updateBeam(token);
+    //  updateBeam(token);
   }
 }
 
 /** Rotate the beam by setting the token's rotation */
 export async function rotateBeamByIdOf(tokenId, degrees) {
+  console.log("rotateBeamByIdOf")
+  console.log(tokenId)
   const token = await resolveValidBeamTokenById(tokenId);
-  if (!token) return;
+  console.log(token)
+  if (!token) return null;
   const flag = token.getFlag(MOD_NAME, "beam") || {};
-//  await token.update({ rotation: degrees });
+  console.log(flag)
+  //  await token.update({ rotation: degrees });
   if (flag.enabled) {
     await token.update({ rotation: token.rotation + degrees });
-  //  updateBeam(token);
+    return token.rotation + degrees;
+    //  updateBeam(token);
   }
+  return null;
 }
 
 /** Toggle the beam (enable/disable) by token ID */
@@ -83,7 +89,6 @@ export async function toggleBeamById(tokenId) {
  * @returns {Token|null}
  */
 async function resolveValidBeamTokenById(tokenId) {
-  //const token = canvas.tokens.get(tokenId);
   const token = await fromUuid(tokenId);
   if (isDebugActive) console.log(token);
   if (!token) {
