@@ -37,11 +37,11 @@ Hooks.once("ready", () => {
 });
 
 Hooks.on("renderWallConfig", (app, html, data) => {
-  const mirrorData = foundry.utils.getProperty(app.object, "flags.foundry-beams.mirror") ?? {};
+  const mirrorData = foundry.utils.getProperty(app.document, "flags.foundry-beams.mirror") ?? {};
   console.log(mirrorData)
   if (isDebugActive) console.log(app);
-  if (isDebugActive) console.log(`[foundry-beams] Rendering WallConfig UI for wall: ${app.object.id}`);
-  let footer = html.find("footer");
+  if (isDebugActive) console.log(`[foundry-beams] Rendering WallConfig UI for wall: ${app.document.id}`);
+  //let footer = app.form.querySelector("footer");
   const tabContent = `
     <fieldset class="beam-group" data-tab="beam">
       <div class="form-group">
@@ -59,7 +59,8 @@ Hooks.on("renderWallConfig", (app, html, data) => {
     </fieldset>
   `;
 
-  footer.before(tabContent);
+//  footer.before(tabContent);
+  app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
   app.setPosition({ height: "auto" });
 });
 
