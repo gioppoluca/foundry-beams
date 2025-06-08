@@ -80,3 +80,13 @@ await beams.rotateBeamByIdTo("Token.UUID", 90);
 // Rotate beam of a specific increment
 await beams.rotateBeamByIdOf("Token.UUID", 90);
 ```
+
+## Monk's Active Tile Triggers integration
+
+
+The module offers some activities to use with MATT:
+- **Rotate Beam Of** action: to have the tile trigger the rotation of a specific emitter token
+- **Rotate Beam Of** action: to have the tile rotate an emitter at a specific direction
+- **Toggle** action: to have the tile toggle a specific emitter
+- **Activate** action: to activate the beam of a specific emitter
+- **Deactivate** action: to deactivate the beam on a specific emitter
