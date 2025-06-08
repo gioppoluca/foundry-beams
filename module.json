@@ -47,5 +47,55 @@
       "loop": false,
       "flags": {}
     }
+  ],
+  "packs": [
+    {
+      "name": "beam-macros",
+      "label": "Beam Macros",
+      "path": "packs/beam-macros",
+      "type": "Macro",
+      "banner": "modules/foundry-beams/images/macros.webp",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "beam-scenes",
+      "label": "Beam Scenes",
+      "path": "packs/beam-scenes",
+      "type": "Scene",
+      "banner": "modules/foundry-beams/images/scenes.webp",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "beam-actors",
+      "label": "Beam Actors",
+      "path": "packs/beam-actors",
+      "type": "Actor",
+      "banner": "modules/foundry-beams/images/actors.webp",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    }
+  ],
+  "packFolders": [
+    {
+      "name": "Active Beams",
+      "sorting": "m",
+      "color": "#e8962a",
+          "packs": [
+            "beam-actors",
+            "beam-scenes",
+            "beam-macros"
+          ]
+    }
   ]
 }
