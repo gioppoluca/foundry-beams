@@ -1,6 +1,6 @@
 {
   "id": "foundry-beams",
-  "title": "Foundry Beams",
+  "title": "Active Beams",
   "description": "Adds customizable beam effects to tokens, including wall interactions and reflections.",
   "version": "#{VERSION}#",
   "library": "false",
