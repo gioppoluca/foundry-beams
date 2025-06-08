@@ -214,7 +214,6 @@ Hooks.on("canvasReady", (canvas) => {
 });
 
 Hooks.on("setupTileActions", (app) => {
-  console.log("GIOPPO beam on MATT")
   app.registerTileGroup(MOD_NAME, "Active Beams");
 
   app.registerTileAction(MOD_NAME, 'beam-rotate-of', {
@@ -253,6 +252,135 @@ Hooks.on("setupTileActions", (app) => {
     },
     content: async (trigger, action) => {
       return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span> rotation: ${action.data.rotateof}`;
+    }
+  });
+
+  app.registerTileAction(MOD_NAME, 'beam-rotate-to', {
+    name: "Rotate Beam To",
+    batch: false,
+    requiresGM: true,
+    ctrls: [
+      {
+        id: "entity",
+        name: "Select Beam Emitter",
+        type: "select",
+        subtype: "entity",
+        options: { show: ['previous', 'tagger'] },
+        restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
+        required: true,
+        defaultType: 'tokens',
+        placeholder: 'Please select a Token that is an emitter'
+      },
+      {
+        id: "rotateto",
+        name: "Rotate To",
+        type: "number",
+        min: 0,
+        max: 360,
+        step: 5,
+        defvalue: 0
+      }
+    ],
+    fn: async (args = {}) => {
+      const { action } = args;
+      // Get the API for the beam module
+      const beams = game.modules.get("foundry-beams").api;
+      // call API to rotate of set value
+      await beams.rotateBeamByIdTo(args.action.data.entity.id, args.action.data.rotateto);
+
+    },
+    content: async (trigger, action) => {
+      return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span> rotation: ${action.data.rotateto}`;
+    }
+  });
+
+  app.registerTileAction(MOD_NAME, 'beam-toggle', {
+    name: "Toggle",
+    batch: false,
+    requiresGM: true,
+    ctrls: [
+      {
+        id: "entity",
+        name: "Select Beam Emitter",
+        type: "select",
+        subtype: "entity",
+        options: { show: ['previous', 'tagger'] },
+        restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
+        required: true,
+        defaultType: 'tokens',
+        placeholder: 'Please select a Token that is an emitter'
+      }
+    ],
+    fn: async (args = {}) => {
+      const { action } = args;
+      // Get the API for the beam module
+      const beams = game.modules.get("foundry-beams").api;
+      // call API to rotate of set value
+      await beams.toggleBeamById(args.action.data.entity.id);
+
+    },
+    content: async (trigger, action) => {
+      return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span>`;
+    }
+  });
+
+  app.registerTileAction(MOD_NAME, 'beam-activate', {
+    name: "Activate",
+    batch: false,
+    requiresGM: true,
+    ctrls: [
+      {
+        id: "entity",
+        name: "Select Beam Emitter",
+        type: "select",
+        subtype: "entity",
+        options: { show: ['previous', 'tagger'] },
+        restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
+        required: true,
+        defaultType: 'tokens',
+        placeholder: 'Please select a Token that is an emitter'
+      }
+    ],
+    fn: async (args = {}) => {
+      const { action } = args;
+      // Get the API for the beam module
+      const beams = game.modules.get("foundry-beams").api;
+      // call API to rotate of set value
+      await beams.enableBeamById(args.action.data.entity.id);
+
+    },
+    content: async (trigger, action) => {
+      return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span>`;
+    }
+  });
+
+  app.registerTileAction(MOD_NAME, 'beam-deactivate', {
+    name: "Deactivate",
+    batch: false,
+    requiresGM: true,
+    ctrls: [
+      {
+        id: "entity",
+        name: "Select Beam Emitter",
+        type: "select",
+        subtype: "entity",
+        options: { show: ['previous', 'tagger'] },
+        restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
+        required: true,
+        defaultType: 'tokens',
+        placeholder: 'Please select a Token that is an emitter'
+      }
+    ],
+    fn: async (args = {}) => {
+      const { action } = args;
+      // Get the API for the beam module
+      const beams = game.modules.get("foundry-beams").api;
+      // call API to rotate of set value
+      await beams.disableBeamById(args.action.data.entity.id);
+
+    },
+    content: async (trigger, action) => {
+      return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span>`;
     }
   });
 

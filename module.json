@@ -91,11 +91,11 @@
       "name": "Active Beams",
       "sorting": "m",
       "color": "#e8962a",
-          "packs": [
-            "beam-actors",
-            "beam-scenes",
-            "beam-macros"
-          ]
+      "packs": [
+        "beam-actors",
+        "beam-scenes",
+        "beam-macros"
+      ]
     }
   ]
 }
