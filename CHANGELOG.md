@@ -1,4 +1,14 @@
 
+## [1.1.0] - 2025-06-08
+### :sparkles: New Features
+- [`12a2dcc`](https://github.com/gioppoluca/foundry-beams/commit/12a2dccb8cd4e9c742d332f79d8a2bc8f383ea5c) - compendium with images *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`4339a8a`](https://github.com/gioppoluca/foundry-beams/commit/4339a8a15fd93bd1fa7b1bef387c28b3cd92b245) - proper publishing of compendiums *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`31b7d7d`](https://github.com/gioppoluca/foundry-beams/commit/31b7d7d6a8c2eefbb8b440c3932a79c7b19cd240) - integration with MATT *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`521ddde`](https://github.com/gioppoluca/foundry-beams/commit/521ddde091996cd4f8db5a34aeb5090d2cbbb77e) - small cleanup *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.0.0] - 2025-06-06
 ### :sparkles: New Features
 - [`2cfa9bf`](https://github.com/gioppoluca/foundry-beams/commit/2cfa9bf221feb9aafdfae321c62cb69a6c172e02) - adding compendium examples *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -48,3 +58,4 @@
 [0.1.0]: https://github.com/gioppoluca/foundry-beams/compare/0.0.5...0.1.0
 [0.1.1]: https://github.com/gioppoluca/foundry-beams/compare/0.1.0...0.1.1
 [1.0.0]: https://github.com/gioppoluca/foundry-beams/compare/0.1.1...1.0.0
+[1.1.0]: https://github.com/gioppoluca/foundry-beams/compare/1.0.0...1.1.0
