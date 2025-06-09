@@ -1,4 +1,10 @@
 
+## [1.2.1] - 2025-06-09
+### :bug: Bug Fixes
+- [`c03120d`](https://github.com/gioppoluca/foundry-beams/commit/c03120d2f6896148871c95af433007061c9ff421) - wrong git url in the module *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`fcec18f`](https://github.com/gioppoluca/foundry-beams/commit/fcec18f456cfc7595d18aa4bea57979dc8de79cb) - wrong permissions on the client *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.1.0] - 2025-06-08
 ### :sparkles: New Features
 - [`12a2dcc`](https://github.com/gioppoluca/foundry-beams/commit/12a2dccb8cd4e9c742d332f79d8a2bc8f383ea5c) - compendium with images *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -59,3 +65,4 @@
 [0.1.1]: https://github.com/gioppoluca/foundry-beams/compare/0.1.0...0.1.1
 [1.0.0]: https://github.com/gioppoluca/foundry-beams/compare/0.1.1...1.0.0
 [1.1.0]: https://github.com/gioppoluca/foundry-beams/compare/1.0.0...1.1.0
+[1.2.1]: https://github.com/gioppoluca/foundry-beams/compare/1.2.0...1.2.1
