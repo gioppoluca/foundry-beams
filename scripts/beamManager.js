@@ -142,7 +142,7 @@ export function updateBeam(token, override = null) {
     //    console.log(beams)
     //    console.log("hittokens||||||||")
     //    console.log(hitTokens)
-    if (beamConfig.hasRegion) {
+    if (beamConfig.hasRegion && game.users.activeGM.isSelf) {
         createRegionFromSegments(segments, token);
     }
 }
@@ -223,7 +223,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         console.log(mirror)
         // looking id the wall is a reactive
         const isReactive = mirror?.isReactive ?? false;
-        if (isReactive) {
+        if (isReactive && game.users.activeGM.isSelf) {
             // if is reactive we need to execute the macro associated
             reactiveMacro(mirror?.macro);
         }

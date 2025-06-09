@@ -59,7 +59,7 @@ Hooks.on("renderWallConfig", (app, html, data) => {
     </fieldset>
   `;
 
-//  footer.before(tabContent);
+  //  footer.before(tabContent);
   app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
   app.setPosition({ height: "auto" });
 });
@@ -249,7 +249,6 @@ Hooks.on("setupTileActions", (app) => {
       const beams = game.modules.get("foundry-beams").api;
       // call API to rotate of set value
       await beams.rotateBeamByIdOf(args.action.data.entity.id, args.action.data.rotateof);
-
     },
     content: async (trigger, action) => {
       return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span> rotation: ${action.data.rotateof}`;
