@@ -130,6 +130,25 @@ Hooks.on("renderTokenConfig", (app, html, data) => {
   app.form.querySelector('#regionConfigButton')?.addEventListener('click', () => { regionConfig(app.token) });
 });
 
+Hooks.on("updateWall", (wallDoc, updateData) => {
+  if (!canvas.scene) return;
+  // Only respond to walls that have moved
+  if (!("c" in updateData)) return;
+  console.log("updateWall")
+  console.log(wallDoc)
+  // Filter and update only beam-enabled tokens
+  const beamTokens = canvas.tokens.placeables.filter(t => {
+//    console.log(t)
+    return t.document.getFlag("foundry-beams", "beam")?.enabled
+  }
+  );
+
+  for (const token of beamTokens) {
+    console.log(token)
+    updateBeam(token); // Recompute the beam for each emitter
+  }
+});
+
 // Watch for token updates and react based on beam flags or movement
 Hooks.on("updateToken", (tokenDoc, updateData) => {
   const token = tokenDoc;
