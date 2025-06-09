@@ -1,4 +1,9 @@
 
+## [1.3.1] - 2025-06-09
+### :bug: Bug Fixes
+- [`d32692d`](https://github.com/gioppoluca/foundry-beams/commit/d32692db5d630dec17f08f2f25c609d142e5ca86) - removed debug markers *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.3.0] - 2025-06-09
 ### :sparkles: New Features
 - [`81d1618`](https://github.com/gioppoluca/foundry-beams/commit/81d1618b9759ff7bd11046e3423a5596d2892d91) - added capability to move wall and react to it. closes [#14](https://github.com/gioppoluca/foundry-beams/pull/14) *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -72,3 +77,4 @@
 [1.1.0]: https://github.com/gioppoluca/foundry-beams/compare/1.0.0...1.1.0
 [1.2.1]: https://github.com/gioppoluca/foundry-beams/compare/1.2.0...1.2.1
 [1.3.0]: https://github.com/gioppoluca/foundry-beams/compare/1.2.1...1.3.0
+[1.3.1]: https://github.com/gioppoluca/foundry-beams/compare/1.3.0...1.3.1
