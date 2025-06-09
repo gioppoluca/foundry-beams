@@ -126,6 +126,7 @@ export function updateBeam(token, override = null) {
 
         // Add marker at the segment's end (excluding last one)
         //    if (i < segments.length - 1) {
+        if (isDebugActive){
         const endX = segment.start.x + segment.dx;
         const endY = segment.start.y + segment.dy;
         const marker = new PIXI.Graphics();
@@ -137,6 +138,7 @@ export function updateBeam(token, override = null) {
         canvas.effects.addChild(marker);
         existing.containers.push({ container: marker });
         hitTokens = hitTokens.concat(findHitTokens(segment, token))
+        }
         //  }
     }
     //    console.log(beams)

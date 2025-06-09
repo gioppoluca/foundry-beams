@@ -1,4 +1,4 @@
-export const isDebugActive = true;
+export const isDebugActive = false;
 import { MOD_NAME } from "./beams-const.js";
 import * as BeamAPI from './beams-api.js';
 import { toggleBeam, updateBeam, beams } from "./beamManager.js";
