@@ -90,3 +90,11 @@ The module offers some activities to use with MATT:
 - **Toggle** action: to have the tile toggle a specific emitter
 - **Activate** action: to activate the beam of a specific emitter
 - **Deactivate** action: to deactivate the beam on a specific emitter
+
+## Support
+
+Please open issues on this repo for any problems that you can have using this module.
+For discussing on my modules please join my [discord server:](https://discord.gg/FgKtjFRn3e)
+
+If you want to support this work
+<a href="https://www.buymeacoffee.com/lucagioppo" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
