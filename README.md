@@ -13,7 +13,7 @@ As shown in the image a beam is emitted from the statue it bounces on 2 walls an
 ## ✨ Features
 
 - 🔦 Create directional, light beams from tokens
-- 🔁 Reflect off flagged mirror walls and pass through windows or open doors
+- 🔁 Reflect off flagged mirror walls and pass through windows or open doors; wall/mirror can move and beam react accordingly
 - 📐 Generates Foundry v12 Region polygons matching the beam's path
 - 🔌 Provides API methods for other modules to control beam behavior
 
