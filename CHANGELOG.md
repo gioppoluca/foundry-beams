@@ -1,4 +1,9 @@
 
+## [1.3.2] - 2025-06-10
+### :bug: Bug Fixes
+- [`82c8a2f`](https://github.com/gioppoluca/foundry-beams/commit/82c8a2fbb65bc96f7294f87b98fe743e5c763857) - closes [#15](https://github.com/gioppoluca/foundry-beams/pull/15) *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.3.1] - 2025-06-09
 ### :bug: Bug Fixes
 - [`d32692d`](https://github.com/gioppoluca/foundry-beams/commit/d32692db5d630dec17f08f2f25c609d142e5ca86) - removed debug markers *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -78,3 +83,4 @@
 [1.2.1]: https://github.com/gioppoluca/foundry-beams/compare/1.2.0...1.2.1
 [1.3.0]: https://github.com/gioppoluca/foundry-beams/compare/1.2.1...1.3.0
 [1.3.1]: https://github.com/gioppoluca/foundry-beams/compare/1.3.0...1.3.1
+[1.3.2]: https://github.com/gioppoluca/foundry-beams/compare/1.3.1...1.3.2
