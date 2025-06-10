@@ -130,16 +130,29 @@ Hooks.on("renderTokenConfig", (app, html, data) => {
   app.form.querySelector('#regionConfigButton')?.addEventListener('click', () => { regionConfig(app.token) });
 });
 
+Hooks.on("deleteWall", async (wallDoc) => {
+  if (!canvas.scene) return;
+
+  // Update all beam-enabled tokens
+  for (const token of canvas.tokens.placeables.filter(t =>
+    t.document.getFlag(MOD_NAME, "beam")?.enabled
+  )) {
+    updateBeam(token);
+  }
+});
+
+
 Hooks.on("updateWall", (wallDoc, updateData) => {
   if (!canvas.scene) return;
-  // Only respond to walls that have moved
-  if (!("c" in updateData)) return;
   console.log("updateWall")
   console.log(wallDoc)
+  console.log(updateData)
+  // Only respond to walls that have moved
+  if (!("c" in updateData) && !("ds" in updateData)) return;
   // Filter and update only beam-enabled tokens
   const beamTokens = canvas.tokens.placeables.filter(t => {
 //    console.log(t)
-    return t.document.getFlag("foundry-beams", "beam")?.enabled
+    return t.document.getFlag(MOD_NAME, "beam")?.enabled
   }
   );
 
@@ -265,7 +278,7 @@ Hooks.on("setupTileActions", (app) => {
     fn: async (args = {}) => {
       const { action } = args;
       // Get the API for the beam module
-      const beams = game.modules.get("foundry-beams").api;
+      const beams = game.modules.get(MOD_NAME).api;
       // call API to rotate of set value
       await beams.rotateBeamByIdOf(args.action.data.entity.id, args.action.data.rotateof);
     },
@@ -303,7 +316,7 @@ Hooks.on("setupTileActions", (app) => {
     fn: async (args = {}) => {
       const { action } = args;
       // Get the API for the beam module
-      const beams = game.modules.get("foundry-beams").api;
+      const beams = game.modules.get(MOD_NAME).api;
       // call API to rotate of set value
       await beams.rotateBeamByIdTo(args.action.data.entity.id, args.action.data.rotateto);
 
@@ -333,7 +346,7 @@ Hooks.on("setupTileActions", (app) => {
     fn: async (args = {}) => {
       const { action } = args;
       // Get the API for the beam module
-      const beams = game.modules.get("foundry-beams").api;
+      const beams = game.modules.get(MOD_NAME).api;
       // call API to rotate of set value
       await beams.toggleBeamById(args.action.data.entity.id);
 
@@ -363,7 +376,7 @@ Hooks.on("setupTileActions", (app) => {
     fn: async (args = {}) => {
       const { action } = args;
       // Get the API for the beam module
-      const beams = game.modules.get("foundry-beams").api;
+      const beams = game.modules.get(MOD_NAME).api;
       // call API to rotate of set value
       await beams.enableBeamById(args.action.data.entity.id);
 
@@ -393,7 +406,7 @@ Hooks.on("setupTileActions", (app) => {
     fn: async (args = {}) => {
       const { action } = args;
       // Get the API for the beam module
-      const beams = game.modules.get("foundry-beams").api;
+      const beams = game.modules.get(MOD_NAME).api;
       // call API to rotate of set value
       await beams.disableBeamById(args.action.data.entity.id);
 
