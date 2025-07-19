@@ -5,6 +5,7 @@ import { reactiveMacro } from './beams-macro.js';
 import { createRegionFromSegments, deleteBeamRegions } from './beams-region.js';
 import { getTokensAlongSegment, createLightning } from "./beams-util.js";
 import { BeamRegistry, BeamVisualStyle, ensureSegment } from "./beamData.js";
+import { StyleRegistry } from "./StyleRegistry.js";
 
 export const beams = new Map(); // token.id -> { containers[], config }
 
@@ -53,7 +54,11 @@ export function createBeam(token, config = {}) {
     beams.set(token.id, { containers: [], config });
 
     // Phase 1: initialise new BeamRegistry (style will be added via flags later)
-    BeamRegistry.ensure(token, config, config.visualStyle ?? BeamVisualStyle.LASER);
+    const flagStyle = token.document.getFlag("foundry-beams", "beam")?.style ?? "laser";
+    console.log("Flag style:", flagStyle)
+    console.log(flagStyle)
+    BeamRegistry.ensure(token, config, flagStyle);
+    //BeamRegistry.ensure(token, config, config.visualStyle ?? BeamVisualStyle.LASER);
 
     updateBeam(token);
     startShaderAnimation();
@@ -100,21 +105,68 @@ function calculateBeamSegments(token, cfg = {}, override = null) {
 export function updateBeam(token, override = null) {
     const existing = beams.get(token.id);
     if (!existing) return; // safety
+    const flagCfg = token.document.getFlag("foundry-beams", "beam") ?? {};
+    const cfg = { ...existing.config, ...flagCfg };   // ← latest values
+    existing.config = cfg;                                  // keep legacy map in sync
+    // 1. get registry entry
+    const beamInst = BeamRegistry.ensure(token, cfg);
+    // 2. read flag style and detect change
+    //const flagStyle = token.document.getFlag("foundry-beams", "beam")?.style ?? "laser";
+    const flagStyle = flagCfg.style ?? "laser";
+    const flagColor = flagCfg.colorHex;
+    const styleChanged = flagStyle !== beamInst.style;
+    const colorChanged = flagColor !== beamInst.colorHex;
+    const oldStyle = beamInst.style;
+    /*
+    beamInst.style = flagStyle;
 
+    if (flagStyle !== oldStyle) {
+        const oldRenderer = StyleRegistry.get(oldStyle);
 
-    const beamInst = BeamRegistry.ensure(token, existing.config);
+        // Destroy every existing segment container and clear the legacy array
+        for (const seg of beamInst.segments.values()) {
+            oldRenderer?.destroy?.(seg);
+
+            if (seg.container) {
+                seg.container.parent?.removeChild(seg.container);
+                seg.container.destroy({ children: true });
+                seg.container = undefined;          // force recreate
+            }
+        }
+        existing.containers.length = 0;         // ← wipe legacy refs in one go
+    }
+    */
+    if (styleChanged || colorChanged) {
+        // FULL reset ─ destroy all old containers, clear segments & legacy array
+        for (const seg of beamInst.segments.values()) {
+            seg.container?.parent?.removeChild(seg.container);
+            seg.container?.destroy({ children: true });
+        }
+        beamInst.segments.clear();          // start afresh
+        existing.containers.length = 0;
+        beamInst.style = flagStyle;
+        beamInst.colorHex = flagColor;
+    }
 
     const doc = token.document;
     const curX = override?.x ?? doc.x;
     const curY = override?.y ?? doc.y;
     const curRot = override?.rotation ?? doc.rotation;
+    const w = override?.width ?? token.w;
+    const h = override?.height ?? token.h;
+    const curColor = override?.flags?.["foundry-beams"]?.beam?.colorHex ?? doc.getFlag(MOD_NAME, "beam")?.colorHex;
+    const curStyle = override?.flags?.["foundry-beams"]?.beam?.style ?? doc.getFlag(MOD_NAME, "beam")?.style;
+
+//    if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot && beamInst.colorHex === curColor && beamInst.style === curStyle) {
     if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot) {
         // No position/rotation change → only lightning jitter needs running
         return;
     }
+    console.log(`[foundry-beams] updateBeam for ${token.name} at ${curX},${curY} rot: ${curRot} color: ${curColor} style: ${curStyle}`);
     beamInst._lastX = curX;
     beamInst._lastY = curY;
     beamInst._lastRot = curRot;
+    beamInst.colorHex = curColor;
     //    beamInst._lastX = doc.x;
     //    beamInst._lastY = doc.y;
     //    beamInst._lastRot = doc.rotation;
@@ -143,8 +195,10 @@ export function updateBeam(token, override = null) {
         };
         seg.normal = segData.normal;
         seg.length = segData.length;
+        const len = seg.length;  // <- add this
 
         // --- Ensure PIXI container exists --------------------------------------
+        /*
         if (!seg.container) {
             // create once depending on beam style
             beamInst.style = BeamVisualStyle.LIGHTNING; // default to lightning for now
@@ -157,15 +211,29 @@ export function updateBeam(token, override = null) {
             // Remember for legacy API consumers
             existing.containers[i] = { container: seg.container, filter: seg.container.filter };
         }
-
+*/
         // --- Update visuals (rotation / length) --------------------------------
-        updateSegmentDisplay(seg, existing.config, beamInst.style);
+        //        updateSegmentDisplay(seg, existing.config, beamInst.style);
+        console.log("Style in beamInst:", beamInst.style)
+        const style = StyleRegistry.get(beamInst.style) ?? StyleRegistry.get("laser");
+        console.log("Style:", style)
+        if (!seg.container) {
+            seg.container = style.create(seg, cfg);
+            canvas.effects.addChild(seg.container);
+
+            // keep shader‑ticker compatible
+            existing.containers.push({ container: seg.container, filter: seg.container.filter });
+        } else {
+            style.update(seg, cfg, len);
+        }
     }
 
     // 4. Clean up extra segments (if beam shortened this frame) ---------------
     const desired = segments.length;
     for (const [id, seg] of [...beamInst.segments]) {
         if (Number(id) >= desired) {
+            const style = StyleRegistry.get(beamInst.style);
+            style?.destroy?.(seg);
             seg.container?.destroy({ children: true });
             beamInst.segments.delete(id);
             existing.containers.splice(Number(id), 1);

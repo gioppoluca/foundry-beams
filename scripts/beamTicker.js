@@ -20,18 +20,11 @@ class BeamTicker {
 
     /** Called each RAF */
     _update(delta) {
-        let anyJitter = false;
         for (const beam of BeamRegistry.values()) {
             for (const seg of beam.segments.values()) {
-                if (typeof seg.jitterFn === "function") {
-                    anyJitter = true;
-                    seg.jitterFn(delta);
-                }
+                (seg.tick ?? seg.jitterFn)?.(delta);   // ← works with old or new field
             }
         }
-        // Optional: if absolutely no segment needed jitter we could early‑return
-        // or even stop() the ticker – but a single iteration over a handful of
-        // beams is extremely cheap, so we keep it simple.
     }
 }
 
