@@ -1,5 +1,8 @@
 import { isDebugActive } from "./module.js";
 import { MOD_NAME } from "./beams-const.js";
+import { BeamRegistry, BeamVisualStyle } from "./beamData.js";
+
+export { BeamRegistry, BeamVisualStyle }; // expose via module.api
 // beams-api.js — API for external control of beam tokens (by token.id only)
 
 import { toggleBeam, updateBeam } from './beamManager.js';
@@ -103,3 +106,13 @@ async function resolveValidBeamTokenById(tokenId) {
   return token;
 }
 
+/**
+ * Change beam visual style on the fly.
+ * @param {Token} token
+ * @param {keyof typeof BeamVisualStyle} style
+ */
+export function setBeamStyle(token, style) {
+  console.log(token)
+  const inst = BeamRegistry.get(token.id);
+  if (inst) inst.style = BeamVisualStyle[style] ?? BeamVisualStyle.LASER;
+}

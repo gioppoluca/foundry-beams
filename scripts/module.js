@@ -2,11 +2,15 @@ export const isDebugActive = false;
 import { MOD_NAME } from "./beams-const.js";
 import * as BeamAPI from './beams-api.js';
 import { toggleBeam, updateBeam, beams } from "./beamManager.js";
+import { createLightning } from "./beams-util.js";
+import { beamTicker } from "./beamTicker.js";
+
 const updateCache = new Map();
 
 Hooks.once("init", () => {
   if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
   // Inject default beam flag schema into token config
+  /*
   CONFIG.Token.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
     fields["flags.foundry-beams.beam"] = {
       type: Object,
@@ -29,6 +33,9 @@ Hooks.once("init", () => {
       }
     };
   };
+
+
+*/
 });
 
 Hooks.once("ready", () => {
@@ -151,7 +158,7 @@ Hooks.on("updateWall", (wallDoc, updateData) => {
   if (!("c" in updateData) && !("ds" in updateData)) return;
   // Filter and update only beam-enabled tokens
   const beamTokens = canvas.tokens.placeables.filter(t => {
-//    console.log(t)
+    //    console.log(t)
     return t.document.getFlag(MOD_NAME, "beam")?.enabled
   }
   );
@@ -218,6 +225,7 @@ Hooks.on("refreshToken", (refreshedToken) => {
     console.log(`[foundry-beams] RefreshToken match for ${refreshedToken.name}, applying cached update.`);
     console.log(cachedUpdate);
   }
+  createLightning({ start: { x: 50, y: 50 }, end: { x: 500, y: 500 }, color: 0xffccff, flicker: 15 });
 
   updateBeam(refreshedToken, cachedUpdate);
 });
@@ -226,7 +234,7 @@ Hooks.on("refreshToken", (refreshedToken) => {
 Hooks.on("canvasReady", (canvas) => {
   if (isDebugActive) console.log("[foundry-beams] Canvas ready. Checking tokens for beam restoration...");
   if (isDebugActive) console.log(beams);
-
+  beamTicker.start();
   // All sensors in scene
   let all_beams = canvas.tokens.placeables.filter((tok) => {
     return tok.document.getFlag(MOD_NAME, "beam");
@@ -416,4 +424,8 @@ Hooks.on("setupTileActions", (app) => {
     }
   });
 
+});
+
+Hooks.once("shutdown", () => {
+  beamTicker.stop();
 });

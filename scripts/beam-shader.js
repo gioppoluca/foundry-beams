@@ -115,6 +115,61 @@ void main() {
     alphaMult: 0.6,
   });
 
+// Normalize beam direction
+//const length = Math.sqrt(dx * dx + dy * dy);
+const dir = [dx / length, dy / length];
+const perp = [-dir[1], dir[0]];
+  const lightning = new PIXI.Filter(null, `
+precision mediump float;
+
+varying vec2 vTextureCoord;
+
+uniform float time;
+uniform vec3 beamColor;
+uniform float alphaMult;
+
+// cheap noise
+float rand(float x){
+    return fract(sin(x)*43758.5453);
+}
+
+float noise(float x){
+    float i = floor(x);
+    float f = fract(x);
+    return mix(rand(i), rand(i+1.0), smoothstep(0.0, 1.0, f));
+}
+
+float lightningLine(vec2 uv, float center, float thickness) {
+    float dist = abs(uv.y - center);
+    return smoothstep(thickness, 0.0, dist);
+}
+
+void main() {
+    vec2 uv = vTextureCoord;
+
+    // base line jitter using 1D noise on x + time
+    float jitter = (noise(uv.x * 10.0 + time * 2.0) - 0.5) * 0.3;
+
+    float beam = lightningLine(uv, 0.5 + jitter, 0.05);
+
+    // optional pulse
+    float pulse = 0.75 + 0.25 * sin(time * 6.0);
+    beam *= pulse;
+
+    gl_FragColor = vec4(beamColor, beam * alphaMult);
+}
+
+
+  `, {
+  time: 0,
+  beamColor: [1.0, 1.0, 0.5],
+  alphaMult: 1.0
+  });
+
+
+
+  
+  //beam.filters = [lightning];
   //beam.filters = [shader];
   beam.filters = [blur];
   container.addChild(beam);
