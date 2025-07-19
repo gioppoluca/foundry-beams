@@ -21,7 +21,8 @@
     "systems": [],
     "requires": []
   },
-  "esmodules": [
+  "scripts": [
+    "greensock/dist/gsap.min.js",
     "scripts/module.js"
   ],
   "styles": [
