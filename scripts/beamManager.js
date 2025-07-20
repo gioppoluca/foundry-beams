@@ -103,40 +103,32 @@ function calculateBeamSegments(token, cfg = {}, override = null) {
 
 
 export function updateBeam(token, override = null) {
+    console.log("updateBeam")
+    console.log(token)
     const existing = beams.get(token.id);
+    const changedStyle = override?.flags?.["foundry-beams"]?.beam?.style !== undefined;
+    const changedColor = override?.flags?.["foundry-beams"]?.beam?.colorHex !== undefined;
+    const changedWidth = override?.flags?.["foundry-beams"]?.beam?.width !== undefined;
+    const changedOffset = override?.flags?.["foundry-beams"]?.beam?.offset !== undefined;
+    console.log("changedStyle:", changedStyle)
+    console.log("changedColor:", changedColor)
+    console.log(existing)
     if (!existing) return; // safety
     const flagCfg = token.document.getFlag("foundry-beams", "beam") ?? {};
+    console.log("Flag config:", flagCfg)
     const cfg = { ...existing.config, ...flagCfg };   // ← latest values
+    console.log("Config:", cfg)
     existing.config = cfg;                                  // keep legacy map in sync
     // 1. get registry entry
-    const beamInst = BeamRegistry.ensure(token, cfg);
     // 2. read flag style and detect change
-    //const flagStyle = token.document.getFlag("foundry-beams", "beam")?.style ?? "laser";
-    const flagStyle = flagCfg.style ?? "laser";
+    const doc = token.document;
+    //const flagStyle = flagCfg.style ?? "laser";
+    const flagStyle = override?.flags?.["foundry-beams"]?.beam?.style ?? doc.getFlag(MOD_NAME, "beam")?.style;
     const flagColor = flagCfg.colorHex;
-    const styleChanged = flagStyle !== beamInst.style;
-    const colorChanged = flagColor !== beamInst.colorHex;
-    const oldStyle = beamInst.style;
-    /*
-    beamInst.style = flagStyle;
-
-    if (flagStyle !== oldStyle) {
-        const oldRenderer = StyleRegistry.get(oldStyle);
-
-        // Destroy every existing segment container and clear the legacy array
-        for (const seg of beamInst.segments.values()) {
-            oldRenderer?.destroy?.(seg);
-
-            if (seg.container) {
-                seg.container.parent?.removeChild(seg.container);
-                seg.container.destroy({ children: true });
-                seg.container = undefined;          // force recreate
-            }
-        }
-        existing.containers.length = 0;         // ← wipe legacy refs in one go
-    }
-    */
-    if (styleChanged || colorChanged) {
+    //const oldStyle = beamInst.style;
+    const beamInst = BeamRegistry.ensure(token, cfg, flagStyle);
+    console.log("Beam instance:", beamInst)
+    if (changedStyle || changedColor || changedWidth || changedOffset) {
         // FULL reset ─ destroy all old containers, clear segments & legacy array
         for (const seg of beamInst.segments.values()) {
             seg.container?.parent?.removeChild(seg.container);
@@ -148,18 +140,21 @@ export function updateBeam(token, override = null) {
         beamInst.colorHex = flagColor;
     }
 
-    const doc = token.document;
+
     const curX = override?.x ?? doc.x;
     const curY = override?.y ?? doc.y;
     const curRot = override?.rotation ?? doc.rotation;
     const w = override?.width ?? token.w;
     const h = override?.height ?? token.h;
+    console.log(`x: ${curX}| y: ${curY} | w: ${w}| h: ${h}| rot: ${curRot}`)
     const curColor = override?.flags?.["foundry-beams"]?.beam?.colorHex ?? doc.getFlag(MOD_NAME, "beam")?.colorHex;
     const curStyle = override?.flags?.["foundry-beams"]?.beam?.style ?? doc.getFlag(MOD_NAME, "beam")?.style;
+    const curWidth = override?.flags?.["foundry-beams"]?.beam?.width ?? doc.getFlag(MOD_NAME, "beam")?.width;
+    const curOffset = override?.flags?.["foundry-beams"]?.beam?.offset ?? doc.getFlag(MOD_NAME, "beam")?.offset;
 
-//    if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot && beamInst.colorHex === curColor && beamInst.style === curStyle) {
-    if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot) {
+    if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot && !(changedStyle || changedColor || changedWidth || changedOffset)) {
         // No position/rotation change → only lightning jitter needs running
+        console.log(`[foundry-beams] No position change for ${token.name} at ${curX},${curY} rot: ${curRot} color: ${curColor} style: ${curStyle}`);
         return;
     }
     console.log(`[foundry-beams] updateBeam for ${token.name} at ${curX},${curY} rot: ${curRot} color: ${curColor} style: ${curStyle}`);
@@ -167,6 +162,8 @@ export function updateBeam(token, override = null) {
     beamInst._lastY = curY;
     beamInst._lastRot = curRot;
     beamInst.colorHex = curColor;
+    beamInst.width = curWidth;
+    beamInst.offset = curOffset;
     //    beamInst._lastX = doc.x;
     //    beamInst._lastY = doc.y;
     //    beamInst._lastRot = doc.rotation;
