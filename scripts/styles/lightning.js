@@ -1,17 +1,31 @@
 //import { PIXI } from "./foundryShim.js";
 
+/* ---------- helpers ---------------------------------------------------- */
 function buildPoints(len, count) {
-    const pts = [0];
-    for (let i = 1; i < count; i++) pts.push((i / count) * len);
-    return pts;
+  // 0 .. len, inclusive, so the last vertex is exactly at beam end
+  const pts = [];
+  for (let i = 0; i <= count; i++) pts.push((i / count) * len);
+  return pts;
 }
-function jitter(pts, rng) { for (let i = 1; i < pts.length - 1; i++) pts[i] += (Math.random() - 0.5) * rng; }
+
+/* jitter *only* interior vertices (skip index 0 and last) */
+function jitter(pts, rng) {
+  for (let i = 1; i < pts.length - 1; i++) {
+    pts[i] += (Math.random() - 0.5) * rng;
+  }
+}
+
+/* redraw the bolt */
 function draw(gfx, pts, col, w) {
-    gfx.clear();
-    gfx.lineStyle(w, PIXI.utils.string2hex(col));
-    gfx.moveTo(0, 0);
-    for (const x of pts) gfx.lineTo(x, (Math.random() - 0.5) * 20);
+  const amp = 20;                                         // vertical swing
+  gfx.clear();
+  gfx.lineStyle(w, PIXI.utils.string2hex(col));
+  gfx.moveTo(0, 0);
+  for (let i = 1; i < pts.length; i++) {
+    gfx.lineTo(pts[i], (Math.random() - 0.5) * amp);
+  }
 }
+
 
 export const lightningStyle = {
     id: "lightning",
