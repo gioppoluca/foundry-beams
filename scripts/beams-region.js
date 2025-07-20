@@ -9,7 +9,7 @@ export async function createRegionFromSegments(segments, token) {
     console.log(token)
     console.log("|||||| SEGMENTS")
     let shapes = []
-    const width = token.document.getFlag("foundry-beams", "beam")?.width ?? 20;
+    const width = Math.max(token.document.getFlag("foundry-beams", "beam")?.width ?? 25, 25);
     for (const segment of segments) {
         console.log(segment)
         const vertexData = getRectanglePointsFromSegment(segment, width)
@@ -28,7 +28,7 @@ export async function createRegionFromSegments(segments, token) {
         const regionData = {
             shapes: shapes,
             name: `Beam-${token.name}-Region`,
-            visibility: 2,
+            visibility: 1,
             x: 0,
             y: 0
         };
