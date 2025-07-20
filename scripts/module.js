@@ -7,14 +7,17 @@ import { beamTicker } from "./beamTicker.js";
 import { StyleRegistry } from "./StyleRegistry.js";
 import { laserStyle } from "./styles/laser.js";
 import { lightningStyle } from "./styles/lightning.js";
-
+import { sineStyle }      from "./styles/sine.js";
+import { flameStyle } from "./styles/flame.js";
 const updateCache = new Map();
 
 Hooks.once("init", () => {
   if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
   StyleRegistry.register(laserStyle);
   StyleRegistry.register(lightningStyle);
-  // Inject default beam flag schema into token config
+  StyleRegistry.register(sineStyle);
+  StyleRegistry.register(flameStyle);
+// Inject default beam flag schema into token config
   /*
   CONFIG.Token.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
     fields["flags.foundry-beams.beam"] = {
@@ -107,7 +110,7 @@ Hooks.on("renderTokenConfig", (app, html, data) => {
 
   // Add Beam tab button to token config tabs
   app.form.querySelector('.sheet-tabs').insertAdjacentHTML('beforeend', `<a class="item" data-action="tab" data-group="sheet"  data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
-  const options = StyleRegistry.ids().map(id => `<option value="${id}" ${current===id?'selected':''}>${id}</option>`).join("");
+  const options = StyleRegistry.ids().map(id => `<option value="${id}" ${current === id ? 'selected' : ''}>${id}</option>`).join("");
 
   // Append custom beam config form elements into the config form
   const dataGroup = game.release.generation < 13 ? "main" : "sheet";
@@ -223,22 +226,26 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
     updateCache.set(token.id, updateData);
   }
 
-  const changed = updateData?.flags?.["foundry-beams"]?.beam?.style !== undefined || updateData?.flags?.["foundry-beams"]?.beam?.colorHex !== undefined;
+  const changedStyle = updateData?.flags?.["foundry-beams"]?.beam?.style !== undefined;
+  const changedColor = updateData?.flags?.["foundry-beams"]?.beam?.colorHex !== undefined;
+  const changedWidth = updateData?.flags?.["foundry-beams"]?.beam?.width !== undefined;
+  const changedOffset = updateData?.flags?.["foundry-beams"]?.beam?.offset !== undefined;
+  console.log(updateData?.flags?.["foundry-beams"]?.beam?.style)
   console.log(updateData?.flags?.["foundry-beams"]?.beam?.colorHex)
-  console.log("Changed:", changed)
-  if (isEnabled && changed) {
+  console.log("Changed:", (changedStyle || changedColor))
+  if (isEnabled && (changedStyle || changedColor || changedWidth || changedOffset)) {
     if (isDebugActive) console.log(`[foundry-beams] Scheduling beam update due to token motion: ${token.name}`);
-    updateCache.set(token.id, updateData);
+    //updateCache.set(token.id, updateData);
     updateBeam(token.object, updateData);
   }
-   // Only react if the style flag changed
-   /*
-  if (diff?.flags?.["foundry-beams"]?.beam?.style !== undefined) {
-    const token = canvas.tokens.get(doc.id);
-    if (token) {
-      updateBeam(token, { x: doc.x, y: doc.y, rotation: doc.rotation });
-    }
-  }
+  // Only react if the style flag changed
+  /*
+ if (diff?.flags?.["foundry-beams"]?.beam?.style !== undefined) {
+   const token = canvas.tokens.get(doc.id);
+   if (token) {
+     updateBeam(token, { x: doc.x, y: doc.y, rotation: doc.rotation });
+   }
+ }
 */
 });
 
@@ -255,7 +262,7 @@ Hooks.on("refreshToken", (refreshedToken) => {
     console.log(`[foundry-beams] RefreshToken match for ${refreshedToken.name}, applying cached update.`);
     console.log(cachedUpdate);
   }
- // createLightning({ start: { x: 50, y: 50 }, end: { x: 500, y: 500 }, color: 0xffccff, flicker: 15 });
+  // createLightning({ start: { x: 50, y: 50 }, end: { x: 500, y: 500 }, color: 0xffccff, flicker: 15 });
 
   updateBeam(refreshedToken, cachedUpdate);
 });

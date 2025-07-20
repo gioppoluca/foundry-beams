@@ -21,8 +21,14 @@ class BeamTicker {
     /** Called each RAF */
     _update(delta) {
         for (const beam of BeamRegistry.values()) {
+            /*
             for (const seg of beam.segments.values()) {
                 (seg.tick ?? seg.jitterFn)?.(delta);   // ← works with old or new field
+            }
+                */
+            for (const seg of beam.segments.values()) {
+                if (typeof seg.tick === "function") seg.tick(delta);      // sine, future styles
+                else if (typeof seg.jitterFn === "function") seg.jitterFn(delta); // legacy lightning
             }
         }
     }
