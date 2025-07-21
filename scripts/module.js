@@ -5,18 +5,21 @@ import { toggleBeam, updateBeam, beams } from "./beamManager.js";
 import { createLightning } from "./beams-util.js";
 import { beamTicker } from "./beamTicker.js";
 import { StyleRegistry } from "./StyleRegistry.js";
+import { loadBuiltIn, loadCustomStyles } from "./StyleManager.js";
 import { laserStyle } from "./styles/laser.js";
 import { lightningStyle } from "./styles/lightning.js";
 import { sineStyle }      from "./styles/sine.js";
 import { flameStyle } from "./styles/flame.js";
 const updateCache = new Map();
 
-Hooks.once("init", () => {
+Hooks.once("init", async () =>  {
   if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
-  StyleRegistry.register(laserStyle);
-  StyleRegistry.register(lightningStyle);
-  StyleRegistry.register(sineStyle);
-  StyleRegistry.register(flameStyle);
+//  StyleRegistry.register(laserStyle);
+//  StyleRegistry.register(lightningStyle);
+//  StyleRegistry.register(sineStyle);
+//  StyleRegistry.register(flameStyle);
+   await loadBuiltIn();      // laser & lightning
+  await loadCustomStyles(); // anything under custom-styles/
 // Inject default beam flag schema into token config
   /*
   CONFIG.Token.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
