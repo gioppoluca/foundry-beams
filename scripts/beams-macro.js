@@ -1,5 +1,5 @@
-import { isDebugActive } from "./module.js";
-import { MOD_NAME } from "./beams-const.js";
+//import { isDebugActive } from "./module.js";
+import { MOD_NAME, isDebugActive } from "./beams-const.js";
 
 export async function reactiveMacro(macro_name) {
     console.log("reactive macro")

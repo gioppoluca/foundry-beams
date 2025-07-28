@@ -1,7 +1,8 @@
+/*
 import {
   gsap
 } from "/scripts/greensock/esm/all.js";
-
+*/
 export function getTokensAlongSegment(start, end, sourceToken, options = {}) {
   const { tolerance = 1, onlyVisible = false } = options;
 
@@ -73,131 +74,6 @@ function orientation(a, b, c) {
 
 
 
-/**
- * Normalize anything vaguely point‑like into {x, y} scene pixels.
- * Accepts Tokens, Walls, {x,y} objects, PIXI.Point, or plain arrays.
- */
-/*
-function toPoint(p) {
-  if (!p) throw new Error('Invalid point');
-  // {x, y}
-  if (typeof p.x === 'number' && typeof p.y === 'number') return { x: p.x, y: p.y };
-  // Token or PlaceableObject
-  if (p.center) return { x: p.center.x, y: p.center.y };
-  // [x, y]
-  if (Array.isArray(p) && p.length >= 2) return { x: p[0], y: p[1] };
-  throw new Error('Unsupported point type supplied to createLightning');
-}
-*/
-/**
- * @typedef {object} LightningOptions
- * @property {*}      start              – Token, {x,y}, PIXI.Point, or [x,y].
- * @property {*}      end                – Same types as start.
- * @property {number} [color=0xffffff]   – Hex color of the bolt.
- * @property {number} [thickness=2]      – Line thickness (px).
- * @property {number} [segments=20]      – Jagged segments.
- * @property {number} [amplitude=20]     – Max sideways displacement.
- * @property {number} [flicker=3]        – Flashes before self‑destroy.
- * @property {number} [flashDuration=0.08] – Seconds each fade out lasts.
- * @property {boolean}[persist=false]    – Keep bolt instead of auto‑cleanup.
- * @property {PIXI.Container} [layer=canvas.effects] – Where to render.
- */
-
-/**
- * Spawn an animated lightning bolt on the Foundry VTT canvas.
- *
- * ```js
- * // Between two controlled tokens
- * createLightning({ start: tokenA, end: tokenB, color: 0x00ffff });
- * ```
- *
- * @param {LightningOptions} opts
- * @returns {{graphics: PIXI.Graphics, destroy():void}}
- */
-/*
-export function createLightning(opts) {
- // const gsap = globalThis.gsap;
-  if (!gsap) throw new Error('GSAP library not found – include gsap.min.js before calling createLightning');
-console.log("createLightning")
-console.log(opts)
-  const {
-    start,
-    end,
-    color = 0xffffff,
-    thickness = 2,
-    segments = 20,
-    amplitude = 20,
-    flicker = 3,
-    flashDuration = 0.08,
-    persist = false,
-    layer = canvas.effects,
-  } = opts;
-
-  const p0 = toPoint(start);
-  const p1 = toPoint(end);
-
-  const g = new PIXI.Graphics();
-  g.blendMode = PIXI.BLEND_MODES.ADD;
-  layer.addChild(g);
-
-  function drawBolt() {
-    g.clear();
-    g.lineStyle(thickness, color, 1, 0.5, true);
-
-    let prevX = p0.x;
-    let prevY = p0.y;
-
-    const dx = p1.x - p0.x;
-    const dy = p1.y - p0.y;
-    const len = Math.hypot(dx, dy) || 1;
-    const perpX = -dy / len;
-    const perpY = dx / len;
-
-    for (let i = 1; i <= segments; i++) {
-      const t = i / segments;
-      let x = p0.x + dx * t;
-      let y = p0.y + dy * t;
-      const taper = 1 - Math.abs(0.5 - t) * 2; // peak randomness mid‑bolt
-      const offset = (Math.random() * 2 - 1) * amplitude * taper;
-      x += perpX * offset;
-      y += perpY * offset;
-      g.moveTo(prevX, prevY);
-      g.lineTo(x, y);
-      prevX = x;
-      prevY = y;
-    }
-  }
-
-  function flash() {
-    const tl = gsap.timeline({
-      onComplete: () => {
-        if (persist) return;
-        if (g.parent) g.parent.removeChild(g);
-        g.destroy();
-      },
-    });
-    for (let i = 0; i < flicker; i++) {
-      tl.call(drawBolt)
-        .set(g, { alpha: 1 })
-        .to(g, { alpha: 0, duration: flashDuration })
-        .set(g, { alpha: 0 });
-    }
-  }
-
-  g.alpha = 0;
-  flash();
-
-  return {
-    graphics: g,
-    destroy() {
-      gsap.killTweensOf(g);
-      if (g.parent) g.parent.removeChild(g);
-      g.destroy();
-    },
-  };
-  
-}
-  */
 
 /** Ensure a global registry for active bolts */
 if (!globalThis.__lightningBolts) globalThis.__lightningBolts = new Map();
@@ -240,7 +116,6 @@ function toPoint(p) {
  *   }
  */
 export function createLightning(opts) {
-//  const gsap = gsap;
   if (!gsap) throw new Error('GSAP library not found – include gsap.min.js before calling createLightning');
 
   const {

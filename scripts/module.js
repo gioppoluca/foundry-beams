@@ -1,64 +1,71 @@
-export const isDebugActive = true;
-import { MOD_NAME } from "./beams-const.js";
 import * as BeamAPI from './beams-api.js';
+import { MOD_NAME, isDebugActive } from "./beams-const.js";
 import { toggleBeam, updateBeam, beams } from "./beamManager.js";
-import { createLightning } from "./beams-util.js";
 import { beamTicker } from "./beamTicker.js";
 import { StyleRegistry } from "./StyleRegistry.js";
 import { loadBuiltIn, loadCustomStyles } from "./StyleManager.js";
-import { laserStyle } from "./styles/laser.js";
-import { lightningStyle } from "./styles/lightning.js";
-import { sineStyle }      from "./styles/sine.js";
-import { flameStyle } from "./styles/flame.js";
+
 const updateCache = new Map();
 
-Hooks.once("init", async () =>  {
+
+Hooks.once("init", async () => {
   if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
-//  StyleRegistry.register(laserStyle);
-//  StyleRegistry.register(lightningStyle);
-//  StyleRegistry.register(sineStyle);
-//  StyleRegistry.register(flameStyle);
-   await loadBuiltIn();      // laser & lightning
+  // Setting: debug flag
+  game.settings.register("foundry-beams", "maxBounces", {
+    name: "Maximum bounces",
+    scope: "world",
+    config: true,
+    type: Number,
+    default: 3,
+    range: { min: 0, max: 5, step: 1 },
+    requiresReload: true,
+    hint: "Maximum number of bounces a beam can make before it stops.",
+    onChange: val => console.log(`[foundry-beams] maxBounces ${val}`)
+  });
+
+  game.settings.register("foundry-beams", "debug", {
+    name: "Enable debug logging",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    requiresReload: true,
+    default: false,
+    onChange: val => console.log(`[foundry-beams] debug ${val ? "ON" : "OFF"}`)
+  });
+
+  game.settings.register("foundry-beams", "useProviderStyles", {
+    name: "Load styles from Styles Hub module",
+    hint: "If the 'foundry-beams-styles' module is active, import and register all of its styles.",
+    scope: "world",
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
+  await loadBuiltIn();      // laser & lightning
   await loadCustomStyles(); // anything under custom-styles/
-// Inject default beam flag schema into token config
-  /*
-  CONFIG.Token.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
-    fields["flags.foundry-beams.beam"] = {
-      type: Object,
-      default: {
-        enabled: false,
-        width: 30,
-        offset: 30,
-        hasRegion: false,
-        colorHex: "#ffe699"
-      }
-    };
-  };
-  CONFIG.Wall.sheetClasses["base"].cls.prototype.injectConfigSheetFields ??= function (fields) {
-    fields["flags.foundry-beams.mirror"] = {
-      type: Object,
-      default: {
-        isMirror: false,
-        isReactive: false,
-        macro: ""
-      }
-    };
-  };
-
-
-*/
 });
 
-Hooks.once("ready", () => {
+Hooks.once("ready", async () => {
   game.modules.get(MOD_NAME).api = BeamAPI;
   if (isDebugActive) console.log("[foundry-beams] API registered");
+
+  if (!game.settings.get("foundry-beams", "useProviderStyles")) return;
+  const hub = game.modules.get("foundry-beams-styles");
+  if (hub?.active && hub.api?.registerAll) {
+    try {
+      const count = await hub.api.registerAll("foundry-beams");
+      console.log(`[foundry-beams] Registered ${count} styles from provider.`);
+    } catch (e) {
+      console.warn("[foundry-beams] Provider registerAll failed:", e);
+    }
+  }
 });
 
 Hooks.on("renderWallConfig", (app, html, data) => {
   const mirrorData = foundry.utils.getProperty(app.document, "flags.foundry-beams.mirror") ?? {};
   console.log(mirrorData)
   if (isDebugActive) console.log(app);
-  if (isDebugActive) console.log(`[foundry-beams] Rendering WallConfig UI for wall: ${app.document.id}`);
   //let footer = app.form.querySelector("footer");
   const tabContent = `
     <fieldset class="beam-group" data-tab="beam">
@@ -77,7 +84,6 @@ Hooks.on("renderWallConfig", (app, html, data) => {
     </fieldset>
   `;
 
-  //  footer.before(tabContent);
   app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
   app.setPosition({ height: "auto" });
 });
@@ -149,7 +155,6 @@ Hooks.on("renderTokenConfig", (app, html, data) => {
     </div>
   `;
 
-  //form.append(tabContent);
   app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
   app.form.querySelector('#regionConfigButton')?.addEventListener('click', () => { regionConfig(app.token) });
 });
@@ -241,15 +246,6 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
     //updateCache.set(token.id, updateData);
     updateBeam(token.object, updateData);
   }
-  // Only react if the style flag changed
-  /*
- if (diff?.flags?.["foundry-beams"]?.beam?.style !== undefined) {
-   const token = canvas.tokens.get(doc.id);
-   if (token) {
-     updateBeam(token, { x: doc.x, y: doc.y, rotation: doc.rotation });
-   }
- }
-*/
 });
 
 Hooks.on("refreshToken", (refreshedToken) => {
@@ -265,7 +261,6 @@ Hooks.on("refreshToken", (refreshedToken) => {
     console.log(`[foundry-beams] RefreshToken match for ${refreshedToken.name}, applying cached update.`);
     console.log(cachedUpdate);
   }
-  // createLightning({ start: { x: 50, y: 50 }, end: { x: 500, y: 500 }, color: 0xffccff, flicker: 15 });
 
   updateBeam(refreshedToken, cachedUpdate);
 });

@@ -1,6 +1,6 @@
-import { isDebugActive } from "./module.js";
-import { MOD_NAME } from "./beams-const.js";
+import { MOD_NAME, isDebugActive } from "./beams-const.js";
 import { BeamRegistry, BeamVisualStyle } from "./beamData.js";
+import { StyleRegistry } from "./StyleRegistry.js";
 
 export { BeamRegistry, BeamVisualStyle }; // expose via module.api
 // beams-api.js — API for external control of beam tokens (by token.id only)
@@ -47,10 +47,8 @@ export async function rotateBeamByIdTo(tokenId, degrees) {
   const token = await resolveValidBeamTokenById(tokenId);
   if (!token) return;
   const flag = token.getFlag(MOD_NAME, "beam") || {};
-  //  await token.update({ rotation: degrees });
   if (flag.enabled) {
     await token.update({ rotation: degrees });
-    //  updateBeam(token);
   }
 }
 
@@ -63,11 +61,9 @@ export async function rotateBeamByIdOf(tokenId, degrees) {
   if (!token) return null;
   const flag = token.getFlag(MOD_NAME, "beam") || {};
   console.log(flag)
-  //  await token.update({ rotation: degrees });
   if (flag.enabled) {
     await token.update({ rotation: token.rotation + degrees });
     return token.rotation + degrees;
-    //  updateBeam(token);
   }
   return null;
 }
@@ -115,4 +111,12 @@ export function setBeamStyle(token, style) {
   console.log(token)
   const inst = BeamRegistry.get(token.id);
   if (inst) inst.style = BeamVisualStyle[style] ?? BeamVisualStyle.LASER;
+}
+
+export function registerExternalStyle(style) {
+  return StyleRegistry.register(style);
+}
+
+export function registerExternalStyles(styles) {
+  for (const s of styles) StyleRegistry.register(s);
 }

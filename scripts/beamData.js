@@ -80,8 +80,6 @@ export const BeamRegistry = {
 
 };
 
-// --- Phase 2 helpers ---------------------------------------------------------
-
 /**
  * Ensure a segment with `id` exists on `beamInst`. Creates a bare template –
  * the caller is responsible for filling geometry and attaching PIXI things.
