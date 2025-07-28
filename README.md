@@ -4,7 +4,7 @@
 - ![Total Download Count](https://img.shields.io/github/downloads/gioppoluca/foundry-beams/total?color=d1b124&label=Total%20Download)
 - ![Forge Installs](https://img.shields.io/badge/dynamic/json?label=Forge%20Installs&query=package.installs&suffix=%25&url=https%3A%2F%2Fforge-vtt.com%2Fapi%2Fbazaar%2Fpackage%2Ffoundry-beams&colorB=4aa94a)
 
-A Foundry VTT module that lets tokens emit animated, glowing beam segments — with support for reflections, shader effects, regions, and module API integration.
+A Foundry VTT module that lets tokens emit animated, styled beam segments — with support for reflections, shader effects, regions, and module API integration.
 The module is system independent.
 
 ![Beam Scene](doc/triggerDoor.png)
@@ -14,7 +14,7 @@ As shown in the image a beam is emitted from the statue it bounces on 2 walls an
 
 ## ✨ Features
 
-- 🔦 Create directional, light beams from tokens
+- 🔦 Create directional, light beams from tokens: beams can have different styles
 - 🔁 Reflect off flagged mirror walls and pass through windows or open doors; wall/mirror can move and beam react accordingly
 - 📐 Generates Foundry v12 Region polygons matching the beam's path
 - 🔌 Provides API methods for other modules to control beam behavior
@@ -33,14 +33,15 @@ Install it as a Foundry VTT module from within the module section.
 ![token configuration](doc/tokenConfig.png)
 2. Use the new **"Beam" tab** to configure:
    - Beam enabled
-   - Color (hex)
    - Width
    - Offset from the center of the token to align the beam start with the token shape
+   - Color (hex)
+   - Style: the style of the beam: actually available laser and lightning
    - If you want to activate a region on the beam
    - Configure the associate region: mind that the region will take a name associated with the token thus if you later change the token name the region at the moment is left orphaned of the beam.
 
 #### WARNINGS
-Token MUST face east since the rotation of the token is used to move the beam and the rotation of 0 is the horizontal line emitting on the right: thus the token part that emit the beam has to be rotated accordingly.
+Token MUST face east since the rotation of the token is used to move the beam and the rotation of 0 is the horizontal line/axes emitting on the right: thus the token part that emit the beam has to be rotated accordingly.
 You cannot use the rotation of the token to try to align it with the beam.
 
 ### Make Walls Reflective
