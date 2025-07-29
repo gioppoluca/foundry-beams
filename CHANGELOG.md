@@ -1,4 +1,12 @@
 
+## [1.3.4] - 2025-07-29
+### :sparkles: New Features
+- [`78a3e79`](https://github.com/gioppoluca/foundry-beams/commit/78a3e79a918ee66ec179734d31957dca757d3d6e) - raised max bounced from 5 to 10 *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`2c989ba`](https://github.com/gioppoluca/foundry-beams/commit/2c989bab116bea9a0fa6f94791e6bcdfc9796f65) - problems in race condition *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.3.3] - 2025-07-29
 ### :sparkles: New Features
 - [`16eb22f`](https://github.com/gioppoluca/foundry-beams/commit/16eb22f77ae7ac83458bb31f4d3086688200f3d4) - refactoring for multiple style of beams *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -105,3 +113,4 @@
 [1.3.1]: https://github.com/gioppoluca/foundry-beams/compare/1.3.0...1.3.1
 [1.3.2]: https://github.com/gioppoluca/foundry-beams/compare/1.3.1...1.3.2
 [1.3.3]: https://github.com/gioppoluca/foundry-beams/compare/1.3.2...1.3.3
+[1.3.4]: https://github.com/gioppoluca/foundry-beams/compare/1.3.3...1.3.4
