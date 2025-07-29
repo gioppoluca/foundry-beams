@@ -7,6 +7,7 @@ import { StyleRegistry } from "./StyleRegistry.js";
 export async function loadBuiltIn() {
   const { laserStyle } = await import("./styles/laser.js");
   const { lightningStyle } = await import("./styles/lightning.js");
+  console.log("[foundry-beams] loading built-in styles");
   StyleRegistry.register(laserStyle);
   StyleRegistry.register(lightningStyle);
 }
@@ -18,6 +19,7 @@ export async function loadBuiltIn() {
  */
 export async function loadCustomStyles() {
   const ROOT = "foundry-beams/custom-styles";
+  console.log(`[foundry-beams] loading custom styles from ${ROOT}`);
   const req = await FilePicker.browse("data", ROOT);
   for (const dir of req.dirs) {
     try {
