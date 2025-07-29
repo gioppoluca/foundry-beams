@@ -17,7 +17,7 @@ Hooks.once("init", async () => {
     config: true,
     type: Number,
     default: 3,
-    range: { min: 0, max: 5, step: 1 },
+    range: { min: 0, max: 10, step: 1 },
     requiresReload: true,
     hint: "Maximum number of bounces a beam can make before it stops.",
     onChange: val => console.log(`[foundry-beams] maxBounces ${val}`)
@@ -42,16 +42,12 @@ Hooks.once("init", async () => {
     default: true
   });
 
-  await loadBuiltIn();      // laser & lightning
-  await loadCustomStyles(); // anything under custom-styles/
-});
-
-Hooks.once("ready", async () => {
   game.modules.get(MOD_NAME).api = BeamAPI;
-  if (isDebugActive) console.log("[foundry-beams] API registered");
-
+  await loadBuiltIn();      // laser & lightning
+  console.log(`[foundry-beams] isDebugActive:`, isDebugActive);
+  console.log(`[foundry-beams] useProviderStyles`, game.settings.get("foundry-beams", "useProviderStyles"));
   if (!game.settings.get("foundry-beams", "useProviderStyles")) return;
-  const hub = game.modules.get("foundry-beams-styles");
+  const hub = await game.modules.get("foundry-beams-styles");
   if (hub?.active && hub.api?.registerAll) {
     try {
       const count = await hub.api.registerAll("foundry-beams");
@@ -60,6 +56,12 @@ Hooks.once("ready", async () => {
       console.warn("[foundry-beams] Provider registerAll failed:", e);
     }
   }
+  await loadCustomStyles(); // anything under custom-styles/
+});
+
+Hooks.once("ready", async () => {
+  if (isDebugActive) console.log("[foundry-beams] API registered");
+
 });
 
 Hooks.on("renderWallConfig", (app, html, data) => {
