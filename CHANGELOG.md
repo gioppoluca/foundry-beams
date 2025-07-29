@@ -1,4 +1,24 @@
 
+## [1.3.3] - 2025-07-29
+### :sparkles: New Features
+- [`16eb22f`](https://github.com/gioppoluca/foundry-beams/commit/16eb22f77ae7ac83458bb31f4d3086688200f3d4) - refactoring for multiple style of beams *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`75492e1`](https://github.com/gioppoluca/foundry-beams/commit/75492e14ec96ebb46ff770267ffd6186c4162e91) - added greensock usage for non laser beams *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`12f6156`](https://github.com/gioppoluca/foundry-beams/commit/12f6156ccefc39534d0cee2d8ac89f7bdc782a87) - choose style *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`e375f47`](https://github.com/gioppoluca/foundry-beams/commit/e375f47d21d8381e9cd42ac1f2eadb9caf92a27e) - new styles *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`cb6404c`](https://github.com/gioppoluca/foundry-beams/commit/cb6404cd44f0f5bc506ed9ecae48ca3c7321d5ce) - min size for region otherwise it will not trigger *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`ec1db78`](https://github.com/gioppoluca/foundry-beams/commit/ec1db7835209e5987ecab7317e0c6a01c2a4fa2a) - style lightning *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`f3312e3`](https://github.com/gioppoluca/foundry-beams/commit/f3312e3c198f19ef21cc208e4e077c9bdf3067d8) - style flaming *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`2dc3a3f`](https://github.com/gioppoluca/foundry-beams/commit/2dc3a3f3465ce9d9b08889bc0b3f5cbfc0df081b) - style wave *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`cfc9780`](https://github.com/gioppoluca/foundry-beams/commit/cfc9780f531d2ef98146b86a264f57f737d64c28) - style flame *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`4233790`](https://github.com/gioppoluca/foundry-beams/commit/42337909788744a4b8444f37c58fd888d9d0b0c1) - capability to load style dynamically from folder *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`9c3c918`](https://github.com/gioppoluca/foundry-beams/commit/9c3c918de2860b0da205107bee23cae80bfba0e4) - added style management for beams *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`7d63429`](https://github.com/gioppoluca/foundry-beams/commit/7d634297ea71f0caaa66393543546b3592ac2888) - generalization for new styles *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`030852a`](https://github.com/gioppoluca/foundry-beams/commit/030852a968461b7741919a9812bedfc7d191910f) - removed unused file due to refactor *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`9238950`](https://github.com/gioppoluca/foundry-beams/commit/923895098923ea99a92be21a4166753895295d31) - remove styles not yet to publish *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.3.2] - 2025-06-10
 ### :bug: Bug Fixes
 - [`82c8a2f`](https://github.com/gioppoluca/foundry-beams/commit/82c8a2fbb65bc96f7294f87b98fe743e5c763857) - closes [#15](https://github.com/gioppoluca/foundry-beams/pull/15) *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -84,3 +104,4 @@
 [1.3.0]: https://github.com/gioppoluca/foundry-beams/compare/1.2.1...1.3.0
 [1.3.1]: https://github.com/gioppoluca/foundry-beams/compare/1.3.0...1.3.1
 [1.3.2]: https://github.com/gioppoluca/foundry-beams/compare/1.3.1...1.3.2
+[1.3.3]: https://github.com/gioppoluca/foundry-beams/compare/1.3.2...1.3.3
