@@ -399,7 +399,7 @@ Hooks.on("setupTileActions", (app) => {
       // Get the API for the beam module
       const beams = game.modules.get(MOD_NAME).api;
       // call API to rotate of set value
-      await beams.toggleBeamById(args.action.data.entity.id);
+      await beams.toggleActivationBeamById(args.action.data.entity.id);
 
     },
     content: async (trigger, action) => {
@@ -429,7 +429,7 @@ Hooks.on("setupTileActions", (app) => {
       // Get the API for the beam module
       const beams = game.modules.get(MOD_NAME).api;
       // call API to rotate of set value
-      await beams.enableBeamById(args.action.data.entity.id);
+      await beams.activateBeamById(args.action.data.entity.id);
 
     },
     content: async (trigger, action) => {
@@ -459,7 +459,7 @@ Hooks.on("setupTileActions", (app) => {
       // Get the API for the beam module
       const beams = game.modules.get(MOD_NAME).api;
       // call API to rotate of set value
-      await beams.disableBeamById(args.action.data.entity.id);
+      await beams.disactivateBeamById(args.action.data.entity.id);
 
     },
     content: async (trigger, action) => {

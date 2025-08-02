@@ -93,6 +93,19 @@ export async function disactivateBeamById(tokenId) {
     await token.setFlag(MOD_NAME, "beam", { active: false });
 }
 
+/** Toggle the beam activation (activate/disactivate) by token ID */
+export async function toggleActivationBeamById(tokenId) {
+  const token = await resolveValidBeamTokenById(tokenId);
+  if (!token) return;
+
+  const flag = token.getFlag(MOD_NAME, "beam") || {};
+  const newState = !flag.active;
+
+  await token.setFlag(MOD_NAME, "beam", { ...flag, active: newState });
+
+}
+
+
 /**
  * Resolves token instance from ID and ensures it has beam configuration
  * @param {string} tokenId
