@@ -1,4 +1,13 @@
 
+## [1.3.6] - 2025-08-02
+### :sparkles: New Features
+- [`dd30adf`](https://github.com/gioppoluca/foundry-beams/commit/dd30adfc9fbaf16ed415f56216944754a8276e5b) - added API for active and disactive *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`6f0d657`](https://github.com/gioppoluca/foundry-beams/commit/6f0d6579c5facc1b68c90e531bef000224006238) - new API for activate *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`d6d7fe3`](https://github.com/gioppoluca/foundry-beams/commit/d6d7fe382b617261429c98e446900d1df7189f19) - fix region behavior removal added concept of active beam *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.3.5] - 2025-08-02
 ### :bug: Bug Fixes
 - [`67d3b3a`](https://github.com/gioppoluca/foundry-beams/commit/67d3b3af6a6c7b5547db9d8c48f765a1a8484914) - beam not updated when wall change or door opens or closes *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -120,3 +129,4 @@
 [1.3.3]: https://github.com/gioppoluca/foundry-beams/compare/1.3.2...1.3.3
 [1.3.4]: https://github.com/gioppoluca/foundry-beams/compare/1.3.3...1.3.4
 [1.3.5]: https://github.com/gioppoluca/foundry-beams/compare/1.3.4...1.3.5
+[1.3.6]: https://github.com/gioppoluca/foundry-beams/compare/1.3.5...1.3.6
