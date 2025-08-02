@@ -132,6 +132,10 @@ Hooks.on("renderTokenConfig", (app, html, data) => {
         <input type="checkbox" name="flags.foundry-beams.beam.enabled" ${beamData.enabled ? "checked" : ""}/>
       </div>
       <div class="form-group">
+        <label>is active</label>
+        <input type="checkbox" name="flags.foundry-beams.beam.active" ${beamData.active ? "checked" : ""}/>
+      </div>
+      <div class="form-group">
         <label>Beam Width (px)</label>
         <input type="number" name="flags.foundry-beams.beam.width" value="${beamData.width ?? 30}" min="1"/>
       </div>
@@ -189,7 +193,7 @@ Hooks.on("updateWall", (wallDoc, updateData) => {
 
   for (const token of beamTokens) {
     console.log(token)
-    updateBeam(token,{},true); // Recompute the beam for each emitter
+    updateBeam(token, {}, true); // Recompute the beam for each emitter
   }
 });
 
@@ -200,6 +204,7 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
 
   const beamConfig = token.getFlag(MOD_NAME, "beam");
   const isEnabled = beamConfig?.enabled === true;
+  const isActive = beamConfig?.active === true;
   const beamExists = beams.has(token.id);
 
   if (isDebugActive) console.log(tokenDoc);
@@ -240,10 +245,11 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
   const changedColor = updateData?.flags?.["foundry-beams"]?.beam?.colorHex !== undefined;
   const changedWidth = updateData?.flags?.["foundry-beams"]?.beam?.width !== undefined;
   const changedOffset = updateData?.flags?.["foundry-beams"]?.beam?.offset !== undefined;
+  const changedActive = updateData?.flags?.["foundry-beams"]?.beam?.active !== undefined;
   console.log(updateData?.flags?.["foundry-beams"]?.beam?.style)
   console.log(updateData?.flags?.["foundry-beams"]?.beam?.colorHex)
   console.log("Changed:", (changedStyle || changedColor))
-  if (isEnabled && (changedStyle || changedColor || changedWidth || changedOffset)) {
+  if (isEnabled && (changedStyle || changedColor || changedWidth || changedOffset || changedActive)) {
     if (isDebugActive) console.log(`[foundry-beams] Scheduling beam update due to token motion: ${token.name}`);
     //updateCache.set(token.id, updateData);
     updateBeam(token.object, updateData);

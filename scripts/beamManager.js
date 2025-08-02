@@ -1,6 +1,6 @@
 import { MOD_NAME, isDebugActive } from "./beams-const.js";
 import { reactiveMacro } from './beams-macro.js';
-import { createRegionFromSegments, deleteBeamRegions } from './beams-region.js';
+import { createRegionFromSegments, deleteBeamRegions, disableRegion, enableRegion } from './beams-region.js';
 import { getTokensAlongSegment } from "./beams-util.js";
 import { BeamRegistry, BeamVisualStyle, ensureSegment } from "./beamData.js";
 import { StyleRegistry } from "./StyleRegistry.js";
@@ -111,8 +111,11 @@ export function updateBeam(token, override = null, forceUpdate = false) {
     const changedColor = override?.flags?.["foundry-beams"]?.beam?.colorHex !== undefined;
     const changedWidth = override?.flags?.["foundry-beams"]?.beam?.width !== undefined;
     const changedOffset = override?.flags?.["foundry-beams"]?.beam?.offset !== undefined;
+    const changedActive = override?.flags?.["foundry-beams"]?.beam?.active !== undefined;
+
     console.log("changedStyle:", changedStyle)
     console.log("changedColor:", changedColor)
+    console.log("changedActive:", changedActive)
     console.log(existing)
     if (!existing) return; // safety
     const flagCfg = token.document.getFlag("foundry-beams", "beam") ?? {};
@@ -122,10 +125,12 @@ export function updateBeam(token, override = null, forceUpdate = false) {
     existing.config = cfg;                                  // keep legacy map in sync
     const doc = token.document;
     const flagStyle = override?.flags?.["foundry-beams"]?.beam?.style ?? doc.getFlag(MOD_NAME, "beam")?.style;
+    const isActive = override?.flags?.["foundry-beams"]?.beam?.active ?? doc.getFlag(MOD_NAME, "beam")?.active;
+    console.log("isactive:", isActive)
     const flagColor = flagCfg.colorHex;
     const beamInst = BeamRegistry.ensure(token, cfg, flagStyle);
     console.log("Beam instance:", beamInst)
-    if (changedStyle || changedColor || changedWidth || changedOffset || forceUpdate) {
+    if (changedStyle || changedColor || changedWidth || changedOffset || forceUpdate || (changedActive)) {
         // FULL reset ─ destroy all old containers, clear segments & legacy array
         for (const seg of beamInst.segments.values()) {
             seg.container?.parent?.removeChild(seg.container);
@@ -137,6 +142,17 @@ export function updateBeam(token, override = null, forceUpdate = false) {
         beamInst.colorHex = flagColor;
     }
 
+    // if the beam is not active we do not draw anything
+    if (!isActive) {
+        console.log("the beam is not active")
+        if (changedActive) {
+            disableRegion(token)
+        }
+        return
+    }
+    if (changedActive && isActive) {
+        enableRegion(token)
+    }
 
     const curX = override?.x ?? doc.x;
     const curY = override?.y ?? doc.y;
@@ -149,7 +165,7 @@ export function updateBeam(token, override = null, forceUpdate = false) {
     const curWidth = override?.flags?.["foundry-beams"]?.beam?.width ?? doc.getFlag(MOD_NAME, "beam")?.width;
     const curOffset = override?.flags?.["foundry-beams"]?.beam?.offset ?? doc.getFlag(MOD_NAME, "beam")?.offset;
 
-    if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot && !(changedStyle || changedColor || changedWidth || changedOffset || forceUpdate)) {
+    if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot && !(changedStyle || changedColor || changedWidth || changedOffset || forceUpdate || changedActive)) {
         // No position/rotation change → only lightning jitter needs running
         console.log(`[foundry-beams] No position change for ${token.name} at ${curX},${curY} rot: ${curRot} color: ${curColor} style: ${curStyle}`);
         return;

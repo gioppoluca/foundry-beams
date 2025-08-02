@@ -2,6 +2,31 @@
 
 import { beams } from './beamManager.js';
 
+export async function disableRegion(token){
+    console.log("disableRegion")
+    console.log(token)
+    const regionName = `Beam-${token.name}-Region`;
+    let region = game.scenes.viewed.regions.getName(regionName)
+    console.log(region)
+    if (region) {
+        for (const behavior of region.behaviors){
+            await behavior.update({disabled: true})
+        }
+    }
+}
+
+export async function enableRegion(token){
+    console.log("enableRegion")
+    console.log(token)
+    const regionName = `Beam-${token.name}-Region`;
+    let region = game.scenes.viewed.regions.getName(regionName)
+    console.log(region)
+    if (region) {
+        for (const behavior of region.behaviors){
+            await behavior.update({disabled: false})
+        }
+    }
+}
 
 export async function createRegionFromSegments(segments, token) {
     console.log("region")
