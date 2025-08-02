@@ -1,4 +1,9 @@
 
+## [1.3.5] - 2025-08-02
+### :bug: Bug Fixes
+- [`67d3b3a`](https://github.com/gioppoluca/foundry-beams/commit/67d3b3af6a6c7b5547db9d8c48f765a1a8484914) - beam not updated when wall change or door opens or closes *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.3.4] - 2025-07-29
 ### :sparkles: New Features
 - [`78a3e79`](https://github.com/gioppoluca/foundry-beams/commit/78a3e79a918ee66ec179734d31957dca757d3d6e) - raised max bounced from 5 to 10 *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -114,3 +119,4 @@
 [1.3.2]: https://github.com/gioppoluca/foundry-beams/compare/1.3.1...1.3.2
 [1.3.3]: https://github.com/gioppoluca/foundry-beams/compare/1.3.2...1.3.3
 [1.3.4]: https://github.com/gioppoluca/foundry-beams/compare/1.3.3...1.3.4
+[1.3.5]: https://github.com/gioppoluca/foundry-beams/compare/1.3.4...1.3.5
