@@ -65,10 +65,15 @@ Other modules can interact via APIs :
 ```js
 const beams = game.modules.get("foundry-beams").api;
 
-// Enable/Disable/Toggle the beam
+// Enable/Disable/Toggle the beam: it means that the beam exists or not = region behaviour is deleted
 await beams.enableBeamById("Token.UUID");
 await beams.disableBeamById("Token.UUID");
 await beams.toggleBeamById("Token.UUID");
+
+// Activate/Disactivate the beam: it means that the beam exista, but could be disabled = region behaviour is kept
+await beams.activateBeamById("Token.UUID");
+await beams.disactivateBeamById("Token.UUID");
+await beams.toggleActivationBeamById("Token.UUID");
 
 
 // Set color
@@ -90,9 +95,9 @@ await beams.rotateBeamByIdOf("Token.UUID", 90);
 The module offers some activities to use with MATT:
 - **Rotate Beam Of** action: to have the tile trigger the rotation of a specific emitter token
 - **Rotate Beam Of** action: to have the tile rotate an emitter at a specific direction
-- **Toggle** action: to have the tile toggle a specific emitter
-- **Activate** action: to activate the beam of a specific emitter
-- **Deactivate** action: to deactivate the beam on a specific emitter
+- **Toggle** action: to have the tile toggle a specific emitter: use toggleActivationBeamById
+- **Activate** action: to activate the beam of a specific emitter: use activateBeamById
+- **Deactivate** action: to deactivate the beam on a specific emitter: use disactivateBeamById
 
 ## Support
 
