@@ -189,7 +189,7 @@ Hooks.on("updateWall", (wallDoc, updateData) => {
 
   for (const token of beamTokens) {
     console.log(token)
-    updateBeam(token); // Recompute the beam for each emitter
+    updateBeam(token,{},true); // Recompute the beam for each emitter
   }
 });
 

@@ -103,7 +103,7 @@ function calculateBeamSegments(token, cfg = {}, override = null) {
 }
 
 
-export function updateBeam(token, override = null) {
+export function updateBeam(token, override = null, forceUpdate = false) {
     console.log("updateBeam")
     console.log(token)
     const existing = beams.get(token.id);
@@ -125,7 +125,7 @@ export function updateBeam(token, override = null) {
     const flagColor = flagCfg.colorHex;
     const beamInst = BeamRegistry.ensure(token, cfg, flagStyle);
     console.log("Beam instance:", beamInst)
-    if (changedStyle || changedColor || changedWidth || changedOffset) {
+    if (changedStyle || changedColor || changedWidth || changedOffset || forceUpdate) {
         // FULL reset ─ destroy all old containers, clear segments & legacy array
         for (const seg of beamInst.segments.values()) {
             seg.container?.parent?.removeChild(seg.container);
@@ -149,7 +149,7 @@ export function updateBeam(token, override = null) {
     const curWidth = override?.flags?.["foundry-beams"]?.beam?.width ?? doc.getFlag(MOD_NAME, "beam")?.width;
     const curOffset = override?.flags?.["foundry-beams"]?.beam?.offset ?? doc.getFlag(MOD_NAME, "beam")?.offset;
 
-    if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot && !(changedStyle || changedColor || changedWidth || changedOffset)) {
+    if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot && !(changedStyle || changedColor || changedWidth || changedOffset || forceUpdate)) {
         // No position/rotation change → only lightning jitter needs running
         console.log(`[foundry-beams] No position change for ${token.name} at ${curX},${curY} rot: ${curRot} color: ${curColor} style: ${curStyle}`);
         return;
