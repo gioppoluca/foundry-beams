@@ -4,6 +4,7 @@ import { toggleBeam, updateBeam, beams } from "./beamManager.js";
 import { beamTicker } from "./beamTicker.js";
 import { StyleRegistry } from "./StyleRegistry.js";
 import { loadBuiltIn, loadCustomStyles } from "./StyleManager.js";
+import { cMATT, isactiveModule } from './utils.js';
 
 const updateCache = new Map();
 
@@ -297,176 +298,203 @@ Hooks.on("canvasReady", (canvas) => {
   }
 });
 
+
+// MATT integration
 Hooks.on("setupTileActions", (app) => {
-  app.registerTileGroup(MOD_NAME, "Active Beams");
+  if (isactiveModule(cMATT)) {
+    app.registerTileGroup(MOD_NAME, "Active Beams");
 
-  app.registerTileAction(MOD_NAME, 'beam-rotate-of', {
-    name: "Rotate Beam Of",
-    batch: false,
-    requiresGM: true,
-    ctrls: [
-      {
-        id: "entity",
-        name: "Select Beam Emitter",
-        type: "select",
-        subtype: "entity",
-        options: { show: ['previous', 'tagger'] },
-        restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
-        required: true,
-        defaultType: 'tokens',
-        placeholder: 'Please select a Token that is an emitter'
+    app.registerTileAction(MOD_NAME, 'beam-rotate-of', {
+      name: "Rotate Beam Of",
+      batch: false,
+      requiresGM: true,
+      ctrls: [
+        {
+          id: "entity",
+          name: "Select Beam Emitter",
+          type: "select",
+          subtype: "entity",
+          options: { show: ['tagger'] },
+          restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
+          required: true,
+          defaultType: 'tokens',
+          placeholder: 'Please select a Token that is an emitter'
+        },
+        {
+          id: "rotateof",
+          name: "Rotate Of",
+          type: "number",
+          min: 0,
+          max: 360,
+          step: 5,
+          defvalue: 0
+        }
+      ],
+      group: MOD_NAME,
+      fn: async (args = {}) => {
+        const { action } = args;
+        // get the array of entities from MATT
+        let beamT = await app.getEntities(args)
+
+        // Get the API for the beam module
+        const beams = game.modules.get(MOD_NAME).api;
+        // call API to rotate of set value for all entities
+        for (const aBeam of beamT) {
+          await beams.rotateBeamByIdOf(aBeam.uuid, args.action.data.rotateof);
+        }
       },
-      {
-        id: "rotateof",
-        name: "Rotate Of",
-        type: "number",
-        min: 0,
-        max: 360,
-        step: 5,
-        defvalue: 0
-      }
-    ],
-    fn: async (args = {}) => {
-      const { action } = args;
-      // Get the API for the beam module
-      const beams = game.modules.get(MOD_NAME).api;
-      // call API to rotate of set value
-      await beams.rotateBeamByIdOf(args.action.data.entity.id, args.action.data.rotateof);
-    },
-    content: async (trigger, action) => {
-      return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span> rotation: ${action.data.rotateof}`;
-    }
-  });
+      content: async (trigger, action) => {
+        let entityName = await app.entityName(action.data?.entity);
+        return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span> rotation: ${action.data.rotateof}`;
 
-  app.registerTileAction(MOD_NAME, 'beam-rotate-to', {
-    name: "Rotate Beam To",
-    batch: false,
-    requiresGM: true,
-    ctrls: [
-      {
-        id: "entity",
-        name: "Select Beam Emitter",
-        type: "select",
-        subtype: "entity",
-        options: { show: ['previous', 'tagger'] },
-        restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
-        required: true,
-        defaultType: 'tokens',
-        placeholder: 'Please select a Token that is an emitter'
+      }
+    });
+
+    app.registerTileAction(MOD_NAME, 'beam-rotate-to', {
+      name: "Rotate Beam To",
+      batch: false,
+      requiresGM: true,
+      ctrls: [
+        {
+          id: "entity",
+          name: "Select Beam Emitter",
+          type: "select",
+          subtype: "entity",
+          options: { show: ['tagger'] },
+          restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
+          required: true,
+          defaultType: 'tokens',
+          placeholder: 'Please select a Token that is an emitter'
+        },
+        {
+          id: "rotateto",
+          name: "Rotate To",
+          type: "number",
+          min: 0,
+          max: 360,
+          step: 5,
+          defvalue: 0
+        }
+      ],
+      fn: async (args = {}) => {
+        const { action } = args;
+        let beamT = await app.getEntities(args)
+
+        // Get the API for the beam module
+        const beams = game.modules.get(MOD_NAME).api;
+        for (const aBeam of beamT) {
+          // call API to rotate to set value
+          await beams.rotateBeamByIdTo(aBeam.uuid, args.action.data.rotateto);
+        }
+
       },
-      {
-        id: "rotateto",
-        name: "Rotate To",
-        type: "number",
-        min: 0,
-        max: 360,
-        step: 5,
-        defvalue: 0
+      content: async (trigger, action) => {
+        return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span> rotation: ${action.data.rotateto}`;
       }
-    ],
-    fn: async (args = {}) => {
-      const { action } = args;
-      // Get the API for the beam module
-      const beams = game.modules.get(MOD_NAME).api;
-      // call API to rotate of set value
-      await beams.rotateBeamByIdTo(args.action.data.entity.id, args.action.data.rotateto);
+    });
 
-    },
-    content: async (trigger, action) => {
-      return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span> rotation: ${action.data.rotateto}`;
-    }
-  });
+    app.registerTileAction(MOD_NAME, 'beam-toggle', {
+      name: "Toggle",
+      batch: false,
+      requiresGM: true,
+      ctrls: [
+        {
+          id: "entity",
+          name: "Select Beam Emitter",
+          type: "select",
+          subtype: "entity",
+          options: { show: ['tagger'] },
+          restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
+          required: true,
+          defaultType: 'tokens',
+          placeholder: 'Please select a Token that is an emitter'
+        }
+      ],
+      fn: async (args = {}) => {
+        const { action } = args;
+        let beamT = await app.getEntities(args)
 
-  app.registerTileAction(MOD_NAME, 'beam-toggle', {
-    name: "Toggle",
-    batch: false,
-    requiresGM: true,
-    ctrls: [
-      {
-        id: "entity",
-        name: "Select Beam Emitter",
-        type: "select",
-        subtype: "entity",
-        options: { show: ['previous', 'tagger'] },
-        restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
-        required: true,
-        defaultType: 'tokens',
-        placeholder: 'Please select a Token that is an emitter'
+        // Get the API for the beam module
+        const beams = game.modules.get(MOD_NAME).api;
+        for (const aBeam of beamT) {
+          // call API to toggle activation
+          await beams.toggleActivationBeamById(aBeam.uuid);
+        }
+
+      },
+      content: async (trigger, action) => {
+        return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span>`;
       }
-    ],
-    fn: async (args = {}) => {
-      const { action } = args;
-      // Get the API for the beam module
-      const beams = game.modules.get(MOD_NAME).api;
-      // call API to rotate of set value
-      await beams.toggleActivationBeamById(args.action.data.entity.id);
+    });
 
-    },
-    content: async (trigger, action) => {
-      return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span>`;
-    }
-  });
+    app.registerTileAction(MOD_NAME, 'beam-activate', {
+      name: "Activate",
+      batch: false,
+      requiresGM: true,
+      ctrls: [
+        {
+          id: "entity",
+          name: "Select Beam Emitter",
+          type: "select",
+          subtype: "entity",
+          options: { show: ['tagger'] },
+          restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
+          required: true,
+          defaultType: 'tokens',
+          placeholder: 'Please select a Token that is an emitter'
+        }
+      ],
+      fn: async (args = {}) => {
+        const { action } = args;
+        let beamT = await app.getEntities(args)
 
-  app.registerTileAction(MOD_NAME, 'beam-activate', {
-    name: "Activate",
-    batch: false,
-    requiresGM: true,
-    ctrls: [
-      {
-        id: "entity",
-        name: "Select Beam Emitter",
-        type: "select",
-        subtype: "entity",
-        options: { show: ['previous', 'tagger'] },
-        restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
-        required: true,
-        defaultType: 'tokens',
-        placeholder: 'Please select a Token that is an emitter'
+        // Get the API for the beam module
+        const beams = game.modules.get(MOD_NAME).api;
+        for (const aBeam of beamT) {
+          // call API to activate
+          await beams.activateBeamById(aBeam.uuid);
+        }
+
+      },
+      content: async (trigger, action) => {
+        return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span>`;
       }
-    ],
-    fn: async (args = {}) => {
-      const { action } = args;
-      // Get the API for the beam module
-      const beams = game.modules.get(MOD_NAME).api;
-      // call API to rotate of set value
-      await beams.activateBeamById(args.action.data.entity.id);
+    });
 
-    },
-    content: async (trigger, action) => {
-      return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span>`;
-    }
-  });
+    app.registerTileAction(MOD_NAME, 'beam-deactivate', {
+      name: "Deactivate",
+      batch: false,
+      requiresGM: true,
+      ctrls: [
+        {
+          id: "entity",
+          name: "Select Beam Emitter",
+          type: "select",
+          subtype: "entity",
+          options: { show: ['tagger'] },
+          restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
+          required: true,
+          defaultType: 'tokens',
+          placeholder: 'Please select a Token that is an emitter'
+        }
+      ],
+      fn: async (args = {}) => {
+        const { action } = args;
+        let beamT = await app.getEntities(args)
 
-  app.registerTileAction(MOD_NAME, 'beam-deactivate', {
-    name: "Deactivate",
-    batch: false,
-    requiresGM: true,
-    ctrls: [
-      {
-        id: "entity",
-        name: "Select Beam Emitter",
-        type: "select",
-        subtype: "entity",
-        options: { show: ['previous', 'tagger'] },
-        restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
-        required: true,
-        defaultType: 'tokens',
-        placeholder: 'Please select a Token that is an emitter'
+        // Get the API for the beam module
+        const beams = game.modules.get(MOD_NAME).api;
+        for (const aBeam of beamT) {
+          // call API to disactivate
+          await beams.disactivateBeamById(aBeam.uuid);
+        }
+
+      },
+      content: async (trigger, action) => {
+        return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span>`;
       }
-    ],
-    fn: async (args = {}) => {
-      const { action } = args;
-      // Get the API for the beam module
-      const beams = game.modules.get(MOD_NAME).api;
-      // call API to rotate of set value
-      await beams.disactivateBeamById(args.action.data.entity.id);
-
-    },
-    content: async (trigger, action) => {
-      return `<span class="action-style">${trigger.name}</span>, <span class="entity-style" style="margin-right: 8px;">token: ${action.data.entity.name}</span>`;
-    }
-  });
-
+    });
+  }
 });
 
 Hooks.once("shutdown", () => {
