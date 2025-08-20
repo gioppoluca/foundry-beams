@@ -28,7 +28,7 @@ export async function updateBeamColorById(tokenId, colorHex) {
   flag.colorHex = colorHex;
   await token.setFlag(MOD_NAME, "beam", flag);
 
-  if (flag.enabled) updateBeam(token);
+  if (flag.enabled) await updateBeam(token);
 }
 
 /** Get beam state (enabled + color) by token ID */

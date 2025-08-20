@@ -1,7 +1,7 @@
 import { MOD_NAME, isDebugActive } from "./beams-const.js";
 import { reactiveMacro } from './beams-macro.js';
 import { createRegionFromSegments, deleteBeamRegions, disableRegion, enableRegion } from './beams-region.js';
-import { getTokensAlongSegment } from "./beams-util.js";
+import { getTokensAlongSegment, startEffect, stopEffect } from "./beams-util.js";
 import { BeamRegistry, BeamVisualStyle, ensureSegment } from "./beamData.js";
 import { StyleRegistry } from "./StyleRegistry.js";
 
@@ -33,7 +33,7 @@ export async function toggleBeam(token, forceEnable = null) {
 
     if (isEnabled) {
         // we need to pass the token and not the TokenDocument
-        createBeam(token.object, flag);
+        await createBeam(token.object, flag);
     } else {
         destroyBeam(token.object);
     }
@@ -42,7 +42,7 @@ export async function toggleBeam(token, forceEnable = null) {
     await token.setFlag(MOD_NAME, "beam", { ...flag, enabled: isEnabled });
 }
 
-export function createBeam(token, config = {}) {
+export  function createBeam(token, config = {}) {
     if (isDebugActive) console.log(`[foundry-beams] Creating beam for ${token.name}`);
     beams.set(token.id, { containers: [], config });
 
@@ -53,7 +53,7 @@ export function createBeam(token, config = {}) {
     BeamRegistry.ensure(token, config, flagStyle);
     //BeamRegistry.ensure(token, config, config.visualStyle ?? BeamVisualStyle.LASER);
 
-    updateBeam(token);
+     updateBeam(token);
     startShaderAnimation();
 }
 
@@ -103,7 +103,7 @@ function calculateBeamSegments(token, cfg = {}, override = null) {
 }
 
 
-export function updateBeam(token, override = null, forceUpdate = false) {
+export  function updateBeam(token, override = null, forceUpdate = false) {
     console.log("updateBeam")
     console.log(token)
     const existing = beams.get(token.id);
@@ -140,8 +140,9 @@ export function updateBeam(token, override = null, forceUpdate = false) {
         existing.containers.length = 0;
         beamInst.style = flagStyle;
         beamInst.colorHex = flagColor;
+        stopEffect(token); // stop any existing effects
     }
-
+stopEffect(token);
     // if the beam is not active we do not draw anything
     if (!isActive) {
         console.log("the beam is not active")
@@ -180,6 +181,8 @@ export function updateBeam(token, override = null, forceUpdate = false) {
 
     // 1. build fresh geometry list (as before)
     const segments = calculateBeamSegments(token, existing.config, override);
+    console.log("BEAMS - Segments:", segments)
+     startEffect(token, segments, curColor);
 
     // 3. update / create each segment
     for (let i = 0; i < segments.length; i++) {

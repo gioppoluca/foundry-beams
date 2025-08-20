@@ -5,6 +5,7 @@ import { beamTicker } from "./beamTicker.js";
 import { StyleRegistry } from "./StyleRegistry.js";
 import { loadBuiltIn, loadCustomStyles } from "./StyleManager.js";
 import { cMATT, isactiveModule } from './utils.js';
+import {isEffectActive} from "./beams-util.js";
 
 const updateCache = new Map();
 
@@ -166,19 +167,19 @@ Hooks.on("renderTokenConfig", (app, html, data) => {
   app.form.querySelector('#regionConfigButton')?.addEventListener('click', () => { regionConfig(app.token) });
 });
 
-Hooks.on("deleteWall", async (wallDoc) => {
+Hooks.on("deleteWall",  (wallDoc) => {
   if (!canvas.scene) return;
 
   // Update all beam-enabled tokens
   for (const token of canvas.tokens.placeables.filter(t =>
     t.document.getFlag(MOD_NAME, "beam")?.enabled
   )) {
-    updateBeam(token);
+     updateBeam(token);
   }
 });
 
 
-Hooks.on("updateWall", (wallDoc, updateData) => {
+Hooks.on("updateWall",  (wallDoc, updateData) => {
   if (!canvas.scene) return;
   console.log("updateWall")
   console.log(wallDoc)
@@ -194,12 +195,16 @@ Hooks.on("updateWall", (wallDoc, updateData) => {
 
   for (const token of beamTokens) {
     console.log(token)
-    updateBeam(token, {}, true); // Recompute the beam for each emitter
+     updateBeam(token, {}, true); // Recompute the beam for each emitter
   }
 });
 
+Hooks.on("preMoveToken", (token, movement, _options) => {
+  if (token.getFlag(MOD_NAME, "beam")) movement.autoRotate = false;
+})
+
 // Watch for token updates and react based on beam flags or movement
-Hooks.on("updateToken", (tokenDoc, updateData) => {
+Hooks.on("updateToken",  (tokenDoc, updateData) => {
   const token = tokenDoc;
   if (!token) return;
 
@@ -251,13 +256,13 @@ Hooks.on("updateToken", (tokenDoc, updateData) => {
   console.log(updateData?.flags?.["foundry-beams"]?.beam?.colorHex)
   console.log("Changed:", (changedStyle || changedColor))
   if (isEnabled && (changedStyle || changedColor || changedWidth || changedOffset || changedActive)) {
-    if (isDebugActive) console.log(`[foundry-beams] Scheduling beam update due to token motion: ${token.name}`);
+    if (isDebugActive) console.log(`[foundry-beams] Scheduling beam update due to token attribute change: ${token.name}`);
     //updateCache.set(token.id, updateData);
-    updateBeam(token.object, updateData);
+     updateBeam(token.object, updateData);
   }
 });
 
-Hooks.on("refreshToken", (refreshedToken) => {
+Hooks.on("refreshToken",  (refreshedToken) => {
   const tokenId = refreshedToken.id;
   console.log("refreshToken")
   console.log(refreshedToken)
@@ -265,13 +270,14 @@ Hooks.on("refreshToken", (refreshedToken) => {
 
   const cachedUpdate = updateCache.get(tokenId);
   updateCache.delete(tokenId); // Consume only once per move
+  console.log(`[foundry-beams] Refreshing token ${refreshedToken.name} with cached update:`, cachedUpdate);
 
   if (isDebugActive) {
     console.log(`[foundry-beams] RefreshToken match for ${refreshedToken.name}, applying cached update.`);
     console.log(cachedUpdate);
   }
 
-  updateBeam(refreshedToken, cachedUpdate);
+   updateBeam(refreshedToken, cachedUpdate);
 });
 
 // Restore beams on scene load if tokens already have them enabled
@@ -499,4 +505,62 @@ Hooks.on("setupTileActions", (app) => {
 
 Hooks.once("shutdown", () => {
   beamTicker.stop();
+});
+
+// Add our HUD button (v12 & v13 Token HUD)
+Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
+  console.log("!!!!!!!!!!!!!!! renderTokenHUD")
+  try {
+    // If Sequencer missing, do nothing (avoids spamming errors)
+    if (!game.modules.get("sequencer")?.active) {
+      console.log(`[${MOD_NAME}] Sequencer module is not active, skipping HUD button.`);
+      return;
+    }
+    console.log(app)
+    console.log(html)
+    // Avoid duplicates if HUD re-renders
+    if (app.form.querySelector(`#${MOD_NAME}-hud-btn`)?.length) {
+      console.log(`[${MOD_NAME}] HUD button already exists, skipping.`);
+      return;
+    }
+
+    // Find a column to insert the button (right column is common in v12/v13)
+    const rightCol = app.form.querySelector?.(".col.right")?.first?.() || app.form.querySelector?.(".col.right");
+    console.log(rightCol)
+    if (!rightCol) return;
+
+    // Create button
+    const btn = document.createElement("div");
+    btn.classList.add("control-icon");
+    btn.id = `${MOD_NAME}-hud-btn`;
+    btn.title = "Toggle Sequencer Effect";
+
+    // Font Awesome icon (uses Foundry’s FA set)
+    const i = document.createElement("i");
+    i.classList.add("fa-solid", "fa-bolt");
+    btn.appendChild(i);
+
+    // Visual “active” state if effect is on
+    const token = app?.object ?? canvas.tokens?.get(data._id) ?? canvas.tokens?.controlled?.[0];
+    if (token && isEffectActive(token)) btn.classList.add("active");
+
+    // Click handler
+    btn.addEventListener("click", async (ev) => {
+      ev.preventDefault();
+      const t = app?.object ?? canvas.tokens?.get(data._id) ?? canvas.tokens?.controlled?.[0];
+      if (!t) return;
+
+      //      await toggleEffect(t);
+
+      // Re-check and reflect state
+      if (isEffectActive(t)) btn.classList.add("active");
+      else btn.classList.remove("active");
+    });
+
+    // Insert into HUD
+    if (rightCol.append) rightCol.append(btn);
+    else if (rightCol.appendChild) rightCol.appendChild(btn);
+  } catch (err) {
+    console.error(`[${MOD_NAME}] Failed to render HUD button`, err);
+  }
 });
