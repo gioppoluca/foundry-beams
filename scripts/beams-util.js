@@ -3,6 +3,8 @@ import {
   gsap
 } from "/scripts/greensock/esm/all.js";
 */
+import {MOD_NAME} from "./beams-const.js";
+
 export function getTokensAlongSegment(start, end, sourceToken, options = {}) {
   const { tolerance = 1, onlyVisible = false } = options;
 
@@ -223,4 +225,129 @@ export function deleteLightning(id) {
   if (!bolt) return false;
   bolt.destroy();
   return true;
+}
+
+// Simple version helpers
+function isV13Plus() {
+  // Foundry v12+ exposes game.release.generation
+  return (game.release?.generation ?? 0) >= 13;
+}
+
+// Ensure Sequencer is loaded
+function assertSequencer() {
+  const active = game.modules.get("sequencer")?.active;
+  if (!active) {
+    ui.notifications?.error("[My Sequencer Toggle] Sequencer module is not active.");
+    throw new Error("Sequencer not active");
+  }
+}
+
+// A stable effect name per-token so we can query/stop it later
+function effectNameForToken(token) {
+  return `${MOD_NAME}-toggle-${token.document?.id ?? token.id}`;
+}
+
+// Is our effect already running on this token?
+export function isEffectActive(token) {
+  try {
+    assertSequencer();
+    const name = effectNameForToken(token);
+    const effects = Sequencer.EffectManager.getEffects({ name, object: token?.object ?? token });
+    return (effects?.length ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
+
+
+/**
+ * Start effect(s).
+ * - If no segments provided => single attached effect (old behavior).
+ * - If segments provided => one effect per segment in a single Sequence.
+ *
+ * @param {Token|TokenDocument|PlaceableObject} token
+ * @param {Array<{start:{x:number,y:number}, end:{x:number,y:number}}>} [segments]
+ */
+export async function startEffect(token, segments = [], color = 0xffffff) {
+  console.log(`[${MOD_NAME}] Starting effect for token`, token, segments);
+  assertSequencer();
+
+  const FILE = "modules/foundry-beams/beam.webm"; // <- your asset
+  const base = effectNameForToken(token);
+console.log(`[${MOD_NAME}] Effect base name: ${base}`);
+  // No segments? default to a single attached effect.
+  if (!Array.isArray(segments) || segments.length === 0) {
+    await new Sequence()
+      .effect()
+        .name(base)
+        .file(FILE)
+        .attachTo(token?.object ?? token)
+        .persist()
+        .belowTokens(false)
+        .fadeIn(200)
+        .fadeOut(200)
+      .play();
+    return;
+  }
+
+  // Build one Sequence with 1 effect per segment
+  const seq = new Sequence();
+  segments.forEach((seg, i) => {
+    const name = `${base}-${i}`;
+    const start = seg?.start ?? {};
+    const end   = seg?.end ?? {};
+    const startPt = { x: start.x, y: start.y };
+    const endPt   = { x: end.x,   y: end.y   };
+
+    // If your asset supports stretching (e.g., beams), .stretchTo will scale/rotate it.
+    seq.effect()
+      .name(name)
+      .file(FILE)
+      .atLocation(startPt)     // start
+      .stretchTo(endPt, { onlyX: true})        // end (Sequencer will rotate/scale to fit)
+      .tint(color)
+      .scale(0.1)
+      .filter("Glow", {
+    distance: 5,      // Number, distance of the glow in pixels
+    outerStrength: 4,  // Number, strength of the glow outward from the edge of the sprite
+    innerStrength: 0,  // Number, strength of the glow inward from the edge of the sprite
+    color: color,   // Hexadecimal, color of the glow
+    quality: 0.1,      // Number, describes the quality of the glow (0 to 1) - the higher the number the less performant
+    knockout: false    // Boolean, toggle to hide the contents and only show glow (effectively hides the sprite)
+})
+      .persist()
+      .belowTokens(false)
+  });
+console.log(`[${MOD_NAME}] Playing sequence with ${segments.length} segments`);
+
+  await seq.play();
+}
+
+/**
+ * Stop effect(s). If segments are provided, it tries to stop the indexed names.
+ * If not, it stops any effect whose name starts with the base.
+ *
+ * @param {Token|TokenDocument|PlaceableObject} token
+ * @param {Array} [segments]
+ */
+export async function stopEffect(token) {
+  assertSequencer();
+  console.log(`[${MOD_NAME}] Stopping effect for token`, token);
+  const base = effectNameForToken(token);
+
+  // If we know how many we spawned, end by exact names
+  //if (Array.isArray(segments) && segments.length > 0) {
+   // const tasks = segments.map((_, i) => {
+      const name = `${base}-*`;
+      console.log(`[${MOD_NAME}] Ending effects with name: ${name}`);
+      return await Sequencer.EffectManager.endEffects({ name });
+   // });
+   // await Promise.all(tasks);
+ //   return;
+ // }
+
+  // Otherwise, end everything with our base prefix
+//  const effects = Sequencer.EffectManager.getEffects({ object: token?.object ?? token }) || [];
+ // const mine = effects.filter(e => e?.data?.name?.startsWith(base));
+ // await Promise.all(mine.map(e => e.end()));
 }
