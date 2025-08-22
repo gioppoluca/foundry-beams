@@ -8,7 +8,11 @@ import { StyleRegistry } from "./StyleRegistry.js";
 export const beams = new Map(); // token.id -> { containers[], config }
 
 const laserBlurCache = new Map(); // tokenId -> BlurFilter
+// TODO we need to save the current style since we do not have the previous flag style in the updateToken hook
+// but potentially each style need to be able to destroy the previous beam with its own ways
+const currentBeamStyle = "laser"; // Default style, can be overridden by user settings  
 
+/*
 let shaderTickerRegistered = false;
 function startShaderAnimation() {
     if (shaderTickerRegistered) return;
@@ -23,7 +27,7 @@ function startShaderAnimation() {
     });
     shaderTickerRegistered = true;
 }
-
+*/
 
 export async function toggleBeam(token, forceEnable = null) {
     console.log(token)
@@ -42,7 +46,7 @@ export async function toggleBeam(token, forceEnable = null) {
     await token.setFlag(MOD_NAME, "beam", { ...flag, enabled: isEnabled });
 }
 
-export  function createBeam(token, config = {}) {
+export function createBeam(token, config = {}) {
     if (isDebugActive) console.log(`[foundry-beams] Creating beam for ${token.name}`);
     beams.set(token.id, { containers: [], config });
 
@@ -53,8 +57,8 @@ export  function createBeam(token, config = {}) {
     BeamRegistry.ensure(token, config, flagStyle);
     //BeamRegistry.ensure(token, config, config.visualStyle ?? BeamVisualStyle.LASER);
 
-     updateBeam(token);
-    startShaderAnimation();
+    updateBeam(token);
+    //startShaderAnimation();
 }
 
 function findHitTokens(segment, token) {
@@ -103,7 +107,7 @@ function calculateBeamSegments(token, cfg = {}, override = null) {
 }
 
 
-export  function updateBeam(token, override = null, forceUpdate = false) {
+export function updateBeam(token, override = null, forceUpdate = false) {
     console.log("updateBeam")
     console.log(token)
     const existing = beams.get(token.id);
@@ -130,6 +134,9 @@ export  function updateBeam(token, override = null, forceUpdate = false) {
     const flagColor = flagCfg.colorHex;
     const beamInst = BeamRegistry.ensure(token, cfg, flagStyle);
     console.log("Beam instance:", beamInst)
+    console.log("Style in beamInst:", beamInst.style)
+    const style = StyleRegistry.get(beamInst.style) ?? StyleRegistry.get("laser");
+    console.log("Style:", style)
     if (changedStyle || changedColor || changedWidth || changedOffset || forceUpdate || (changedActive)) {
         // FULL reset ─ destroy all old containers, clear segments & legacy array
         for (const seg of beamInst.segments.values()) {
@@ -140,9 +147,12 @@ export  function updateBeam(token, override = null, forceUpdate = false) {
         existing.containers.length = 0;
         beamInst.style = flagStyle;
         beamInst.colorHex = flagColor;
-        stopEffect(token); // stop any existing effects
+        // we must delete the stuff with the old style
+        style.deleteAllSegments(token, beamInst);
+        //stopEffect(token); // stop any existing effects
     }
-stopEffect(token);
+    style.deleteAllSegments(token, beamInst);
+
     // if the beam is not active we do not draw anything
     if (!isActive) {
         console.log("the beam is not active")
@@ -182,41 +192,11 @@ stopEffect(token);
     // 1. build fresh geometry list (as before)
     const segments = calculateBeamSegments(token, existing.config, override);
     console.log("BEAMS - Segments:", segments)
-     startEffect(token, segments, curColor);
+    //    startEffect(token, segments, curColor);
 
     // 3. update / create each segment
-    for (let i = 0; i < segments.length; i++) {
-        const segData = segments[i];
-        const segId = String(i);
-
-        // Re‑use or create BeamSegment shell
-        const seg = ensureSegment(beamInst, segId);
-
-        // --- Update geometry data (point calc unchanged) -----------------------
-        seg.start = segData.start;
-        seg.end = segData.end ?? {
-            x: segData.start.x + (segData.dx ?? 0),
-            y: segData.start.y + (segData.dy ?? 0)
-        };
-        seg.normal = segData.normal;
-        seg.length = segData.length;
-        const len = seg.length;  // <- add this
-
-        // --- Update visuals (rotation / length) --------------------------------
-        console.log("Style in beamInst:", beamInst.style)
-        const style = StyleRegistry.get(beamInst.style) ?? StyleRegistry.get("laser");
-        console.log("Style:", style)
-        if (!seg.container) {
-            seg.container = style.create(seg, cfg);
-            canvas.effects.addChild(seg.container);
-
-            // keep shader‑ticker compatible
-            existing.containers.push({ container: seg.container, filter: seg.container.filter });
-        } else {
-            style.update(seg, cfg, len);
-        }
-    }
-
+    //        beamInst.segments = segments
+    existing.containers = style.processSegments(segments, cfg, beamInst, token);
     // 4. Clean up extra segments (if beam shortened this frame) ---------------
     const desired = segments.length;
     for (const [id, seg] of [...beamInst.segments]) {
@@ -249,10 +229,14 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
 
     while (bounces < maxBounces) {
         const dest = Ray.fromAngle(currentPoint.x, currentPoint.y, direction, maxDistance).B;
+        // Check for collisions with walls or outer bounds
         const collisions = CONFIG.Canvas.polygonBackends.move.testCollision(currentPoint, dest, {
             mode: "all",
             type: "light"
         });
+        // TODO: at the moment the collided token is not used, but we keep it for future enhancements
+        // if we want to check for collisions with tokens
+        // Test for collisions with tokens
         const collidedTk = CONFIG.Canvas.polygonBackends.move.testCollision(currentPoint, dest, { type: "sight", mode: "all" });
 
         console.log("collidedTk")
@@ -260,6 +244,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
 
         if (isDebugActive) console.log(collisions);
         if (collisions.length == 0) {
+            // No collisions
             break;
         }
         // here we need to get the first element of the array
@@ -272,14 +257,16 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         if (collisionElement.edges.values().next().value.type == "outerBounds") {
             // if it is outerbound I need to keep the wall but stop bouncing but BEFORE if first bounce> OFFSET
             if (bounces === 0) {
-                // it is the first segment
+                // it is the first segment we want to offset it as set in the config
                 currentPoint = {
                     x: origin.x + Math.cos(direction) * beamOffset,
                     y: origin.y + Math.sin(direction) * beamOffset
                 };
-                console.log(`BEAM DIRECTION RAD: ${direction}`);
-                console.log(`OFFSET POINT: x=${currentPoint.x}, y=${currentPoint.y}`);
+                //                console.log(`BEAM DIRECTION RAD: ${direction}`);
+                //                console.log(`OFFSET POINT: x=${currentPoint.x}, y=${currentPoint.y}`);
             }
+            // since we hit the outer bounds we need to set the bounces to maxBounces
+            if (isDebugActive) console.log(`[foundry-beams] Beam hit outer bounds. Stopping bounces.`);
             bounces = maxBounces;
         }
         let endPoint = collisionElement ?? dest;
@@ -293,7 +280,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         if (isDebugActive) console.log(length);
         const normal = [-dy / length, dx / length];
 
-        // offset of the starting segment)
+        // offset of the starting segment
         if (bounces === 0) {
             // it is the first segment
             currentPoint = {
@@ -305,7 +292,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
             console.log(`OFFSET POINT: x=${currentPoint.x}, y=${currentPoint.y}`);
         }
 
-        segments.push({ start: currentPoint, end: endPoint, dx, dy, length, normal });
+        segments.push({ start: currentPoint, end: { x: endPoint.x, y: endPoint.y }, dx, dy, length, normal });
         if (isDebugActive) console.log("after wall check");
         // added to solve the imprecision in the collision
         if (collisionElement == null) break;
@@ -314,9 +301,13 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         console.log(mirror)
         // looking id the wall is a reactive
         const isReactive = mirror?.isReactive ?? false;
+        // TODO: need to check if is really needed to check if the user is GM
         if (isReactive && game.users.activeGM.isSelf) {
             // if is reactive we need to execute the macro associated
             reactiveMacro(mirror?.macro);
+            // TODO here there could be the generation of an event for the wall hit
+            // TODO we need to have a structure for saving the wall hit so we can also be able to understand if a beam leaves a reactive wall
+
         }
 
         // looking if the wall is a mirror
@@ -349,7 +340,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         direction = Math.atan2(ry, rx);
         if (isDebugActive) console.log(`[foundry-beams] Reflection #${bounces + 1} at mirror.  in: ${direction.toFixed(3)} `);
 
-        //direction = reflection;
+        // now direction = reflection;
         console.log(direction)
         currentPoint = endPoint;
         bounces++;
@@ -362,6 +353,9 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
 export function destroyBeam(token) {
     const beam = beams.get(token.id);
     if (!beam) return;
+    const flagStyle = beams.config?.style ?? "laser";
+    const style = StyleRegistry.get(flagStyle) ?? StyleRegistry.get("laser");
+    style.deleteAllSegments(token)
     deleteBeamRegions(token);
     for (const { container } of beam.containers) container.destroy({ children: true });
     beams.delete(token.id);

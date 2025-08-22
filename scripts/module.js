@@ -2,47 +2,17 @@ import * as BeamAPI from './beams-api.js';
 import { MOD_NAME, isDebugActive } from "./beams-const.js";
 import { toggleBeam, updateBeam, beams } from "./beamManager.js";
 import { beamTicker } from "./beamTicker.js";
-import { StyleRegistry } from "./StyleRegistry.js";
 import { loadBuiltIn, loadCustomStyles } from "./StyleManager.js";
 import { cMATT, isactiveModule } from './utils.js';
-import {isEffectActive} from "./beams-util.js";
-
-const updateCache = new Map();
-
+import { isEffectActive } from "./beams-util.js";
+import { registerBeamSettings } from './beams-settings.js';
+import { beamWallConfig, beamTokenConfig } from './beams-document-config.js';
+import { beamWallUpdate, beamTokenUpdate, beamRefreshToken, beamsCanvasReady } from './beams-document-manage.js';
 
 Hooks.once("init", async () => {
   if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
-  // Setting: debug flag
-  game.settings.register("foundry-beams", "maxBounces", {
-    name: "Maximum bounces",
-    scope: "world",
-    config: true,
-    type: Number,
-    default: 3,
-    range: { min: 0, max: 10, step: 1 },
-    requiresReload: true,
-    hint: "Maximum number of bounces a beam can make before it stops.",
-    onChange: val => console.log(`[foundry-beams] maxBounces ${val}`)
-  });
+  registerBeamSettings();
 
-  game.settings.register("foundry-beams", "debug", {
-    name: "Enable debug logging",
-    scope: "world",
-    config: true,
-    type: Boolean,
-    requiresReload: true,
-    default: false,
-    onChange: val => console.log(`[foundry-beams] debug ${val ? "ON" : "OFF"}`)
-  });
-
-  game.settings.register("foundry-beams", "useProviderStyles", {
-    name: "Load styles from Styles Hub module",
-    hint: "If the 'foundry-beams-styles' module is active, import and register all of its styles.",
-    scope: "world",
-    config: true,
-    type: Boolean,
-    default: true
-  });
 
   game.modules.get(MOD_NAME).api = BeamAPI;
   await loadBuiltIn();      // laser & lightning
@@ -67,136 +37,28 @@ Hooks.once("ready", async () => {
 });
 
 Hooks.on("renderWallConfig", (app, html, data) => {
-  const mirrorData = foundry.utils.getProperty(app.document, "flags.foundry-beams.mirror") ?? {};
-  console.log(mirrorData)
-  if (isDebugActive) console.log(app);
-  //let footer = app.form.querySelector("footer");
-  const tabContent = `
-    <fieldset class="beam-group" data-tab="beam">
-      <div class="form-group">
-        <label>Is mirror</label>
-        <input type="checkbox" name="flags.foundry-beams.mirror.isMirror" ${mirrorData.isMirror ? "checked" : ""}/>
-      </div>
-      <div class="form-group">
-        <label>Is reactive</label>
-        <input type="checkbox" name="flags.foundry-beams.mirror.isReactive" ${mirrorData.isReactive ? "checked" : ""}/>
-      </div>
-      <div class="form-group">
-        <label>Macro for reactive</label>
-        <input type="string" name="flags.foundry-beams.mirror.macro" value="${mirrorData.macro ?? ""}" />
-      </div>
-    </fieldset>
-  `;
-
-  app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
-  app.setPosition({ height: "auto" });
+  beamWallConfig(app, html, data)
 });
 
-// this function could go to the proper file
-async function regionConfig(token) {
-  console.log("regionConfig");
-  const regionName = `Beam-${token.name}-Region`;
-  let region = game.scenes.viewed.regions.getName(regionName)
-  if (!region) {
-    const regionData = {
-      shapes: [],
-      name: `Beam-${token.name}-Region`,
-      visibility: 2,
-      x: 0,
-      y: 0
-    };
-    console.log(regionData)
-    region = (await canvas.scene.createEmbeddedDocuments("Region", [regionData]))[0];
-  }
-  let renderedConfig = await (new foundry.applications.sheets.RegionConfig({ document: region }).render({ force: true }));
-  renderedConfig.element.querySelector('section.tab.region-behaviors').classList += ' active';
-}
 
-Hooks.on("renderTokenConfig", (app, html, data) => {
-  const beamData = foundry.utils.getProperty(app.token, "flags.foundry-beams.beam") ?? {};
-
-  console.log(app)
-  console.log(html)
-  console.log(beamData)
-  if (isDebugActive) console.log(`[foundry-beams] Rendering TokenConfig UI for token: ${app.token.name}`);
-  const current = beamData.style ?? "laser";
-
-  // Add Beam tab button to token config tabs
-  app.form.querySelector('.sheet-tabs').insertAdjacentHTML('beforeend', `<a class="item" data-action="tab" data-group="sheet"  data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
-  const options = StyleRegistry.ids().map(id => `<option value="${id}" ${current === id ? 'selected' : ''}>${id}</option>`).join("");
-
-  // Append custom beam config form elements into the config form
-  const dataGroup = game.release.generation < 13 ? "main" : "sheet";
-  const tabContent = `
-    <div class="tab scrollable" data-group="${dataGroup}" data-tab="beam" data-application-part="beam">
-      <div class="form-group">
-        <label>Enable Beam</label>
-        <input type="checkbox" name="flags.foundry-beams.beam.enabled" ${beamData.enabled ? "checked" : ""}/>
-      </div>
-      <div class="form-group">
-        <label>is active</label>
-        <input type="checkbox" name="flags.foundry-beams.beam.active" ${beamData.active ? "checked" : ""}/>
-      </div>
-      <div class="form-group">
-        <label>Beam Width (px)</label>
-        <input type="number" name="flags.foundry-beams.beam.width" value="${beamData.width ?? 30}" min="1"/>
-      </div>
-      <div class="form-group">
-        <label>Beam Offset (px)</label>
-        <input type="number" name="flags.foundry-beams.beam.offset" value="${beamData.offset ?? 30}" min="1"/>
-      </div>
-      <div class="form-group">
-        <label>Beam Color</label>
-        <input type="color" name="flags.foundry-beams.beam.colorHex" value="${beamData.colorHex ?? "#ffe699"}"/>
-      </div>
-      <div class="form-group">
-      <label>Beam Style</label>
-      <select name="flags.foundry-beams.beam.style">${options}</select>
-    </div>
-      <div class="form-group">
-        <label>Activate region on beam?</label>
-        <input type="checkbox" name="flags.foundry-beams.beam.hasRegion" ${beamData.hasRegion ? "checked" : ""}/>
-      </div>
-      <div class="form-group">
-        <button id="regionConfigButton" >Configure Region</button>
-      </div>
-    </div>
-  `;
-
-  app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
-  app.form.querySelector('#regionConfigButton')?.addEventListener('click', () => { regionConfig(app.token) });
+Hooks.on("renderTokenConfig", (app, html, data, opts) => {
+  beamTokenConfig(app, html, data, opts)
 });
 
-Hooks.on("deleteWall",  (wallDoc) => {
+Hooks.on("deleteWall", (wallDoc) => {
   if (!canvas.scene) return;
 
   // Update all beam-enabled tokens
   for (const token of canvas.tokens.placeables.filter(t =>
     t.document.getFlag(MOD_NAME, "beam")?.enabled
   )) {
-     updateBeam(token);
+    updateBeam(token);
   }
 });
 
 
-Hooks.on("updateWall",  (wallDoc, updateData) => {
-  if (!canvas.scene) return;
-  console.log("updateWall")
-  console.log(wallDoc)
-  console.log(updateData)
-  // Only respond to walls that have moved
-  if (!("c" in updateData) && !("ds" in updateData)) return;
-  // Filter and update only beam-enabled tokens
-  const beamTokens = canvas.tokens.placeables.filter(t => {
-    //    console.log(t)
-    return t.document.getFlag(MOD_NAME, "beam")?.enabled
-  }
-  );
-
-  for (const token of beamTokens) {
-    console.log(token)
-     updateBeam(token, {}, true); // Recompute the beam for each emitter
-  }
+Hooks.on("updateWall", (wallDoc, updateData, options, userid) => {
+  beamWallUpdate(wallDoc, updateData, options, userid)
 });
 
 Hooks.on("preMoveToken", (token, movement, _options) => {
@@ -204,104 +66,17 @@ Hooks.on("preMoveToken", (token, movement, _options) => {
 })
 
 // Watch for token updates and react based on beam flags or movement
-Hooks.on("updateToken",  (tokenDoc, updateData) => {
-  const token = tokenDoc;
-  if (!token) return;
-
-  const beamConfig = token.getFlag(MOD_NAME, "beam");
-  const isEnabled = beamConfig?.enabled === true;
-  const isActive = beamConfig?.active === true;
-  const beamExists = beams.has(token.id);
-
-  if (isDebugActive) console.log(tokenDoc);
-  if (isDebugActive) console.log(updateData);
-  if (isDebugActive) console.log(`[foundry-beams] Token updated: ${token.name}`);
-  if (isDebugActive) console.log(`[foundry-beams] Beam flag enabled: ${isEnabled}, Beam already exists: ${beamExists}`);
-
-  // Handle enabling the beam
-  if (isEnabled && !beamExists) {
-    if (isDebugActive) console.log(`[foundry-beams] Scheduling beam creation for ${token.name}`);
-    Hooks.once("refreshToken", (refreshed) => {
-      if (refreshed.id === token.id) {
-        if (isDebugActive) console.log(`[foundry-beams] Creating beam after refresh for ${token.name}`);
-        toggleBeam(token, true);
-      }
-    });
-  }
-
-  // Handle disabling the beam
-  if (!isEnabled && beamExists) {
-    if (isDebugActive) console.log(`[foundry-beams] Scheduling beam destruction for ${token.name}`);
-    Hooks.once("refreshToken", (refreshed) => {
-      if (refreshed.id === token.id) {
-        if (isDebugActive) console.log(`[foundry-beams] Destroying beam after refresh for ${token.name}`);
-        toggleBeam(token, false);
-      }
-    });
-  }
-
-  // If the token has moved or rotated, cache the update and let refreshToken do the job
-  const moved = "x" in updateData || "y" in updateData || "rotation" in updateData;
-  if (isEnabled && moved) {
-    if (isDebugActive) console.log(`[foundry-beams] Scheduling beam update due to token motion: ${token.name}`);
-    updateCache.set(token.id, updateData);
-  }
-
-  const changedStyle = updateData?.flags?.["foundry-beams"]?.beam?.style !== undefined;
-  const changedColor = updateData?.flags?.["foundry-beams"]?.beam?.colorHex !== undefined;
-  const changedWidth = updateData?.flags?.["foundry-beams"]?.beam?.width !== undefined;
-  const changedOffset = updateData?.flags?.["foundry-beams"]?.beam?.offset !== undefined;
-  const changedActive = updateData?.flags?.["foundry-beams"]?.beam?.active !== undefined;
-  console.log(updateData?.flags?.["foundry-beams"]?.beam?.style)
-  console.log(updateData?.flags?.["foundry-beams"]?.beam?.colorHex)
-  console.log("Changed:", (changedStyle || changedColor))
-  if (isEnabled && (changedStyle || changedColor || changedWidth || changedOffset || changedActive)) {
-    if (isDebugActive) console.log(`[foundry-beams] Scheduling beam update due to token attribute change: ${token.name}`);
-    //updateCache.set(token.id, updateData);
-     updateBeam(token.object, updateData);
-  }
+Hooks.on("updateToken", (tokenDoc, updateData, options, userid) => {
+  beamTokenUpdate(tokenDoc, updateData, options, userid)
 });
 
-Hooks.on("refreshToken",  (refreshedToken) => {
-  const tokenId = refreshedToken.id;
-  console.log("refreshToken")
-  console.log(refreshedToken)
-  if (!updateCache.has(tokenId)) return;
-
-  const cachedUpdate = updateCache.get(tokenId);
-  updateCache.delete(tokenId); // Consume only once per move
-  console.log(`[foundry-beams] Refreshing token ${refreshedToken.name} with cached update:`, cachedUpdate);
-
-  if (isDebugActive) {
-    console.log(`[foundry-beams] RefreshToken match for ${refreshedToken.name}, applying cached update.`);
-    console.log(cachedUpdate);
-  }
-
-   updateBeam(refreshedToken, cachedUpdate);
+Hooks.on("refreshToken", (refreshedToken) => {
+  beamRefreshToken(refreshedToken);
 });
 
 // Restore beams on scene load if tokens already have them enabled
 Hooks.on("canvasReady", (canvas) => {
-  if (isDebugActive) console.log("[foundry-beams] Canvas ready. Checking tokens for beam restoration...");
-  if (isDebugActive) console.log(beams);
-  beamTicker.start();
-  // All sensors in scene
-  let all_beams = canvas.tokens.placeables.filter((tok) => {
-    return tok.document.getFlag(MOD_NAME, "beam");
-  });
-
-  console.log("canvasready")
-  console.log(all_beams)
-
-  for (const token of all_beams) {
-    const beamConfig = token.document.getFlag(MOD_NAME, "beam");
-    if (isDebugActive) console.log(beamConfig);
-    if (beamConfig?.enabled) {
-      if (isDebugActive) console.log(`[foundry-beams] Restoring beam for ${token.name}`);
-      console.log(token)
-      toggleBeam(token.document, true);
-    }
-  }
+  beamsCanvasReady();
 });
 
 
@@ -535,12 +310,12 @@ Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
     btn.id = `${MOD_NAME}-hud-btn`;
     btn.title = "Toggle Sequencer Effect";
 
-    // Font Awesome icon (uses Foundryís FA set)
+    // Font Awesome icon (uses Foundry‚Äôs FA set)
     const i = document.createElement("i");
     i.classList.add("fa-solid", "fa-bolt");
     btn.appendChild(i);
 
-    // Visual ìactiveî state if effect is on
+    // Visual ‚Äúactive‚Äù state if effect is on
     const token = app?.object ?? canvas.tokens?.get(data._id) ?? canvas.tokens?.controlled?.[0];
     if (token && isEffectActive(token)) btn.classList.add("active");
 

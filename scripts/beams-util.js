@@ -77,155 +77,7 @@ function orientation(a, b, c) {
 
 
 
-/** Ensure a global registry for active bolts */
-if (!globalThis.__lightningBolts) globalThis.__lightningBolts = new Map();
 
-/**
- * Convert assorted point inputs to {x, y}.
- */
-function toPoint(p) {
-  if (!p) throw new Error('Invalid point');
-  if (typeof p.x === 'number' && typeof p.y === 'number') return { x: p.x, y: p.y };
-  if (p.center) return { x: p.center.x, y: p.center.y };
-  if (Array.isArray(p) && p.length >= 2) return { x: p[0], y: p[1] };
-  throw new Error('Unsupported point type supplied to createLightning');
-}
-
-/**
- * @typedef {object} LightningOptions
- * @prop {*}        start              – Token, {x,y}, PIXI.Point, or [x,y]
- * @prop {*}        end                – Same types as start
- * @prop {number} [color=0xffffff]     – Hex color
- * @prop {number} [thickness=2]
- * @prop {number} [segments=20]
- * @prop {number} [amplitude=20]
- * @prop {number} [flicker=3]
- * @prop {number} [flashDuration=0.08]
- * @prop {boolean}[persist=false]      – Skip auto‑cleanup
- * @prop {boolean}[animate=true]       – Whether to animate flashes at all
- * @prop {boolean}[loop=false]         – Repeat flashes forever (needs animate=true)
- * @prop {string} [id]                 – Supply custom identifier
- * @prop {PIXI.Container}[layer=canvas.effects]
- */
-
-/**
- * Create a lightning bolt on Foundry's canvas.
- * Returns a handle:
- *   {
- *     id: string,
- *     graphics: PIXI.Graphics,
- *     destroy(): void
- *   }
- */
-export function createLightning(opts) {
-  if (!gsap) throw new Error('GSAP library not found – include gsap.min.js before calling createLightning');
-
-  const {
-    start,
-    end,
-    color = 0xffffff,
-    thickness = 2,
-    segments = 20,
-    amplitude = 20,
-    flicker = 3,
-    flashDuration = 0.08,
-    persist = false,
-    animate = true,
-    loop = false,
-    id = foundry.utils.randomID(),
-    layer = canvas.effects,
-  } = opts;
-
-  if (__lightningBolts.has(id)) {
-    console.warn(`Lightning with id "${id}" already exists – overwriting`);
-    const old = __lightningBolts.get(id);
-    old.destroy?.();
-  }
-
-  const p0 = toPoint(start);
-  const p1 = toPoint(end);
-
-  const g = new PIXI.Graphics();
-  g.blendMode = PIXI.BLEND_MODES.ADD;
-  layer.addChild(g);
-
-  function drawBolt() {
-    g.clear();
-    g.lineStyle(thickness, color, 1, 0.5, true);
-
-    let prevX = p0.x;
-    let prevY = p0.y;
-    const dx = p1.x - p0.x;
-    const dy = p1.y - p0.y;
-    const len = Math.hypot(dx, dy) || 1;
-    const perpX = -dy / len;
-    const perpY = dx / len;
-
-    for (let i = 1; i <= segments; i++) {
-      const t = i / segments;
-      let x = p0.x + dx * t;
-      let y = p0.y + dy * t;
-      const taper = 1 - Math.abs(0.5 - t) * 2;
-      const offset = (Math.random() * 2 - 1) * amplitude * taper;
-      x += perpX * offset;
-      y += perpY * offset;
-      g.moveTo(prevX, prevY);
-      g.lineTo(x, y);
-      prevX = x;
-      prevY = y;
-    }
-  }
-
-  function buildTimeline() {
-    const tl = gsap.timeline({
-      repeat: loop ? -1 : 0,
-      onComplete: () => {
-        if (persist || loop) return; // keep alive if desired
-        destroy();
-      },
-    });
-
-    const cycles = loop ? 1 : flicker;
-    for (let i = 0; i < cycles; i++) {
-      tl.call(drawBolt)
-        .set(g, { alpha: 1 })
-        .to(g, { alpha: 0, duration: flashDuration })
-        .set(g, { alpha: 0 });
-    }
-    return tl;
-  }
-
-  function destroy() {
-    gsap.killTweensOf(g);
-    if (g.parent) g.parent.removeChild(g);
-    g.destroy();
-    __lightningBolts.delete(id);
-  }
-
-  if (animate) {
-    g.alpha = 0;
-    buildTimeline();
-  } else {
-    drawBolt();
-    g.alpha = 1;
-  }
-
-  const handle = { id, graphics: g, destroy };
-  __lightningBolts.set(id, handle);
-  return handle;
-}
-
-/**
- * Delete a bolt previously created with createLightning.
- * @param {string} id – The identifier returned by createLightning.
- * @returns {boolean} True if a bolt was found and destroyed.
- */
-export function deleteLightning(id) {
-  const bolt = __lightningBolts.get(id);
-  if (!bolt) return false;
-  bolt.destroy();
-  return true;
-}
 
 // Simple version helpers
 function isV13Plus() {
@@ -306,13 +158,13 @@ console.log(`[${MOD_NAME}] Effect base name: ${base}`);
       .atLocation(startPt)     // start
       .stretchTo(endPt, { onlyX: true})        // end (Sequencer will rotate/scale to fit)
       .tint(color)
-      .scale(0.1)
+      .scale({x:1.0,y:0.2})
       .filter("Glow", {
-    distance: 5,      // Number, distance of the glow in pixels
-    outerStrength: 4,  // Number, strength of the glow outward from the edge of the sprite
+    distance: 15,      // Number, distance of the glow in pixels
+    outerStrength: 3,  // Number, strength of the glow outward from the edge of the sprite
     innerStrength: 0,  // Number, strength of the glow inward from the edge of the sprite
     color: color,   // Hexadecimal, color of the glow
-    quality: 0.1,      // Number, describes the quality of the glow (0 to 1) - the higher the number the less performant
+    quality: 0.07,      // Number, describes the quality of the glow (0 to 1) - the higher the number the less performant
     knockout: false    // Boolean, toggle to hide the contents and only show glow (effectively hides the sprite)
 })
       .persist()

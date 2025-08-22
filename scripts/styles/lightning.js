@@ -81,4 +81,57 @@ export const lightningStyle = {
     },
 
     destroy(seg) { seg.tick = undefined; },
+
+        deleteAllSegments(token, beamInst) {
+        // in this case nothing to do
+    },
+    
+    processSegments(segments, cfg, beamInst, token) {
+        let retContainers = [];
+        console.log("Style LASER - PROCESS SEGMENTS")
+        for (let i = 0; i < segments.length; i++) {
+            const segData = segments[i];
+            const segId = String(i);
+
+            // Re‑use or create BeamSegment shell
+            const seg = this.ensureSegment(beamInst, segId);
+            console.log("Segment:", seg)
+            console.log("Segment:", segData)
+            //const seg = {}
+
+            // --- Update geometry data (point calc unchanged) -----------------------
+            seg.start = segData.start;
+            /*
+            seg.end = segData.end ?? {
+                x: segData.start.x + (segData.dx ?? 0),
+                y: segData.start.y + (segData.dy ?? 0)
+            };
+            */
+            seg.end = segData.end;
+            seg.normal = segData.normal;
+            seg.length = segData.length;
+            const len = seg.length;  // <- add this
+            console.log("Segment after:", seg)
+            // --- Update visuals (rotation / length) --------------------------------
+            if (!seg.container) {
+                seg.container = this.create(seg, cfg);
+                canvas.effects.addChild(seg.container);
+
+                // keep shader‑ticker compatible
+                retContainers.push({ container: seg.container, filter: seg.container.filter });
+            } else {
+                this.update(seg, cfg, len);
+            }
+        }
+        return retContainers;
+    },
+
+    ensureSegment(beamInst, id) {
+        let seg = beamInst.segments.get(id);
+        if (!seg) {
+            seg = { id, start: { x: 0, y: 0 }, end: { x: 0, y: 0 }, normal: [0, 0], length: 0 };
+            beamInst.segments.set(id, seg);
+        }
+        return seg;
+    }
 };
