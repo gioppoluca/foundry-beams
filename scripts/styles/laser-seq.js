@@ -7,65 +7,13 @@ export const laserSeqStyle = {
     id: "laserSeq",
 
     create(seg, cfg, token) {
-        /*
-        const cont = new PIXI.Container();
-        cont.blendMode = PIXI.BLEND_MODES.ADD;
-        cont.zIndex = 9_000;
-
-        const beam = new PIXI.Sprite(PIXI.Texture.WHITE);
-        beam.anchor.set(0, 0.5);
-        beam.height = cfg.width ?? 30;
-        beam.tint = PIXI.utils.string2hex(cfg.colorHex ?? "#ffe699");
-
-        let blur = blurCache.get(cfg.cacheKey ?? seg.id);
-        if (!blur) {
-            blur = new PIXI.filters.BlurFilter();
-            blur.blur = 4;
-            blurCache.set(cfg.cacheKey ?? seg.id, blur);
-        }
-        beam.filters = [blur];
-
-        cont.addChild(beam);
-        seg.container = cont;
-        this.update(seg, cfg, seg.length); // set pos/rot/len
-        return cont;
-        */
     },
 
     update(seg, cfg, len, token) {
-        /*
-        startEffect(token, segments, PIXI.utils.string2hex(cfg.colorHex ?? "#ffe699"));
-        const cont = seg.container;
-        const beam = cont.children[0];                     // ← sprite
-        const newTint = PIXI.utils.string2hex(cfg.colorHex ?? "#ffe699");
-        if (beam.tint !== newTint) beam.tint = newTint;
-        const dx = seg.end.x - seg.start.x;
-        const dy = seg.end.y - seg.start.y;
-        cont.position.set(seg.start.x, seg.start.y);
-        cont.rotation = Math.atan2(dy, dx);
-        cont.children[0].width = len;
-
-        // Debug markers
-        if (cfg.debug) {
-            if (!seg.debugStart) {
-                seg.debugStart = new PIXI.Graphics().beginFill(0x00ff00).drawCircle(0, 0, 3);
-                seg.debugEnd = new PIXI.Graphics().beginFill(0xff0000).drawCircle(0, 0, 3);
-                cont.addChild(seg.debugStart, seg.debugEnd);
-            }
-            seg.debugEnd.position.set(len, 0);
-        } else if (seg.debugStart) {
-            seg.debugStart.destroy();
-            seg.debugEnd.destroy();
-            seg.debugStart = seg.debugEnd = undefined;
-        }
-            */
     },
 
     async deleteAllSegments(token, beamInst) {
-//        if (game.user.isGM) {
-            console.log("I'm the GM and I can delete effects");
-            await this.stopEffect(token);
-  //      }
+        await this.stopEffect(token);
     },
     async processSegments(segments, cfg, beamInst, token) {
         console.log("Processing segments for laserSeq style", segments, cfg, beamInst, token);
@@ -75,7 +23,7 @@ export const laserSeqStyle = {
         if (game.user.isGM) {
             console.log("I'm the GM and I can generate effects");
             await this.stopEffect(token);
-            await this.startEffect(token, segments, PIXI.utils.string2hex(cfg.colorHex ?? "#ffe699"));
+            await this.startEffect(token, segments, PIXI.utils.string2hex(cfg.colorHex ?? "#ffe699"), cfg.width);
         }
         return retContainers;
     },
@@ -116,12 +64,13 @@ export const laserSeqStyle = {
      * @param {Token|TokenDocument|PlaceableObject} token
      * @param {Array<{start:{x:number,y:number}, end:{x:number,y:number}}>} [segments]
      */
-    async startEffect(token, segments = [], color = 0xffffff) {
+    async startEffect(token, segments = [], color = 0xffffff, width = 10) {
         console.log(`[${MOD_NAME}] Starting effect for token`, token, segments);
         this.assertSequencer();
 
         const FILE = "modules/foundry-beams/beam.webm"; // <- your asset
         const base = this.effectNameForToken(token);
+        const scaleY = (width * 0.01); // base asset is 100px high
         console.log(`[${MOD_NAME}] Effect base name: ${base}`);
         // No segments? default to a single attached effect.
 
@@ -143,7 +92,7 @@ export const laserSeqStyle = {
                 .atLocation(startPt)     // start
                 .stretchTo(endPt, { onlyX: true })        // end (Sequencer will rotate/scale to fit)
                 .tint(color)
-                .scale({ x: 1.0, y: 0.2 })
+                .scale({ x: 1.0, y: scaleY })
                 .filter("Glow", {
                     distance: 15,      // Number, distance of the glow in pixels
                     outerStrength: 3,  // Number, strength of the glow outward from the edge of the sprite
