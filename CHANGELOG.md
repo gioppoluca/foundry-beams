@@ -1,4 +1,9 @@
 
+## [1.4.1] - 2025-08-22
+### :bug: Bug Fixes
+- [`356fc46`](https://github.com/gioppoluca/foundry-beams/commit/356fc4667f80ffff15d4dff0ef5c4d57e8d87bb6) - width not updating on laserSeq *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.4.0] - 2025-08-22
 ### :sparkles: New Features
 - [`7293354`](https://github.com/gioppoluca/foundry-beams/commit/729335494046b4bd634e9d89656568e0e401f17f) - first implementation that uses Sequencer plus fix V13 for disable autorotate *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -142,3 +147,4 @@
 [1.3.5]: https://github.com/gioppoluca/foundry-beams/compare/1.3.4...1.3.5
 [1.3.6]: https://github.com/gioppoluca/foundry-beams/compare/1.3.5...1.3.6
 [1.4.0]: https://github.com/gioppoluca/foundry-beams/compare/1.3.6...1.4.0
+[1.4.1]: https://github.com/gioppoluca/foundry-beams/compare/1.4.0...1.4.1
