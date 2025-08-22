@@ -18,12 +18,13 @@ As shown in the image a beam is emitted from the statue it bounces on 2 walls an
 - 🔁 Reflect off flagged mirror walls and pass through windows or open doors; wall/mirror can move and beam react accordingly
 - 📐 Generates Foundry v12 Region polygons matching the beam's path
 - 🔌 Provides API methods for other modules to control beam behavior
+- Integrated with Monk's Active Tiles
 
 ## 📦 Installation
 
 Install it as a Foundry VTT module from within the module section.
 
-> Requires **Foundry VTT v12+**
+> Requires **Foundry VTT v12+** and **Sequencer** module
 
 ## 🚀 Usage
 
@@ -39,6 +40,10 @@ Install it as a Foundry VTT module from within the module section.
    - Style: the style of the beam: actually available laser and lightning
    - If you want to activate a region on the beam
    - Configure the associate region: mind that the region will take a name associated with the token thus if you later change the token name the region at the moment is left orphaned of the beam.
+
+#### Beam Types
+**LEGACY**: _laser_ and _lightning_ are from the first implementation of the module and have the problem that they do not respect roofs
+**CURRENT**: _laserSeq_ uses Sequencer to generate the beam. Is the new implementation that respect the roofs and also allows for nicer looking beams.  more will come as also some fine tuning.
 
 #### WARNINGS
 Token MUST face east since the rotation of the token is used to move the beam and the rotation of 0 is the horizontal line/axes emitting on the right: thus the token part that emit the beam has to be rotated accordingly.
