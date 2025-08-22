@@ -1,4 +1,15 @@
 
+## [1.4.0] - 2025-08-22
+### :sparkles: New Features
+- [`7293354`](https://github.com/gioppoluca/foundry-beams/commit/729335494046b4bd634e9d89656568e0e401f17f) - first implementation that uses Sequencer plus fix V13 for disable autorotate *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`ad9249a`](https://github.com/gioppoluca/foundry-beams/commit/ad9249aedc94c2e87d8abc8230063184e0baf38c) - new Sequencer implementation *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`24a6351`](https://github.com/gioppoluca/foundry-beams/commit/24a635164a439a1455db19f003ef1379c3ebfb49) - closes [#21](https://github.com/gioppoluca/foundry-beams/pull/21) *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`c119f86`](https://github.com/gioppoluca/foundry-beams/commit/c119f8673e9b66b923f298b8abb7b977e321b3e6) - missing file *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`2921d41`](https://github.com/gioppoluca/foundry-beams/commit/2921d41c477feaa37f08d713b90969550b83c92f) - new release preparation adding sequencer relationship *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.3.6] - 2025-08-02
 ### :sparkles: New Features
 - [`dd30adf`](https://github.com/gioppoluca/foundry-beams/commit/dd30adfc9fbaf16ed415f56216944754a8276e5b) - added API for active and disactive *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -130,3 +141,4 @@
 [1.3.4]: https://github.com/gioppoluca/foundry-beams/compare/1.3.3...1.3.4
 [1.3.5]: https://github.com/gioppoluca/foundry-beams/compare/1.3.4...1.3.5
 [1.3.6]: https://github.com/gioppoluca/foundry-beams/compare/1.3.5...1.3.6
+[1.4.0]: https://github.com/gioppoluca/foundry-beams/compare/1.3.6...1.4.0
