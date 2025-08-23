@@ -135,6 +135,7 @@ jobs:
             scripts/                             \
             styles/                              \
             packs/                               \
+            assets/                              \
             languages/                           \
             images/                            \
             lang/
