@@ -3,8 +3,8 @@
 const blurCache = new Map(); // cfg.cacheKey -> BlurFilter
 const MOD_NAME = "foundry-beams";
 
-export const laserSeqStyle = {
-    id: "laserSeq",
+export const hexfieldStyle = {
+    id: "hexfield",
 
     create(seg, cfg, token) {
     },
@@ -68,7 +68,7 @@ export const laserSeqStyle = {
         console.log(`[${MOD_NAME}] Starting effect for token`, token, segments);
         this.assertSequencer();
 
-        const FILE = "modules/foundry-beams/assets/beam.webm"; // <- your asset
+        const FILE = "modules/foundry-beams/assets/hexfield.webm"; // <- your asset
         const base = this.effectNameForToken(token);
         const scaleY = (width * 0.01); // base asset is 100px high
         console.log(`[${MOD_NAME}] Effect base name: ${base}`);
