@@ -1,4 +1,12 @@
 
+## [1.4.3] - 2025-08-24
+### :sparkles: New Features
+- [`dae5f9f`](https://github.com/gioppoluca/foundry-beams/commit/dae5f9fa67a0d990cd5bd672a00ed5b946cabdd5) - new lightning field style *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`f92e978`](https://github.com/gioppoluca/foundry-beams/commit/f92e9786207688f876c9eb72db584dce0c515b29) - closes [#22](https://github.com/gioppoluca/foundry-beams/pull/22) and improve token config form a bit *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.4.2] - 2025-08-23
 ### :sparkles: New Features
 - [`b61e8a5`](https://github.com/gioppoluca/foundry-beams/commit/b61e8a5544ec665ee6fe8428e24ca169c0183a1f) - new hexfield style *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -154,3 +162,4 @@
 [1.4.0]: https://github.com/gioppoluca/foundry-beams/compare/1.3.6...1.4.0
 [1.4.1]: https://github.com/gioppoluca/foundry-beams/compare/1.4.0...1.4.1
 [1.4.2]: https://github.com/gioppoluca/foundry-beams/compare/1.4.1...1.4.2
+[1.4.3]: https://github.com/gioppoluca/foundry-beams/compare/1.4.2...1.4.3
