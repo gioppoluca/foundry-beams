@@ -18,7 +18,7 @@ As shown in the image a beam is emitted from the statue it bounces on 2 walls an
 - 🔁 Reflect off flagged mirror walls and pass through windows or open doors; wall/mirror can move and beam react accordingly
 - 📐 Generates Foundry v12 Region polygons matching the beam's path
 - 🔌 Provides API methods for other modules to control beam behavior
-- Integrated with Monk's Active Tiles
+- Integrated with Monk's Active Tiles with both actions dedicated and the capability to trigger tiles
 
 ## 📦 Installation
 
@@ -54,9 +54,13 @@ You cannot use the rotation of the token to try to align it with the beam.
 1. Edit any wall and find the section where to opt for making the wall
 ![wall config](doc/wallMacroTrigger.png)
    1. a mirror (all sides become a mirror) 
-   2. reactive to beam (will execute the macro names in the input field)
-   3. the macro name to execute each time the beam hit the wall
+   2. reactive to beam both on enter or exit: will execute the macro names, macro UUID or trigger MATT tiles (UUID) in the input field
+   3. the macro name to execute each time the beam enter or exit the wall, not if it moves along it
 
+#### MATT triggering from wall
+The selected tile (at the moment UUID) will trigger a MATT action to a specific landing that HAS to exist. The landing name convention is: 
+- Beam-<token.name>-enter : for the enter landing
+- Beam-<token.name>-exit : for the exit landing
 
 ### Automatically Generated Regions (v12)
 
