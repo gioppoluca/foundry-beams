@@ -89,6 +89,7 @@ export const hexfieldStyle = {
             seq.effect()
                 .name(name)
                 .file(FILE)
+                .volume(0.0)
                 .atLocation(startPt)     // start
                 .stretchTo(endPt, { onlyX: true })        // end (Sequencer will rotate/scale to fit)
                 .tint(color)

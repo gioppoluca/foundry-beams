@@ -75,9 +75,18 @@ Hooks.on("refreshToken", (refreshedToken) => {
 });
 
 // Restore beams on scene load if tokens already have them enabled
-Hooks.on("canvasReady", (canvas) => {
+//Hooks.on("canvasReady", (canvas) => {
+//beamsCanvasReady();
+//});
+
+Hooks.on("sequencerEffectManagerReady", () => {
+  if (isDebugActive) console.log("[foundry-beams] Sequencer Effect Manager is ready.");
+  //beamTicker.start();
   beamsCanvasReady();
-});
+
+})
+
+
 
 
 // MATT integration
@@ -92,7 +101,7 @@ Hooks.on("setupTileActions", (app) => {
       ctrls: [
         {
           id: "entity",
-          name:  game.i18n.localize("foundry-beams.MATT.Actions.RotateBeamOf.Controls.Entity.Name"),
+          name: game.i18n.localize("foundry-beams.MATT.Actions.RotateBeamOf.Controls.Entity.Name"),
           type: "select",
           subtype: "entity",
           options: { show: ['tagger'] },
@@ -279,62 +288,59 @@ Hooks.on("setupTileActions", (app) => {
 });
 
 Hooks.once("shutdown", () => {
+  Sequencer.EffectManager.endEffects({ name: `${MOD_NAME}*` });
   beamTicker.stop();
+});
+Hooks.once("canvasTearDown", () => {
+  Sequencer.EffectManager.endEffects({ name: `${MOD_NAME}*` });
 });
 
 // Add our HUD button (v12 & v13 Token HUD)
 Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
-  console.log("!!!!!!!!!!!!!!! renderTokenHUD")
   try {
-    // If Sequencer missing, do nothing (avoids spamming errors)
-    if (!game.modules.get("sequencer")?.active) {
-      console.log(`[${MOD_NAME}] Sequencer module is not active, skipping HUD button.`);
-      return;
-    }
-    console.log(app)
-    console.log(html)
-    // Avoid duplicates if HUD re-renders
-    if (app.form.querySelector(`#${MOD_NAME}-hud-btn`)?.length) {
-      console.log(`[${MOD_NAME}] HUD button already exists, skipping.`);
-      return;
-    }
+    // Require Sequencer
+    if (!game.modules.get("sequencer")?.active) return;
 
-    // Find a column to insert the button (right column is common in v12/v13)
-    const rightCol = app.form.querySelector?.(".col.right")?.first?.() || app.form.querySelector?.(".col.right");
-    console.log(rightCol)
+    const token = app?.object ?? canvas.tokens?.get?.(data._id) ?? canvas.tokens?.controlled?.[0];
+    if (!token) return;
+
+    // Only show for tokens that have beam flags
+    const beamFlags = token.document.getFlag(MOD_NAME, "beam");
+    if (!beamFlags?.enabled) return;
+
+    // Find right column and prevent duplicates
+    const rightCol = app.form?.querySelector?.(".col.right");
     if (!rightCol) return;
+    if (rightCol.querySelector(`#${MOD_NAME}-hud-btn`)) return;
 
-    // Create button
+    // Build button
     const btn = document.createElement("div");
     btn.classList.add("control-icon");
     btn.id = `${MOD_NAME}-hud-btn`;
     btn.title = game.i18n.localize("foundry-beams.HUD.ToggleSequencerEffect");
 
-    // Font Awesome icon (uses Foundry’s FA set)
     const i = document.createElement("i");
     i.classList.add("fa-solid", "fa-bolt");
     btn.appendChild(i);
 
-    // Visual “active” state if effect is on
-    const token = app?.object ?? canvas.tokens?.get(data._id) ?? canvas.tokens?.controlled?.[0];
-    if (token && isEffectActive(token)) btn.classList.add("active");
+    const setVisualState = () => {
+      const f = token.document.getFlag(MOD_NAME, "beam") || {};
+      btn.classList.toggle("active", !!f.active);
+      btn.classList.toggle("disabled", !f.enabled);
+      btn.style.opacity = f.enabled ? "" : "0.5";
+    };
+    setVisualState();
 
-    // Click handler
     btn.addEventListener("click", async (ev) => {
       ev.preventDefault();
-      const t = app?.object ?? canvas.tokens?.get(data._id) ?? canvas.tokens?.controlled?.[0];
+      const t = app?.object ?? canvas.tokens?.get?.(data._id) ?? canvas.tokens?.controlled?.[0];
       if (!t) return;
-
-      //      await toggleEffect(t);
-
-      // Re-check and reflect state
-      if (isEffectActive(t)) btn.classList.add("active");
-      else btn.classList.remove("active");
+      // Use the module API and the token UUID (fromUuid in the API)
+      await game.modules.get(MOD_NAME).api.toggleActivationBeamById(t.document.uuid);
+      setVisualState();
     });
 
-    // Insert into HUD
-    if (rightCol.append) rightCol.append(btn);
-    else if (rightCol.appendChild) rightCol.appendChild(btn);
+    rightCol.append(btn);
   } catch (err) {
     console.error(`[${MOD_NAME}] Failed to render HUD button`, err);
   }

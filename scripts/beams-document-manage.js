@@ -99,6 +99,8 @@ export function beamRefreshToken(refreshedToken) {
 
 export function beamsCanvasReady() {
     if (isDebugActive) console.log(`[${MOD_NAME}] Canvas is ready, restoring beams for tokens with beam enabled...`);
+    const effects = Sequencer.EffectManager.getEffects()
+    console.log(`[${MOD_NAME}] - All sequencer effects:`, effects);
     // All sensors in scene
     beamTicker.start();
     let all_beams = canvas.tokens.placeables.filter((tok) => {

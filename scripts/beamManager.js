@@ -1,7 +1,7 @@
 import { MOD_NAME, isDebugActive } from "./beams-const.js";
 import { reactiveMacro } from './beams-macro.js';
 import { createRegionFromSegments, deleteBeamRegions, disableRegion, enableRegion } from './beams-region.js';
-import { getTokensAlongSegment, startEffect, stopEffect } from "./beams-util.js";
+import { getTokensAlongSegment } from "./beams-util.js";
 import { BeamRegistry, BeamVisualStyle, ensureSegment } from "./beamData.js";
 import { StyleRegistry } from "./StyleRegistry.js";
 
@@ -192,7 +192,6 @@ export function updateBeam(token, override = null, forceUpdate = false) {
     // 1. build fresh geometry list (as before)
     const segments = calculateBeamSegments(token, existing.config, override);
     console.log("BEAMS - Segments:", segments)
-    //    startEffect(token, segments, curColor);
 
     // 3. update / create each segment
     //        beamInst.segments = segments
@@ -210,6 +209,7 @@ export function updateBeam(token, override = null, forceUpdate = false) {
     }
 
     // 5. (Re)build Region polygon if flag is set -----------------------------
+    // TODO check if this has meaning I should already have config info of beamInst
     const beamFlags = token.document.getFlag("foundry-beams", "beam") ?? {};
     if (beamFlags.hasRegion && game.users.activeGM?.isSelf) {
         // This helper lives in beams-region.js and still expects the raw

@@ -22,8 +22,10 @@ export const lightningfieldStyle = {
         console.log("[FOUNDRY_BEAMS] game.user:", game.user);
         if (game.user.isGM) {
             console.log("I'm the GM and I can generate effects");
-            await this.stopEffect(token);
-            await this.startEffect(token, segments, PIXI.utils.string2hex(cfg.colorHex ?? "#ffe699"), cfg.width);
+            let stopped = await this.stopEffect(token);
+            console.log(`[${MOD_NAME}]stopped`,stopped)
+            let started = await this.startEffect(token, segments, PIXI.utils.string2hex(cfg.colorHex ?? "#ffe699"), cfg.width);
+            console.log(`[${MOD_NAME}]started`,started)
         }
         return retContainers;
     },
@@ -89,6 +91,7 @@ export const lightningfieldStyle = {
             seq.effect()
                 .name(name)
                 .file(FILE)
+                .volume(0.0)
                 .atLocation(startPt)     // start
                 .stretchTo(endPt, { onlyX: true })        // end (Sequencer will rotate/scale to fit)
                 .tint(color)
@@ -107,7 +110,7 @@ export const lightningfieldStyle = {
         console.log(`[${MOD_NAME}] Playing sequence with ${segments.length} segments`);
 
         //await seq.play({ local: true, preload: true });
-        await seq.play({ local: false, preload: false });
+        return await seq.play({ local: false, preload: false });
     },
 
     /**
@@ -124,6 +127,6 @@ export const lightningfieldStyle = {
 
         const name = `${base}-*`;
         console.log(`[${MOD_NAME}] Ending effects with name: ${name}`);
-        return await Sequencer.EffectManager.endEffects({ name });
+        return await Sequencer.EffectManager.endEffects({ name: name });
     }
 };
