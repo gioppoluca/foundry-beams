@@ -1,19 +1,19 @@
 export function registerBeamSettings() {
     // Setting: debug flag
     game.settings.register("foundry-beams", "maxBounces", {
-        name: "Maximum bounces",
+        name: game.i18n.localize("foundry-beams.Settings.MaxBounces.Name"),
         scope: "world",
         config: true,
         type: Number,
         default: 3,
         range: { min: 0, max: 10, step: 1 },
         requiresReload: true,
-        hint: "Maximum number of bounces a beam can make before it stops.",
+        hint: game.i18n.localize("foundry-beams.Settings.MaxBounces.Hint"),
         onChange: val => console.log(`[foundry-beams] maxBounces ${val}`)
     });
 
     game.settings.register("foundry-beams", "debug", {
-        name: "Enable debug logging",
+        name: game.i18n.localize("foundry-beams.Settings.Debug.Name"),
         scope: "world",
         config: true,
         type: Boolean,
@@ -23,8 +23,8 @@ export function registerBeamSettings() {
     });
 
     game.settings.register("foundry-beams", "useProviderStyles", {
-        name: "Load styles from Styles Hub module",
-        hint: "If the 'foundry-beams-styles' module is active, import and register all of its styles.",
+        name: game.i18n.localize("foundry-beams.Settings.UseProviderStyles.Name"),
+        hint: game.i18n.localize("foundry-beams.Settings.UseProviderStyles.Hint"),
         scope: "world",
         config: true,
         type: Boolean,

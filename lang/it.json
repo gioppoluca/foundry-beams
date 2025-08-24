@@ -1,0 +1,59 @@
+{
+  "foundry-beams": {
+    "Beam": "Fascio",
+
+    "EnableBeam": "Abilita Fascio",
+    "Active": "Attivo",
+    "BeamWidthPx": "Larghezza Fascio (px)",
+    "BeamOffsetPx": "Scostamento Fascio (px)",
+    "BeamColor": "Colore Fascio",
+    "BeamStyle": "Stile Fascio",
+    "ActivateRegionOnBeam": "Attiva regione sul fascio?",
+    "ConfigureRegion": "Configura Regione",
+
+    "WallConfigLegend": "Fasci Attivi",
+    "IsMirror": "È specchio",
+    "IsReactive": "È reattivo",
+    "MacroForReactive": "Macro per reattivo",
+
+    "HUD": {
+      "ToggleSequencerEffect": "Attiva/Disattiva Effetto Sequencer"
+    },
+
+    "error": {
+      "SequencerNotActive": "Il modulo Sequencer non è attivo."
+    },
+
+    "Settings": {
+      "MaxBounces": {
+        "Name": "Rimbalzi massimi",
+        "Hint": "Numero massimo di rimbalzi che un fascio può fare prima di fermarsi."
+      },
+      "Debug": {
+        "Name": "Abilita logging di debug"
+      },
+      "UseProviderStyles": {
+        "Name": "Carica stili dal modulo Styles Hub",
+        "Hint": "Se il modulo 'foundry-beams-styles' è attivo, importa e registra tutti i suoi stili."
+      }
+    },
+
+    "MATT": {
+      "GroupName": "Fasci Attivi",
+      "Actions": {
+        "RotateBeamOf": {
+          "Name": "Ruota Fascio Di",
+          "Controls": {
+            "Entity": {
+              "Name": "Seleziona Emettitore del Fascio",
+              "Placeholder": "Seleziona un Token che è un emettitore"
+            },
+            "RotateOf": {
+              "Name": "Ruota Di"
+            }
+          }
+        }
+      }
+    }
+  }
+}

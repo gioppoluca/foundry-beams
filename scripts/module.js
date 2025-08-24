@@ -83,27 +83,27 @@ Hooks.on("canvasReady", (canvas) => {
 // MATT integration
 Hooks.on("setupTileActions", (app) => {
   if (isactiveModule(cMATT)) {
-    app.registerTileGroup(MOD_NAME, "Active Beams");
+    app.registerTileGroup(MOD_NAME, game.i18n.localize("foundry-beams.MATT.GroupName"));
 
     app.registerTileAction(MOD_NAME, 'beam-rotate-of', {
-      name: "Rotate Beam Of",
+      name: game.i18n.localize("foundry-beams.MATT.Actions.RotateBeamOf.Name"),
       batch: false,
       requiresGM: true,
       ctrls: [
         {
           id: "entity",
-          name: "Select Beam Emitter",
+          name:  game.i18n.localize("foundry-beams.MATT.Actions.RotateBeamOf.Controls.Entity.Name"),
           type: "select",
           subtype: "entity",
           options: { show: ['tagger'] },
           restrict: (entity) => { return (entity instanceof Token); },  //this needs to be a token
           required: true,
           defaultType: 'tokens',
-          placeholder: 'Please select a Token that is an emitter'
+          placeholder: game.i18n.localize("foundry-beams.MATT.Actions.RotateBeamOf.Controls.Entity.Placeholder")
         },
         {
           id: "rotateof",
-          name: "Rotate Of",
+          name: game.i18n.localize("foundry-beams.MATT.Actions.RotateBeamOf.Controls.RotateOf.Name"),
           type: "number",
           min: 0,
           max: 360,
@@ -308,7 +308,7 @@ Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
     const btn = document.createElement("div");
     btn.classList.add("control-icon");
     btn.id = `${MOD_NAME}-hud-btn`;
-    btn.title = "Toggle Sequencer Effect";
+    btn.title = game.i18n.localize("foundry-beams.HUD.ToggleSequencerEffect");
 
     // Font Awesome icon (uses Foundry’s FA set)
     const i = document.createElement("i");

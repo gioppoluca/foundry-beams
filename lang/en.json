@@ -1,5 +1,59 @@
 {
   "foundry-beams": {
-    "Beam": "Beam"
+    "Beam": "Beam",
+
+    "EnableBeam": "Enable Beam",
+    "Active": "Active",
+    "BeamWidthPx": "Beam Width (px)",
+    "BeamOffsetPx": "Beam Offset (px)",
+    "BeamColor": "Beam Color",
+    "BeamStyle": "Beam Style",
+    "ActivateRegionOnBeam": "Activate region on beam?",
+    "ConfigureRegion": "Configure Region",
+
+    "WallConfigLegend": "Active Beams",
+    "IsMirror": "Is mirror",
+    "IsReactive": "Is reactive",
+    "MacroForReactive": "Macro for reactive",
+
+    "HUD": {
+      "ToggleSequencerEffect": "Toggle Sequencer Effect"
+    },
+
+    "error": {
+      "SequencerNotActive": "Sequencer module is not active."
+    },
+
+    "Settings": {
+      "MaxBounces": {
+        "Name": "Maximum bounces",
+        "Hint": "Maximum number of bounces a beam can make before it stops."
+      },
+      "Debug": {
+        "Name": "Enable debug logging"
+      },
+      "UseProviderStyles": {
+        "Name": "Load styles from Styles Hub module",
+        "Hint": "If the 'foundry-beams-styles' module is active, import and register all of its styles."
+      }
+    },
+
+    "MATT": {
+      "GroupName": "Active Beams",
+      "Actions": {
+        "RotateBeamOf": {
+          "Name": "Rotate Beam Of",
+          "Controls": {
+            "Entity": {
+              "Name": "Select Beam Emitter",
+              "Placeholder": "Please select a Token that is an emitter"
+            },
+            "RotateOf": {
+              "Name": "Rotate Of"
+            }
+          }
+        }
+      }
+    }
   }
 }

@@ -33,7 +33,7 @@ export const laserSeqStyle = {
     assertSequencer() {
         const active = game.modules.get("sequencer")?.active;
         if (!active) {
-            ui.notifications?.error("[My Sequencer Toggle] Sequencer module is not active.");
+            ui.notifications?.error(game.i18n.localize("foundry-beams.error.SequencerNotActive"));
             throw new Error("Sequencer not active");
         }
     },

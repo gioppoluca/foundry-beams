@@ -9,17 +9,17 @@ export function beamWallConfig(app, html, data) {
   //let footer = app.form.querySelector("footer");
   const tabContent = `
     <fieldset class="beam-group" data-tab="beam">
-      <legend>Active Beams</legend>
+      <legend>${game.i18n.localize("foundry-beams.WallConfigLegend")}</legend>
       <div class="form-group">
-        <label>Is mirror</label>
+        <label>${game.i18n.localize("foundry-beams.IsMirror")}</label>
         <input type="checkbox" name="flags.foundry-beams.mirror.isMirror" ${mirrorData.isMirror ? "checked" : ""}/>
       </div>
       <div class="form-group">
-        <label>Is reactive</label>
+        <label>${game.i18n.localize("foundry-beams.IsReactive")}</label>
         <input type="checkbox" name="flags.foundry-beams.mirror.isReactive" ${mirrorData.isReactive ? "checked" : ""}/>
       </div>
       <div class="form-group">
-        <label>Macro for reactive</label>
+        <label>${game.i18n.localize("foundry-beams.MacroForReactive")}</label>
         <input type="string" name="flags.foundry-beams.mirror.macro" value="${mirrorData.macro ?? ""}" />
       </div>
     </fieldset>
@@ -58,36 +58,36 @@ export function beamTokenConfig(app, html, data, opts) {
   const tabContent = `
     <div class="tab scrollable" data-group="${dataGroup}" data-tab="beam" data-application-part="beam">
       <div class="form-group">
-        <label>Enable Beam</label>
+        <label>${game.i18n.localize("foundry-beams.EnableBeam")}</label>
         <input type="checkbox" name="flags.foundry-beams.beam.enabled" ${beamData.enabled ? "checked" : ""}/>
       </div>
       <fieldset class="fb-fields" ${beamData.enabled ? "" : "disabled"}>
       <div class="form-group">
-        <label>is active</label>
+        <label>${game.i18n.localize("foundry-beams.Active")}</label>
         <input type="checkbox" name="flags.foundry-beams.beam.active" ${beamData.active ? "checked" : ""}/>
       </div>
       <div class="form-group">
-        <label>Beam Width (px)</label>
+        <label>${game.i18n.localize("foundry-beams.BeamWidthPx")}</label>
         <input type="number" name="flags.foundry-beams.beam.width" value="${beamData.width ?? 30}" min="1"/>
       </div>
       <div class="form-group">
-        <label>Beam Offset (px)</label>
+        <label>${game.i18n.localize("foundry-beams.BeamOffsetPx")}</label>
         <input type="number" name="flags.foundry-beams.beam.offset" value="${beamData.offset ?? 30}" min="0"/>
       </div>
       <div class="form-group">
-        <label>Beam Color</label>
+        <label>${game.i18n.localize("foundry-beams.BeamColor")}</label>
         <input type="color" name="flags.foundry-beams.beam.colorHex" value="${beamData.colorHex ?? "#ffe699"}"/>
       </div>
       <div class="form-group">
-      <label>Beam Style</label>
+      <label>${game.i18n.localize("foundry-beams.BeamStyle")}</label>
       <select name="flags.foundry-beams.beam.style">${options}</select>
     </div>
       <div class="form-group">
-        <label>Activate region on beam?</label>
+        <label>${game.i18n.localize("foundry-beams.ActivateRegionOnBeam")}</label>
         <input type="checkbox" name="flags.foundry-beams.beam.hasRegion" ${beamData.hasRegion ? "checked" : ""}/>
       </div>
       <div class="form-group">
-        <button id="regionConfigButton" >Configure Region</button>
+        <button id="regionConfigButton" >${game.i18n.localize("foundry-beams.ConfigureRegion")}</button>
       </div>
       </fieldset>
     </div>
