@@ -50,7 +50,7 @@ export function beamTokenConfig(app, html, data, opts) {
   if (isDebugActive) console.log(`[${MOD_NAME}] Rendering TokenConfig UI for token: ${app.token.name} with beam data:`, beamData);
 
   // Add Beam tab button to token config tabs
-  app.form.querySelector('.sheet-tabs').insertAdjacentHTML('beforeend', `<a class="item" data-action="tab" data-group="sheet"  data-tab="beam"><i class="fas fa-lightbulb"></i> Beam</a>`);
+  app.form.querySelector('.sheet-tabs').insertAdjacentHTML('beforeend', `<a class="item" data-action="tab" data-group="sheet"  data-tab="beam"><i class="fas fa-lightbulb"></i> ${game.i18n.localize("foundry-beams.Beam")}</a>`);
   const options = StyleRegistry.ids().map(id => `<option value="${id}" ${beamData.style === id ? 'selected' : ''}>${id}</option>`).join("");
 
   // Append custom beam config form elements into the config form
@@ -61,6 +61,7 @@ export function beamTokenConfig(app, html, data, opts) {
         <label>Enable Beam</label>
         <input type="checkbox" name="flags.foundry-beams.beam.enabled" ${beamData.enabled ? "checked" : ""}/>
       </div>
+      <fieldset class="fb-fields" ${beamData.enabled ? "" : "disabled"}>
       <div class="form-group">
         <label>is active</label>
         <input type="checkbox" name="flags.foundry-beams.beam.active" ${beamData.active ? "checked" : ""}/>
@@ -71,7 +72,7 @@ export function beamTokenConfig(app, html, data, opts) {
       </div>
       <div class="form-group">
         <label>Beam Offset (px)</label>
-        <input type="number" name="flags.foundry-beams.beam.offset" value="${beamData.offset ?? 30}" min="1"/>
+        <input type="number" name="flags.foundry-beams.beam.offset" value="${beamData.offset ?? 30}" min="0"/>
       </div>
       <div class="form-group">
         <label>Beam Color</label>
@@ -88,6 +89,7 @@ export function beamTokenConfig(app, html, data, opts) {
       <div class="form-group">
         <button id="regionConfigButton" >Configure Region</button>
       </div>
+      </fieldset>
     </div>
   `;
 
