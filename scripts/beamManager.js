@@ -353,7 +353,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
 export function destroyBeam(token) {
     const beam = beams.get(token.id);
     if (!beam) return;
-    const flagStyle = beams.config?.style ?? "laser";
+    const flagStyle = beam.config?.style ?? "laser";
     const style = StyleRegistry.get(flagStyle) ?? StyleRegistry.get("laser");
     style.deleteAllSegments(token)
     deleteBeamRegions(token);
