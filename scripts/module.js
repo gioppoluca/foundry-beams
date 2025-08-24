@@ -8,6 +8,7 @@ import { isEffectActive } from "./beams-util.js";
 import { registerBeamSettings } from './beams-settings.js';
 import { beamWallConfig, beamTokenConfig } from './beams-document-config.js';
 import { beamWallUpdate, beamTokenUpdate, beamRefreshToken, beamsCanvasReady } from './beams-document-manage.js';
+import { reactiveMacro } from './beams-macro.js';
 
 Hooks.once("init", async () => {
   if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
@@ -92,7 +93,7 @@ Hooks.on("sequencerEffectManagerReady", () => {
 // MATT integration
 Hooks.on("setupTileActions", (app) => {
   if (isactiveModule(cMATT)) {
-    console.log(`[${MOD_NAME}] setupTileActions`,app)
+    console.log(`[${MOD_NAME}] setupTileActions`, app)
     console.log(app)
     app.registerTileGroup(MOD_NAME, game.i18n.localize("foundry-beams.MATT.GroupName"));
 
@@ -351,25 +352,33 @@ Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
 
 Hooks.on("foundry-beams.wall-enter", ({ wall, token, beam, mirrorData }) => {
   ui.notifications.info(`enter ${wall.id}`);
-//  const targetObject = foundry.utils.fromUuidSync('Scene.V2ywvtargCl6EFih.Tile.ORIPNfVBMwTDMiWf')
-  const targetObject = foundry.utils.fromUuidSync(mirrorData?.macro)
-  console.log(`[${MOD_NAME}]`,targetObject)
-  targetObject.trigger({ tokens: [], method: 'trigger', options: {landing : "Beam-EmitterStatue-enter"}});
   console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${wall.id}`);
-//  const flags = wall?.getFlag("foundry-beams", "mirror") || {};
-//  if (flags.isReactive && flags.macro && game.users.activeGM?.isSelf) {
-//    game.macros.getName(flags.macro)?.execute({});
-//  }
+  const targetObject = foundry.utils.fromUuidSync(mirrorData?.macro)
+  console.log(`[${MOD_NAME}]`, targetObject)
+  if (targetObject.documentName === "Tile") {
+    targetObject.trigger({ tokens: [], method: 'trigger', options: { landing: "Beam-EmitterStatue-enter" } });
+  } else if (targetObject.documentName === "Macro") {
+    //reactiveMacro(mirror?.macro);
+    targetObject.execute({});
+  } else {
+    // last chance it could be a legacy macro call
+    reactiveMacro(mirrorData?.macro);
+  }
+
 });
 
 Hooks.on("foundry-beams.wall-exit", ({ wall, token, beam, mirrorData }) => {
   ui.notifications.error(`leave ${wall.id}`);
-  const targetObject = foundry.utils.fromUuidSync(mirrorData?.macroExit)
-  console.log(`[${MOD_NAME}]`,targetObject)
-  targetObject.trigger({ tokens: [], method: 'trigger', options: {landing : "Beam-EmitterStatue-exit"}});
   console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${wall.id}`);
-//  const flags = wall?.getFlag("foundry-beams", "mirror") || {};
-//  if (flags.isReactive && flags.macro && game.users.activeGM?.isSelf) {
-//    game.macros.getName(flags.macro)?.execute({});
-//  }
+  const targetObject = foundry.utils.fromUuidSync(mirrorData?.macroExit)
+  console.log(`[${MOD_NAME}]`, targetObject)
+  if (targetObject.documentName === "Tile") {
+    targetObject.trigger({ tokens: [], method: 'trigger', options: { landing: "Beam-EmitterStatue-exit" } });
+  } else if (targetObject.documentName === "Macro") {
+    //reactiveMacro(mirror?.macro);
+    targetObject.execute({});
+  } else {
+    // last chance it could be a legacy macro call
+    reactiveMacro(mirrorData?.macroExit);
+  }
 });
