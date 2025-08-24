@@ -351,12 +351,12 @@ Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
 
 
 Hooks.on("foundry-beams.wall-enter", ({ wall, token, beam, mirrorData }) => {
-  ui.notifications.info(`enter ${wall.id}`);
+//  ui.notifications.info(`enter ${wall.id}`);
   console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${wall.id}`);
   const targetObject = foundry.utils.fromUuidSync(mirrorData?.macro)
   console.log(`[${MOD_NAME}]`, targetObject)
   if (targetObject.documentName === "Tile") {
-    targetObject.trigger({ tokens: [], method: 'trigger', options: { landing: "Beam-EmitterStatue-enter" } });
+    targetObject.trigger({ tokens: [], method: 'trigger', options: { landing: `Beam-${token.name}-enter` } });
   } else if (targetObject.documentName === "Macro") {
     //reactiveMacro(mirror?.macro);
     targetObject.execute({});
@@ -368,12 +368,12 @@ Hooks.on("foundry-beams.wall-enter", ({ wall, token, beam, mirrorData }) => {
 });
 
 Hooks.on("foundry-beams.wall-exit", ({ wall, token, beam, mirrorData }) => {
-  ui.notifications.error(`leave ${wall.id}`);
+//  ui.notifications.error(`leave ${wall.id}`);
   console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${wall.id}`);
   const targetObject = foundry.utils.fromUuidSync(mirrorData?.macroExit)
   console.log(`[${MOD_NAME}]`, targetObject)
   if (targetObject.documentName === "Tile") {
-    targetObject.trigger({ tokens: [], method: 'trigger', options: { landing: "Beam-EmitterStatue-exit" } });
+    targetObject.trigger({ tokens: [], method: 'trigger', options: { landing: `Beam-${token.name}-exit` } });
   } else if (targetObject.documentName === "Macro") {
     //reactiveMacro(mirror?.macro);
     targetObject.execute({});
