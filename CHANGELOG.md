@@ -1,4 +1,16 @@
 
+## [1.4.4] - 2025-08-24
+### :sparkles: New Features
+- [`0ffeb70`](https://github.com/gioppoluca/foundry-beams/commit/0ffeb706a87aceecf3c5e8271f4fe3f02dadbe87) - trigger MATT tile both on enter and exit of the beam from a wall *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`289f546`](https://github.com/gioppoluca/foundry-beams/commit/289f5467ace3ef09992b65eec18469347df2503d) - now wall react to macro (legacy), macro (UUID) and MATT tiles *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`10ebecd`](https://github.com/gioppoluca/foundry-beams/commit/10ebecdfdc07290e2ec62fa6070d6678aea8b23f) - better language implementation *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`2fb1cc4`](https://github.com/gioppoluca/foundry-beams/commit/2fb1cc4756c96167c6953b642d9a17494ea2fb3c) - potential error in destroyBeam *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`829e183`](https://github.com/gioppoluca/foundry-beams/commit/829e1831d746a2e4e9c8c248c60f034b06ed9134) - Sequencer duplication of effects e proper hod button *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`b7dc9dc`](https://github.com/gioppoluca/foundry-beams/commit/b7dc9dcaab010028d7eb7e7ffb7169b0d309ef67) - removed hardcoded name *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.4.3] - 2025-08-24
 ### :sparkles: New Features
 - [`dae5f9f`](https://github.com/gioppoluca/foundry-beams/commit/dae5f9fa67a0d990cd5bd672a00ed5b946cabdd5) - new lightning field style *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -163,3 +175,4 @@
 [1.4.1]: https://github.com/gioppoluca/foundry-beams/compare/1.4.0...1.4.1
 [1.4.2]: https://github.com/gioppoluca/foundry-beams/compare/1.4.1...1.4.2
 [1.4.3]: https://github.com/gioppoluca/foundry-beams/compare/1.4.2...1.4.3
+[1.4.4]: https://github.com/gioppoluca/foundry-beams/compare/1.4.3...1.4.4
