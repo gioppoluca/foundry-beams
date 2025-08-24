@@ -6,24 +6,81 @@ export function beamWallConfig(app, html, data) {
   const mirrorData = foundry.utils.getProperty(app.document, "flags.foundry-beams.mirror") ?? {};
   console.log(mirrorData)
   if (isDebugActive) console.log(app);
-  //let footer = app.form.querySelector("footer");
   const tabContent = `
     <fieldset class="beam-group" data-tab="beam">
       <legend>${game.i18n.localize("foundry-beams.WallConfigLegend")}</legend>
+
       <div class="form-group">
         <label>${game.i18n.localize("foundry-beams.IsMirror")}</label>
-        <input type="checkbox" name="flags.foundry-beams.mirror.isMirror" ${mirrorData.isMirror ? "checked" : ""}/>
+        <input id="fb-isMirror" type="checkbox" name="flags.foundry-beams.mirror.isMirror" ${mirrorData.isMirror ? "checked" : ""}/>
       </div>
-      <div class="form-group">
-        <label>${game.i18n.localize("foundry-beams.IsReactive")}</label>
-        <input type="checkbox" name="flags.foundry-beams.mirror.isReactive" ${mirrorData.isReactive ? "checked" : ""}/>
-      </div>
-      <div class="form-group">
-        <label>${game.i18n.localize("foundry-beams.MacroForReactive")}</label>
-        <input type="string" name="flags.foundry-beams.mirror.macro" value="${mirrorData.macro ?? ""}" />
-      </div>
+
+      <fieldset class="fb-fields" id="fb-reactive">
+        <legend>${game.i18n.localize("foundry-beams.WallConfigIsReactiveLegend")}</legend>
+        <div class="form-group">
+          <label title="${game.i18n.localize("foundry-beams.IsReactiveTooltip")}">${game.i18n.localize("foundry-beams.IsReactive")}</label>
+          <input id="fb-isReactive" type="checkbox" name="flags.foundry-beams.mirror.isReactive" ${mirrorData.isReactive ? "checked" : ""}/>
+        </div>
+        <div class="form-group">
+          <label>${game.i18n.localize("foundry-beams.MacroForReactive")}</label>
+          <input id="fb-macro" type="text" data-dtype="String"
+                 name="flags.foundry-beams.mirror.macro"
+                 value="${mirrorData.macro ?? ""}" />
+        </div>
+      </fieldset>
+
+      <fieldset class="fb-fields" id="fb-reactive-exit">
+        <legend>${game.i18n.localize("foundry-beams.WallConfigIsReactiveExitLegend")}</legend>
+        <div class="form-group">
+          <label title="${game.i18n.localize("foundry-beams.IsReactiveExitTooltip")}">${game.i18n.localize("foundry-beams.IsReactive")}</label>
+          <input id="fbIsReactiveExit" type="checkbox" name="flags.foundry-beams.mirror.isReactiveExit" ${mirrorData.isReactiveExit ? "checked" : ""}/>
+        </div>
+        <div class="form-group">
+          <label>${game.i18n.localize("foundry-beams.MacroForReactive")}</label>
+          <input id="fbMacroExit" type="text" data-dtype="String"
+                 name="flags.foundry-beams.mirror.macroExit"
+                 value="${mirrorData.macroExit ?? ""}" />
+        </div>
+      </fieldset>
     </fieldset>
   `;
+
+  // Wire dynamic behavior
+  console.log(app,html,data);
+  //const form = app.form;
+  //const el = (sel) => form.querySelector(sel);
+
+//  const chkMirror       = el('#fb-isMirror');
+  //const fsReactive      = el('#fb-reactive');
+  const chkReactive     = app.form.querySelector('#fb-isReactive');
+  const inpMacro        = app.form.querySelector('#fb-macro');
+  console.log("difference in queryselector")
+console.log(html.querySelector('#fb-macro'))
+console.log(app.form.querySelector('#fb-macro'))
+//  const fsReactiveExit  = el('#fb-reactive-exit');
+  const chkReactiveExit = app.form.querySelector('#fbIsReactiveExit');
+  const inpMacroExit    = app.form.querySelector('#fbMacroExit');
+  app.form.querySelector('#fbIsReactiveExit')?.addEventListener('change', updateStates);
+
+  console.log(chkReactive, inpMacro, chkReactiveExit, inpMacroExit);
+
+  const updateStates = () => {
+    // Enable/disable fieldsets by "Is mirror"
+    //const mirrorOn = !!chkMirror?.checked;
+//    if (fsReactive)     fsReactive.disabled     = !mirrorOn;
+//    if (fsReactiveExit) fsReactiveExit.disabled = !mirrorOn;
+
+    // Inside each fieldset, toggle macro editability by its checkbox
+    if (inpMacro)     inpMacro.disabled     = !(chkReactive?.checked);
+    if (inpMacroExit) inpMacroExit.disabled = !(chkReactiveExit?.checked);
+  };
+
+  //chkMirror?.addEventListener('change', updateStates);
+  chkReactive?.addEventListener('change', updateStates);
+  chkReactiveExit?.addEventListener('change', updateStates);
+
+  // Initial sync (covers first render)
+  updateStates();
 
   app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
   app.setPosition({ height: "auto" });
@@ -61,7 +118,7 @@ export function beamTokenConfig(app, html, data, opts) {
         <label>${game.i18n.localize("foundry-beams.EnableBeam")}</label>
         <input type="checkbox" name="flags.foundry-beams.beam.enabled" ${beamData.enabled ? "checked" : ""}/>
       </div>
-      <fieldset class="fb-fields" ${beamData.enabled ? "" : "disabled"}>
+      <fieldset class="fb-fields" >
       <div class="form-group">
         <label>${game.i18n.localize("foundry-beams.Active")}</label>
         <input type="checkbox" name="flags.foundry-beams.beam.active" ${beamData.active ? "checked" : ""}/>

@@ -92,6 +92,8 @@ Hooks.on("sequencerEffectManagerReady", () => {
 // MATT integration
 Hooks.on("setupTileActions", (app) => {
   if (isactiveModule(cMATT)) {
+    console.log(`[${MOD_NAME}] setupTileActions`,app)
+    console.log(app)
     app.registerTileGroup(MOD_NAME, game.i18n.localize("foundry-beams.MATT.GroupName"));
 
     app.registerTileAction(MOD_NAME, 'beam-rotate-of', {
@@ -344,4 +346,30 @@ Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
   } catch (err) {
     console.error(`[${MOD_NAME}] Failed to render HUD button`, err);
   }
+});
+
+
+Hooks.on("foundry-beams.wall-enter", ({ wall, token, beam, mirrorData }) => {
+  ui.notifications.info(`enter ${wall.id}`);
+//  const targetObject = foundry.utils.fromUuidSync('Scene.V2ywvtargCl6EFih.Tile.ORIPNfVBMwTDMiWf')
+  const targetObject = foundry.utils.fromUuidSync(mirrorData?.macro)
+  console.log(`[${MOD_NAME}]`,targetObject)
+  targetObject.trigger({ tokens: [], method: 'trigger', options: {landing : "Beam-EmitterStatue-enter"}});
+  console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${wall.id}`);
+//  const flags = wall?.getFlag("foundry-beams", "mirror") || {};
+//  if (flags.isReactive && flags.macro && game.users.activeGM?.isSelf) {
+//    game.macros.getName(flags.macro)?.execute({});
+//  }
+});
+
+Hooks.on("foundry-beams.wall-exit", ({ wall, token, beam, mirrorData }) => {
+  ui.notifications.error(`leave ${wall.id}`);
+  const targetObject = foundry.utils.fromUuidSync(mirrorData?.macroExit)
+  console.log(`[${MOD_NAME}]`,targetObject)
+  targetObject.trigger({ tokens: [], method: 'trigger', options: {landing : "Beam-EmitterStatue-exit"}});
+  console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${wall.id}`);
+//  const flags = wall?.getFlag("foundry-beams", "mirror") || {};
+//  if (flags.isReactive && flags.macro && game.users.activeGM?.isSelf) {
+//    game.macros.getName(flags.macro)?.execute({});
+//  }
 });

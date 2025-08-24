@@ -34,6 +34,7 @@ export class BeamInstance {
     /** User‑configurable appearance/physics */ this.config = config;
     /** e.g. "laser" | "lightning" */          this.style = style;
     /** @type {Map<string, BeamSegment>} */      this.segments = new Map();
+        this.hitWalls = new Set();
     }
 
     /** Destroy PIXI containers & wipe segment map */
@@ -72,6 +73,16 @@ export const BeamRegistry = {
         const inst = this._map.get(tokenId);
         if (inst) inst.clear();
         this._map.delete(tokenId);
+    },
+
+    setWalls(tokenId, wallSet) {
+        let inst = this._map.get(tokenId);
+        if (!inst) {
+            // we have a problems since we should have an instance already
+            console.warn(`[${MOD_NAME}] - Trying to set walls on a beam instance that does not exist yet for token ${token.id}`);
+        } else {
+            inst.hitWalls = wallSet;
+        }
     },
 
     /** Iterate */

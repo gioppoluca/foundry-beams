@@ -12,10 +12,14 @@
     "ConfigureRegion": "Configure Region",
 
     "WallConfigLegend": "Active Beams",
+    "WallConfigIsReactiveLegend": "Is reactive to beam entering",
+    "WallConfigIsReactiveExitLegend": "Is reactive to beam exiting",
     "IsMirror": "Is mirror",
     "IsReactive": "Is reactive",
-    "MacroForReactive": "Macro for reactive",
-
+    "IsReactiveTooltip": "If enabled, when a beam hits this wall, it will trigger the specified Macro/MATT (save UUID).",
+    "IsReactiveExitTooltip": "If enabled, when a beam leaves this wall, it will trigger the specified Macro/MATT (save UUID).",
+    "MacroForReactive": "UUID for reactive",
+    
     "HUD": {
       "ToggleSequencerEffect": "Toggle Sequencer Effect"
     },

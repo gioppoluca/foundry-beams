@@ -108,7 +108,7 @@ function calculateBeamSegments(token, cfg = {}, override = null) {
 
 
 export function updateBeam(token, override = null, forceUpdate = false) {
-    console.log("updateBeam")
+    console.log(`[${MOD_NAME} - updateBeam ???????????????????????????????@@@@@@@@@@@@@`)
     console.log(token)
     const existing = beams.get(token.id);
     const changedStyle = override?.flags?.["foundry-beams"]?.beam?.style !== undefined;
@@ -120,7 +120,10 @@ export function updateBeam(token, override = null, forceUpdate = false) {
     console.log("changedStyle:", changedStyle)
     console.log("changedColor:", changedColor)
     console.log("changedActive:", changedActive)
-    console.log(existing)
+    console.log(`[${MOD_NAME}] - "existing" variable:`, existing)
+    const inst = BeamRegistry.get(token.id);
+    console.log(`[${MOD_NAME}] - "inst" variable:`, inst)
+    const prevWalls = inst?.hitWalls ?? new Set();
     if (!existing) return; // safety
     const flagCfg = token.document.getFlag("foundry-beams", "beam") ?? {};
     console.log("Flag config:", flagCfg)
@@ -158,11 +161,26 @@ export function updateBeam(token, override = null, forceUpdate = false) {
         console.log("the beam is not active")
         if (changedActive) {
             disableRegion(token)
+            // we also fire the wall leave event for all the walls currently hit
+            console.log("hit walls:", inst?.hitWalls)
+            if (inst?.hitWalls) {
+                for (const wallId of inst.hitWalls) {
+                    const wall = canvas.scene?.walls?.get(wallId);
+                    Hooks.callAll("foundry-beams.wall-leave", { wall, wallId, token, beam: inst, reason: "deactivate" });
+                }
+            }
         }
         return
     }
     if (changedActive && isActive) {
         enableRegion(token)
+        // we also need to fire the wall enter event for all the walls currently hit
+        if (inst?.hitWalls) {
+            for (const wallId of inst.hitWalls) {
+                const wall = canvas.scene?.walls?.get(wallId);
+                Hooks.callAll("foundry-beams.wall-enter", { wall, wallId, token, beam: inst });
+            }
+        }
     }
 
     const curX = override?.x ?? doc.x;
@@ -193,8 +211,34 @@ export function updateBeam(token, override = null, forceUpdate = false) {
     const segments = calculateBeamSegments(token, existing.config, override);
     console.log("BEAMS - Segments:", segments)
 
+    const next = new Set(segments.map(s => s.wallId).filter(Boolean));
+    // enter: in next but not in prev
+    for (const wallId of next) {
+        if (!prevWalls.has(wallId)) {
+            const wall = canvas.scene?.walls?.get(wallId);
+            const mirrorData = foundry.utils.getProperty(wall, "flags.foundry-beams.mirror") ?? {};
+            if (mirrorData?.isReactive && mirrorData?.macro) {
+                Hooks.callAll("foundry-beams.wall-enter", { wall: wall, token: token, beam: inst, mirrorData: mirrorData });
+            }
+        }
+    }
+    // leave: in prevWalls but not in next
+    for (const wallId of prevWalls) {
+        if (!next.has(wallId)) {
+            const wall = canvas.scene?.walls?.get(wallId);
+            const mirrorData = foundry.utils.getProperty(wall, "flags.foundry-beams.mirror") ?? {};
+            if (mirrorData?.isReactiveExit && mirrorData?.macroExit) {
+                Hooks.callAll("foundry-beams.wall-exit", { wall: wall, token: token, beam: inst, mirrorData: mirrorData });
+            }
+        }
+    }
+
+    // now we need to update the hitWalls set in the beam instance
+    BeamRegistry.setWalls(token.id, next);
+
     // 3. update / create each segment
     //        beamInst.segments = segments
+    console.log(`[${MOD_NAME}]BEFORE - updateBeam processSegments @@@@@@@@@@@`, segments, beamInst)
     existing.containers = style.processSegments(segments, cfg, beamInst, token);
     // 4. Clean up extra segments (if beam shortened this frame) ---------------
     const desired = segments.length;
@@ -292,7 +336,9 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
             console.log(`OFFSET POINT: x=${currentPoint.x}, y=${currentPoint.y}`);
         }
 
-        segments.push({ start: currentPoint, end: { x: endPoint.x, y: endPoint.y }, dx, dy, length, normal });
+        const wallId = edgeData?.object?.document?.id ?? null;
+        console.log(`[${MOD_NAME} - WALL ID: ${wallId}`);
+        segments.push({ start: currentPoint, end: { x: endPoint.x, y: endPoint.y }, dx, dy, length, normal, wallId });
         if (isDebugActive) console.log("after wall check");
         // added to solve the imprecision in the collision
         if (collisionElement == null) break;
@@ -300,15 +346,16 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         const mirror = edgeData?.object?.document.getFlag(MOD_NAME, "mirror")
         console.log(mirror)
         // looking id the wall is a reactive
-        const isReactive = mirror?.isReactive ?? false;
+        // this part is not needed anymore due to the wall hooks
+        //const isReactive = mirror?.isReactive ?? false;
         // TODO: need to check if is really needed to check if the user is GM
-        if (isReactive && game.users.activeGM.isSelf) {
+        //if (isReactive && game.users.activeGM.isSelf) {
             // if is reactive we need to execute the macro associated
-            reactiveMacro(mirror?.macro);
+          //  reactiveMacro(mirror?.macro);
             // TODO here there could be the generation of an event for the wall hit
             // TODO we need to have a structure for saving the wall hit so we can also be able to understand if a beam leaves a reactive wall
 
-        }
+        //}
 
         // looking if the wall is a mirror
         const isMirror = mirror?.isMirror ?? false;
@@ -354,6 +401,13 @@ export function destroyBeam(token) {
     const beam = beams.get(token.id);
     if (!beam) return;
     const flagStyle = beam.config?.style ?? "laser";
+    const inst = BeamRegistry.get(token.id);
+    if (inst?.hitWalls) {
+        for (const wallId of inst.hitWalls) {
+            const wall = canvas.scene?.walls?.get(wallId);
+            Hooks.callAll("foundry-beams.wall-leave", { wall, wallId, token, beam: inst, reason: "destroy" });
+        }
+    }
     const style = StyleRegistry.get(flagStyle) ?? StyleRegistry.get("laser");
     style.deleteAllSegments(token)
     deleteBeamRegions(token);
