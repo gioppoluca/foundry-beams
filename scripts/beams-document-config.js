@@ -55,8 +55,8 @@ export function beamWallConfig(app, html, data) {
   const chkReactive     = app.form.querySelector('#fb-isReactive');
   const inpMacro        = app.form.querySelector('#fb-macro');
   console.log("difference in queryselector")
-console.log(html.querySelector('#fb-macro'))
-console.log(app.form.querySelector('#fb-macro'))
+//console.log(html.querySelector('#fb-macro'))
+//console.log(app.form.querySelector('#fb-macro'))
 //  const fsReactiveExit  = el('#fb-reactive-exit');
   const chkReactiveExit = app.form.querySelector('#fbIsReactiveExit');
   const inpMacroExit    = app.form.querySelector('#fbMacroExit');
