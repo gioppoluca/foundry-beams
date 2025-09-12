@@ -12,8 +12,12 @@ export function beamWallUpdate(wallDoc, updateData, options, userid) {
     console.log("updateWall")
     console.log(wallDoc)
     console.log(updateData)
-    // Only respond to walls that have moved
-    if (!("c" in updateData) && !("ds" in updateData)) return;
+    console.log(wallDoc.getFlag(MOD_NAME, "mirror"))
+    const beamWallFlag = wallDoc.getFlag(MOD_NAME, "mirror");
+    //console.log(updateData?.flags[MOD_NAME]?.mirror)
+    console.log(("flags.foundry-beams.mirror" in updateData))
+    // Only respond to walls that have moved or have changed mirror state
+    if (!("c" in updateData) && !("ds" in updateData) && !beamWallFlag) return;
     // Filter and update only beam-enabled tokens
     const beamTokens = canvas.tokens.placeables.filter(t => {
         return t.document.getFlag(MOD_NAME, "beam")?.enabled
