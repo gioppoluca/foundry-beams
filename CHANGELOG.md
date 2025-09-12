@@ -1,4 +1,9 @@
 
+## [1.4.5] - 2025-09-12
+### :bug: Bug Fixes
+- [`d32bf19`](https://github.com/gioppoluca/foundry-beams/commit/d32bf19d0fd94715b6aae02d92d5f19e36f3f62d) - wall setting problem with v12 *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.4.4] - 2025-08-24
 ### :sparkles: New Features
 - [`0ffeb70`](https://github.com/gioppoluca/foundry-beams/commit/0ffeb706a87aceecf3c5e8271f4fe3f02dadbe87) - trigger MATT tile both on enter and exit of the beam from a wall *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -176,3 +181,4 @@
 [1.4.2]: https://github.com/gioppoluca/foundry-beams/compare/1.4.1...1.4.2
 [1.4.3]: https://github.com/gioppoluca/foundry-beams/compare/1.4.2...1.4.3
 [1.4.4]: https://github.com/gioppoluca/foundry-beams/compare/1.4.3...1.4.4
+[1.4.5]: https://github.com/gioppoluca/foundry-beams/compare/1.4.4...1.4.5
