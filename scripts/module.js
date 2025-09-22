@@ -29,7 +29,7 @@ Hooks.once("init", async () => {
       console.warn("[foundry-beams] Provider registerAll failed:", e);
     }
   }
-  await loadCustomStyles(); // anything under custom-styles/
+  //await loadCustomStyles(); // anything under custom-styles/
 });
 
 Hooks.once("ready", async () => {
@@ -60,6 +60,32 @@ Hooks.on("deleteWall", (wallDoc) => {
 
 Hooks.on("updateWall", (wallDoc, updateData, options, userid) => {
   beamWallUpdate(wallDoc, updateData, options, userid)
+});
+
+Hooks.on("preUpdateToken", (tokenDoc, changes, options, userId) => {
+  // If the form is trying to set beam flags:
+  const incoming = foundry.utils.getProperty(changes, `flags.${MOD_NAME}.beam`);
+  if (incoming) {
+    const enabled = incoming.enabled === true || incoming.enabled === "true";
+    if (!enabled) {
+      // 1) Don’t apply any beam subfields from this submit
+      foundry.utils.unsetProperty(changes, `flags.${MOD_NAME}.beam`);
+      // 2) Ensure beam flags are removed
+      changes.flags ??= {};
+      changes.flags[MOD_NAME] ??= {};
+      changes.flags[MOD_NAME]["-=beam"] = null;
+    }
+    return; // We’re done handling the incoming case.
+  }
+
+  // No incoming beam flags ? legacy cleanup opportunity:
+  // If the token already has a beam flag but it’s not enabled, purge it.
+  const existing = tokenDoc.getFlag(MOD_NAME, "beam");
+  if (existing && !(existing.enabled === true || existing.enabled === "true")) {
+    changes.flags ??= {};
+    changes.flags[MOD_NAME] ??= {};
+    changes.flags[MOD_NAME]["-=beam"] = null;
+  }
 });
 
 Hooks.on("preMoveToken", (token, movement, _options) => {
@@ -351,7 +377,7 @@ Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
 
 
 Hooks.on("foundry-beams.wall-enter", ({ wall, token, beam, mirrorData }) => {
-//  ui.notifications.info(`enter ${wall.id}`);
+  //  ui.notifications.info(`enter ${wall.id}`);
   console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${wall.id}`);
   const targetObject = foundry.utils.fromUuidSync(mirrorData?.macro)
   console.log(`[${MOD_NAME}]`, targetObject)
@@ -368,7 +394,7 @@ Hooks.on("foundry-beams.wall-enter", ({ wall, token, beam, mirrorData }) => {
 });
 
 Hooks.on("foundry-beams.wall-exit", ({ wall, token, beam, mirrorData }) => {
-//  ui.notifications.error(`leave ${wall.id}`);
+  //  ui.notifications.error(`leave ${wall.id}`);
   console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${wall.id}`);
   const targetObject = foundry.utils.fromUuidSync(mirrorData?.macroExit)
   console.log(`[${MOD_NAME}]`, targetObject)
@@ -381,4 +407,22 @@ Hooks.on("foundry-beams.wall-exit", ({ wall, token, beam, mirrorData }) => {
     // last chance it could be a legacy macro call
     reactiveMacro(mirrorData?.macroExit);
   }
+});
+
+
+const database = {
+  _templates: { // Grid size, start point, end point
+    "default": [100, 0, 0],
+  },
+  walls: {
+    tentacles: {
+      "30ft": `modules/${MOD_NAME}/assets/tentacles-30.webm`,
+      "60ft": `modules/${MOD_NAME}/assets/tentacles-60.webm`,
+      "90ft": `modules/${MOD_NAME}/assets/tentacles-90.webm`
+    }
+  }
+}
+
+Hooks.on("sequencerReady", () => {
+  Sequencer.Database.registerEntries(MOD_NAME, database);
 });
