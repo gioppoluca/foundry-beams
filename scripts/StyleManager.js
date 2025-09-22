@@ -10,12 +10,14 @@ export async function loadBuiltIn() {
   const { laserSeqStyle } = await import("./styles/laser-seq.js");
   const { hexfieldStyle } = await import("./styles/hexfield.js");
   const { lightningfieldStyle } = await import("./styles/lightningfield.js");
+  const { tentaclefieldStyle } = await import("./styles/tentaclefield.js");
   console.log("[foundry-beams] loading built-in styles");
   StyleRegistry.register(laserStyle);
   StyleRegistry.register(lightningStyle);
   StyleRegistry.register(laserSeqStyle);
   StyleRegistry.register(hexfieldStyle);
   StyleRegistry.register(lightningfieldStyle);
+  StyleRegistry.register(tentaclefieldStyle);
 }
 
 /**
