@@ -33,7 +33,7 @@ export async function toggleBeam(token, forceEnable = null) {
     console.log(token)
     const flag = token.getFlag(MOD_NAME, "beam") || {};
     const isEnabled = forceEnable !== null ? forceEnable : !flag.enabled;
-    if (isDebugActive) console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`);
+    if (isDebugActive()) console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`);
 
     if (isEnabled) {
         // we need to pass the token and not the TokenDocument
@@ -47,7 +47,7 @@ export async function toggleBeam(token, forceEnable = null) {
 }
 
 export function createBeam(token, config = {}) {
-    if (isDebugActive) console.log(`[foundry-beams] Creating beam for ${token.name}`);
+    if (isDebugActive()) console.log(`[foundry-beams] Creating beam for ${token.name}`);
     beams.set(token.id, { containers: [], config });
 
     // Phase 1: initialise new BeamRegistry (style will be added via flags later)
@@ -286,7 +286,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         console.log("collidedTk")
         console.log(collidedTk)
 
-        if (isDebugActive) console.log(collisions);
+        if (isDebugActive()) console.log(collisions);
         if (collisions.length == 0) {
             // No collisions
             break;
@@ -310,18 +310,18 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
                 //                console.log(`OFFSET POINT: x=${currentPoint.x}, y=${currentPoint.y}`);
             }
             // since we hit the outer bounds we need to set the bounces to maxBounces
-            if (isDebugActive) console.log(`[foundry-beams] Beam hit outer bounds. Stopping bounces.`);
+            if (isDebugActive()) console.log(`[foundry-beams] Beam hit outer bounds. Stopping bounces.`);
             bounces = maxBounces;
         }
         let endPoint = collisionElement ?? dest;
         const edgeData = collisionElement.edges.values().next().value;
-        if (isDebugActive) console.log(edgeData);
+        if (isDebugActive()) console.log(edgeData);
 
         const dx = endPoint.x - currentPoint.x;
         const dy = endPoint.y - currentPoint.y;
         console.log(`dx: ${dx} | dy: ${dy} `)
         let length = Math.hypot(dx, dy);
-        if (isDebugActive) console.log(length);
+        if (isDebugActive()) console.log(length);
         const normal = [-dy / length, dx / length];
 
         // offset of the starting segment
@@ -339,7 +339,7 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         const wallId = edgeData?.object?.document?.id ?? null;
         console.log(`[${MOD_NAME} - WALL ID: ${wallId}`);
         segments.push({ start: currentPoint, end: { x: endPoint.x, y: endPoint.y }, dx, dy, length, normal, wallId });
-        if (isDebugActive) console.log("after wall check");
+        if (isDebugActive()) console.log("after wall check");
         // added to solve the imprecision in the collision
         if (collisionElement == null) break;
 
@@ -385,13 +385,13 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         const ry = incident.y - 2 * dot * normalW.y;
 
         direction = Math.atan2(ry, rx);
-        if (isDebugActive) console.log(`[foundry-beams] Reflection #${bounces + 1} at mirror.  in: ${direction.toFixed(3)} `);
+        if (isDebugActive()) console.log(`[foundry-beams] Reflection #${bounces + 1} at mirror.  in: ${direction.toFixed(3)} `);
 
         // now direction = reflection;
         console.log(direction)
         currentPoint = endPoint;
         bounces++;
-        if (isDebugActive) console.log(`[foundry-beams] Beam reflected at mirror wall. Bounce #${bounces}, new angle: ${direction}`);
+        if (isDebugActive()) console.log(`[foundry-beams] Beam reflected at mirror wall. Bounce #${bounces}, new angle: ${direction}`);
 
     }
 
@@ -415,6 +415,6 @@ export function destroyBeam(token) {
     beams.delete(token.id);
     // Phase 1 cleanup in new registry
     BeamRegistry.delete(token.id);
-    if (isDebugActive) console.log(`[foundry-beams] Beam fully destroyed for ${token.name}`);
+    if (isDebugActive()) console.log(`[foundry-beams] Beam fully destroyed for ${token.name}`);
 }
 

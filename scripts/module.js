@@ -11,13 +11,12 @@ import { beamWallUpdate, beamTokenUpdate, beamRefreshToken, beamsCanvasReady } f
 import { reactiveMacro } from './beams-macro.js';
 
 Hooks.once("init", async () => {
-  if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
+  if (isDebugActive()) console.log("[foundry-beams] Initializing module and schema injection...");
   registerBeamSettings();
 
 
   game.modules.get(MOD_NAME).api = BeamAPI;
   await loadBuiltIn();      // laser & lightning
-  console.log(`[foundry-beams] isDebugActive:`, isDebugActive);
   console.log(`[foundry-beams] useProviderStyles`, game.settings.get("foundry-beams", "useProviderStyles"));
   if (!game.settings.get("foundry-beams", "useProviderStyles")) return;
   const hub = await game.modules.get("foundry-beams-styles");
@@ -33,7 +32,7 @@ Hooks.once("init", async () => {
 });
 
 Hooks.once("ready", async () => {
-  if (isDebugActive) console.log("[foundry-beams] API registered");
+  if (isDebugActive()) console.log("[foundry-beams] API registered");
 
 });
 
@@ -68,18 +67,18 @@ Hooks.on("preUpdateToken", (tokenDoc, changes, options, userId) => {
   if (incoming) {
     const enabled = incoming.enabled === true || incoming.enabled === "true";
     if (!enabled) {
-      // 1) Don’t apply any beam subfields from this submit
+      // 1) Donï¿½t apply any beam subfields from this submit
       foundry.utils.unsetProperty(changes, `flags.${MOD_NAME}.beam`);
       // 2) Ensure beam flags are removed
       changes.flags ??= {};
       changes.flags[MOD_NAME] ??= {};
       changes.flags[MOD_NAME]["-=beam"] = null;
     }
-    return; // We’re done handling the incoming case.
+    return; // Weï¿½re done handling the incoming case.
   }
 
   // No incoming beam flags ? legacy cleanup opportunity:
-  // If the token already has a beam flag but it’s not enabled, purge it.
+  // If the token already has a beam flag but itï¿½s not enabled, purge it.
   const existing = tokenDoc.getFlag(MOD_NAME, "beam");
   if (existing && !(existing.enabled === true || existing.enabled === "true")) {
     changes.flags ??= {};
@@ -107,7 +106,7 @@ Hooks.on("refreshToken", (refreshedToken) => {
 //});
 
 Hooks.on("sequencerEffectManagerReady", () => {
-  if (isDebugActive) console.log("[foundry-beams] Sequencer Effect Manager is ready.");
+  if (isDebugActive()) console.log("[foundry-beams] Sequencer Effect Manager is ready.");
   //beamTicker.start();
   beamsCanvasReady();
 

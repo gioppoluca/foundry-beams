@@ -113,7 +113,7 @@ export async function toggleActivationBeamById(tokenId) {
  */
 async function resolveValidBeamTokenById(tokenId) {
   const token = await fromUuid(tokenId);
-  if (isDebugActive) console.log(token);
+  if (isDebugActive()) console.log(token);
   if (!token) {
     console.warn(`[foundry-beams] Token not found on canvas: ${tokenId}`);
     return null;
