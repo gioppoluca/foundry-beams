@@ -16,12 +16,12 @@ export const hexfieldStyle = {
         await this.stopEffect(token);
     },
     async processSegments(segments, cfg, beamInst, token) {
-        console.log("Processing segments for laserSeq style", segments, cfg, beamInst, token);
+//        console.log("Processing segments for laserSeq style", segments, cfg, beamInst, token);
         let retContainers = [];
-        console.log("am I the GM?", game.user.isGM);
-        console.log("[FOUNDRY_BEAMS] game.user:", game.user);
+  //      console.log("am I the GM?", game.user.isGM);
+    //    console.log("[FOUNDRY_BEAMS] game.user:", game.user);
         if (game.user.isGM) {
-            console.log("I'm the GM and I can generate effects");
+      //      console.log("I'm the GM and I can generate effects");
             await this.stopEffect(token);
             await this.startEffect(token, segments, PIXI.utils.string2hex(cfg.colorHex ?? "#ffe699"), cfg.width);
         }
@@ -65,20 +65,19 @@ export const hexfieldStyle = {
      * @param {Array<{start:{x:number,y:number}, end:{x:number,y:number}}>} [segments]
      */
     async startEffect(token, segments = [], color = 0xffffff, width = 10) {
-        console.log(`[${MOD_NAME}] Starting effect for token`, token, segments);
+//        console.log(`[${MOD_NAME}] Starting effect for token`, token, segments);
         this.assertSequencer();
 
         const FILE = "modules/foundry-beams/assets/hexfield.webm"; // <- your asset
         const base = this.effectNameForToken(token);
         const scaleY = (width * 0.01); // base asset is 100px high
-        console.log(`[${MOD_NAME}] Effect base name: ${base}`);
+  //      console.log(`[${MOD_NAME}] Effect base name: ${base}`);
         // No segments? default to a single attached effect.
 
         // Build one Sequence with 1 effect per segment
         const seq = new Sequence();
         segments.forEach((seg, i) => {
             const randomFourDigit = Math.floor(1000 + Math.random() * 9000);
-            console.log(randomFourDigit);
             const name = `${base}-${i}-${randomFourDigit}`;
             const start = seg?.start ?? {};
             const end = seg?.end ?? {};
@@ -91,6 +90,7 @@ export const hexfieldStyle = {
                 .file(FILE)
                 .volume(0.0)
                 .atLocation(startPt)     // start
+                .elevation(token.document?.elevation ?? 0) // match token elevation
                 .stretchTo(endPt, { onlyX: true })        // end (Sequencer will rotate/scale to fit)
                 .tint(color)
                 .scale({ x: 1.0, y: scaleY })
@@ -105,7 +105,7 @@ export const hexfieldStyle = {
                 .persist(true, { "persistTokenPrototype": true })
                 .belowTokens(false)
         });
-        console.log(`[${MOD_NAME}] Playing sequence with ${segments.length} segments`);
+    //    console.log(`[${MOD_NAME}] Playing sequence with ${segments.length} segments`);
 
         //await seq.play({ local: true, preload: true });
         await seq.play({ local: false, preload: false });
@@ -120,11 +120,11 @@ export const hexfieldStyle = {
      */
     async stopEffect(token) {
         this.assertSequencer();
-        console.log(`[${MOD_NAME}] Stopping effect for token`, token);
+  //      console.log(`[${MOD_NAME}] Stopping effect for token`, token);
         const base = this.effectNameForToken(token);
 
         const name = `${base}-*`;
-        console.log(`[${MOD_NAME}] Ending effects with name: ${name}`);
+    //    console.log(`[${MOD_NAME}] Ending effects with name: ${name}`);
         return await Sequencer.EffectManager.endEffects({ name });
     }
 };

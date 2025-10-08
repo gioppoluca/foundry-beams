@@ -63,15 +63,15 @@ export const laserStyle = {
     
     processSegments(segments, cfg, beamInst, token) {
         let retContainers = [];
-        console.log("Style LASER - PROCESS SEGMENTS")
+  //      console.log("Style LASER - PROCESS SEGMENTS")
         for (let i = 0; i < segments.length; i++) {
             const segData = segments[i];
             const segId = String(i);
 
             // Re‑use or create BeamSegment shell
             const seg = this.ensureSegment(beamInst, segId);
-            console.log("Segment:", seg)
-            console.log("Segment:", segData)
+//            console.log("Segment:", seg)
+//            console.log("Segment:", segData)
             //const seg = {}
 
             // --- Update geometry data (point calc unchanged) -----------------------
@@ -86,7 +86,7 @@ export const laserStyle = {
             seg.normal = segData.normal;
             seg.length = segData.length;
             const len = seg.length;  // <- add this
-            console.log("Segment after:", seg)
+    //        console.log("Segment after:", seg)
             // --- Update visuals (rotation / length) --------------------------------
             if (!seg.container) {
                 seg.container = this.create(seg, cfg);

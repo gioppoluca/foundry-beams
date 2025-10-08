@@ -80,7 +80,6 @@ export const lightningfieldStyle = {
         const seq = new Sequence();
         segments.forEach((seg, i) => {
             const randomFourDigit = Math.floor(1000 + Math.random() * 9000);
-            console.log(randomFourDigit);
             const name = `${base}-${i}-${randomFourDigit}`;
             const start = seg?.start ?? {};
             const end = seg?.end ?? {};
@@ -93,6 +92,7 @@ export const lightningfieldStyle = {
                 .file(FILE)
                 .volume(0.0)
                 .atLocation(startPt)     // start
+                .elevation(token.document?.elevation ?? 0) // match token elevation
                 .stretchTo(endPt, { onlyX: true })        // end (Sequencer will rotate/scale to fit)
                 .tint(color)
                 .scale({ x: 1.0, y: scaleY })
