@@ -1,5 +1,5 @@
 import * as BeamAPI from './beams-api.js';
-import { MOD_NAME, isDebugActive } from "./beams-const.js";
+import { MOD_NAME, isDebugActive, initDebugFlag } from "./beams-const.js";
 import { toggleBeam, updateBeam, beams } from "./beamManager.js";
 import { beamTicker } from "./beamTicker.js";
 import { loadBuiltIn, loadCustomStyles } from "./StyleManager.js";
@@ -11,9 +11,9 @@ import { beamWallUpdate, beamTokenUpdate, beamRefreshToken, beamsCanvasReady } f
 import { reactiveMacro } from './beams-macro.js';
 
 Hooks.once("init", async () => {
-  if (isDebugActive()) console.log("[foundry-beams] Initializing module and schema injection...");
+  // if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
   registerBeamSettings();
-
+  initDebugFlag();
 
   game.modules.get(MOD_NAME).api = BeamAPI;
   await loadBuiltIn();      // laser & lightning
@@ -32,7 +32,7 @@ Hooks.once("init", async () => {
 });
 
 Hooks.once("ready", async () => {
-  if (isDebugActive()) console.log("[foundry-beams] API registered");
+  if (isDebugActive) console.log("[foundry-beams] API registered");
 
 });
 
@@ -63,28 +63,25 @@ Hooks.on("updateWall", (wallDoc, updateData, options, userid) => {
 
 Hooks.on("preUpdateToken", (tokenDoc, changes, options, userId) => {
   // If the form is trying to set beam flags:
-  const incoming = foundry.utils.getProperty(changes, `flags.${MOD_NAME}.beam`);
-  if (incoming) {
-    const enabled = incoming.enabled === true || incoming.enabled === "true";
-    if (!enabled) {
-      // 1) Don�t apply any beam subfields from this submit
-      foundry.utils.unsetProperty(changes, `flags.${MOD_NAME}.beam`);
-      // 2) Ensure beam flags are removed
-      changes.flags ??= {};
-      changes.flags[MOD_NAME] ??= {};
-      changes.flags[MOD_NAME]["-=beam"] = null;
-    }
-    return; // We�re done handling the incoming case.
-  }
+  const beamChanges = foundry.utils.hasProperty(changes, `flags.${MOD_NAME}.beam`);
+  if (!beamChanges) return;
+  const beamFlags = tokenDoc.getFlag(MOD_NAME, "beam");
+  //if (!beamFlags && !(changes.flags && changes.flags[MOD_NAME] && changes.flags[MOD_NAME].beam)) return;
+  //if (!beamFlags && !beamChanges) return;
 
-  // No incoming beam flags ? legacy cleanup opportunity:
-  // If the token already has a beam flag but it�s not enabled, purge it.
-  const existing = tokenDoc.getFlag(MOD_NAME, "beam");
-  if (existing && !(existing.enabled === true || existing.enabled === "true")) {
+
+  console.log(`[${MOD_NAME}] preUpdateToken detected incoming beam flags for token ${tokenDoc.id}:`, beamFlags, changes);
+
+  if (!changes?.flags[MOD_NAME]?.beam?.enabled && !beamFlags?.enabled) {
+    // 1) Don�t apply any beam subfields from this submit
+    tokenDoc.unsetFlag(MOD_NAME, `beam`);
+    // 2) Ensure beam flags are removed
     changes.flags ??= {};
     changes.flags[MOD_NAME] ??= {};
     changes.flags[MOD_NAME]["-=beam"] = null;
   }
+
+
 });
 
 Hooks.on("preMoveToken", (token, movement, _options) => {
@@ -106,7 +103,7 @@ Hooks.on("refreshToken", (refreshedToken) => {
 //});
 
 Hooks.on("sequencerEffectManagerReady", () => {
-  if (isDebugActive()) console.log("[foundry-beams] Sequencer Effect Manager is ready.");
+  if (isDebugActive) console.log("[foundry-beams] Sequencer Effect Manager is ready.");
   //beamTicker.start();
   beamsCanvasReady();
 
@@ -317,10 +314,13 @@ Hooks.on("setupTileActions", (app) => {
 
 Hooks.once("shutdown", () => {
   Sequencer.EffectManager.endEffects({ name: `${MOD_NAME}*` });
+  //for (const inst of BeamRegistry.values?.() ?? []) inst?.clear?.();
   beamTicker.stop();
 });
 Hooks.once("canvasTearDown", () => {
   Sequencer.EffectManager.endEffects({ name: `${MOD_NAME}*` });
+  //for (const inst of BeamRegistry.values?.() ?? []) inst?.clear?.();
+  //beamTicker.stop();
 });
 
 // Add our HUD button (v12 & v13 Token HUD)
@@ -425,3 +425,43 @@ const database = {
 Hooks.on("sequencerReady", () => {
   Sequencer.Database.registerEntries(MOD_NAME, database);
 });
+
+/*
+Hooks.on("levelsPerspectiveChanged", (currentToken) => {
+  console.log(`[${MOD_NAME}] ########## levelsPerspectiveChanged detected for token`, currentToken);
+  if (!currentToken) return;
+  //let bounds = WallHeight.getSourceElevationBounds(currentToken.document);
+
+  console.log(`[${MOD_NAME}] levelsPerspectiveChanged bounds`, currentToken.document.elevation);
+  // Update all beam-enabled tokens
+  for (const token of canvas.tokens.placeables.filter(t =>
+    t.document.getFlag(MOD_NAME, "beam")?.enabled
+  )) {
+    // if the token is on the same level as the emitter
+    console.log(`[${MOD_NAME}] levelsPerspectiveChanged checking token`, token);
+    const beamFlags = token.document.getFlag(MOD_NAME, "beam");
+    console.log(`[${MOD_NAME}] levelsPerspectiveChanged beamFlags`, beamFlags);
+    if (token.document.elevation !== currentToken.document.elevation) {
+      console.log(`[${MOD_NAME}] levelsPerspectiveChanged disable beam for token`, token);
+      // if there has already a saved state use that or false
+      const lvBkActive = beamFlags?.lvBkActive ?? false;
+      let activeState = lvBkActive || (beamFlags?.active);
+      console.log(`[${MOD_NAME}] levelsPerspectiveChanged activeState`, activeState, lvBkActive, beamFlags);
+      // save current active state for the level purpose only
+      token.document.setFlag(MOD_NAME, "beam", { lvBkActive:  activeState});
+      // now disable the emitter
+      token.document.setFlag(MOD_NAME, "beam", { active: false });
+    } else {
+      console.log(`[${MOD_NAME}] levelsPerspectiveChanged ENABLE beam for token`, token);
+      // if there has already a saved state use that or false
+      const lvBkActive = beamFlags?.lvBkActive ?? false;
+      // restore the saved state only if the saved state is true
+      if (lvBkActive) {
+        token.document.setFlag(MOD_NAME, "beam", { active: lvBkActive });
+      }
+    }
+
+
+  };
+});
+*/

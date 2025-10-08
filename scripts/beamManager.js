@@ -30,10 +30,10 @@ function startShaderAnimation() {
 */
 
 export async function toggleBeam(token, forceEnable = null) {
-    console.log(token)
+    //    console.log(token)
     const flag = token.getFlag(MOD_NAME, "beam") || {};
     const isEnabled = forceEnable !== null ? forceEnable : !flag.enabled;
-    if (isDebugActive()) console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`);
+    if (isDebugActive) console.log(`[foundry-beams] toggleBeam for ${token.name}: ${isEnabled}`, token, flag);
 
     if (isEnabled) {
         // we need to pass the token and not the TokenDocument
@@ -47,17 +47,16 @@ export async function toggleBeam(token, forceEnable = null) {
 }
 
 export function createBeam(token, config = {}) {
-    if (isDebugActive()) console.log(`[foundry-beams] Creating beam for ${token.name}`);
+    if (isDebugActive) console.log(`[foundry-beams] Creating beam for ${token.name}`);
     beams.set(token.id, { containers: [], config });
 
     // Phase 1: initialise new BeamRegistry (style will be added via flags later)
     const flagStyle = token.document.getFlag("foundry-beams", "beam")?.style ?? "laser";
-    console.log("Flag style:", flagStyle)
-    console.log(flagStyle)
+    //    console.log("Flag style:", flagStyle)
+    //    console.log(flagStyle)
     BeamRegistry.ensure(token, config, flagStyle);
     //BeamRegistry.ensure(token, config, config.visualStyle ?? BeamVisualStyle.LASER);
-
-    updateBeam(token);
+    updateBeam(token, null, true);
     //startShaderAnimation();
 }
 
@@ -86,7 +85,7 @@ function calculateBeamSegments(token, cfg = {}, override = null) {
     const h = override?.height ?? token.h;
 
     // Origin is token centre
-    const origin = { x: x + w / 2, y: y + h / 2 };
+    const origin = { x: x + w / 2, y: y + h / 2, elevation: doc.elevation };
     const rotationRad = rotDeg * Math.PI / 180;
     const maxDist = 99_999; // unchanged, effectively ‘infinite’
     // Resolve maxBounces: token flag (if ever added) → cfg → world setting
@@ -108,8 +107,7 @@ function calculateBeamSegments(token, cfg = {}, override = null) {
 
 
 export function updateBeam(token, override = null, forceUpdate = false) {
-    console.log(`[${MOD_NAME} - updateBeam ???????????????????????????????@@@@@@@@@@@@@`)
-    console.log(token)
+    //console.log(`[${MOD_NAME} - updateBeam ???????????????????????????????@@@@@@@@@@@@@`)
     const existing = beams.get(token.id);
     const changedStyle = override?.flags?.["foundry-beams"]?.beam?.style !== undefined;
     const changedColor = override?.flags?.["foundry-beams"]?.beam?.colorHex !== undefined;
@@ -117,29 +115,26 @@ export function updateBeam(token, override = null, forceUpdate = false) {
     const changedOffset = override?.flags?.["foundry-beams"]?.beam?.offset !== undefined;
     const changedActive = override?.flags?.["foundry-beams"]?.beam?.active !== undefined;
 
-    console.log("changedStyle:", changedStyle)
-    console.log("changedColor:", changedColor)
-    console.log("changedActive:", changedActive)
-    console.log(`[${MOD_NAME}] - "existing" variable:`, existing)
+    if (isDebugActive) console.log(`[${MOD_NAME}] - changedStyle, changedColor, changedActive, existing`, changedStyle, changedColor, changedActive, existing)
     const inst = BeamRegistry.get(token.id);
-    console.log(`[${MOD_NAME}] - "inst" variable:`, inst)
+
     const prevWalls = inst?.hitWalls ?? new Set();
     if (!existing) return; // safety
     const flagCfg = token.document.getFlag("foundry-beams", "beam") ?? {};
-    console.log("Flag config:", flagCfg)
+    if (isDebugActive) console.log(`[${MOD_NAME}] - "inst" variable; flag config`, inst, flagCfg)
     const cfg = { ...existing.config, ...flagCfg };   // ← latest values
-    console.log("Config:", cfg)
+    //console.log("Config:", cfg)
     existing.config = cfg;                                  // keep legacy map in sync
     const doc = token.document;
     const flagStyle = override?.flags?.["foundry-beams"]?.beam?.style ?? doc.getFlag(MOD_NAME, "beam")?.style;
     const isActive = override?.flags?.["foundry-beams"]?.beam?.active ?? doc.getFlag(MOD_NAME, "beam")?.active;
-    console.log("isactive:", isActive)
+    //console.log("isactive:", isActive)
     const flagColor = flagCfg.colorHex;
     const beamInst = BeamRegistry.ensure(token, cfg, flagStyle);
-    console.log("Beam instance:", beamInst)
-    console.log("Style in beamInst:", beamInst.style)
+    //console.log("Beam instance:", beamInst)
+    //console.log("Style in beamInst:", beamInst.style)
     const style = StyleRegistry.get(beamInst.style) ?? StyleRegistry.get("laser");
-    console.log("Style:", style)
+    //console.log("Style:", style)
     if (changedStyle || changedColor || changedWidth || changedOffset || forceUpdate || (changedActive)) {
         // FULL reset ─ destroy all old containers, clear segments & legacy array
         for (const seg of beamInst.segments.values()) {
@@ -158,11 +153,11 @@ export function updateBeam(token, override = null, forceUpdate = false) {
 
     // if the beam is not active we do not draw anything
     if (!isActive) {
-        console.log("the beam is not active")
+        //console.log("the beam is not active")
         if (changedActive) {
             disableRegion(token)
             // we also fire the wall leave event for all the walls currently hit
-            console.log("hit walls:", inst?.hitWalls)
+            //console.log("hit walls:", inst?.hitWalls)
             if (inst?.hitWalls) {
                 for (const wallId of inst.hitWalls) {
                     const wall = canvas.scene?.walls?.get(wallId);
@@ -188,7 +183,7 @@ export function updateBeam(token, override = null, forceUpdate = false) {
     const curRot = override?.rotation ?? doc.rotation;
     const w = override?.width ?? token.w;
     const h = override?.height ?? token.h;
-    console.log(`x: ${curX}| y: ${curY} | w: ${w}| h: ${h}| rot: ${curRot}`)
+    //console.log(`x: ${curX}| y: ${curY} | w: ${w}| h: ${h}| rot: ${curRot}`)
     const curColor = override?.flags?.["foundry-beams"]?.beam?.colorHex ?? doc.getFlag(MOD_NAME, "beam")?.colorHex;
     const curStyle = override?.flags?.["foundry-beams"]?.beam?.style ?? doc.getFlag(MOD_NAME, "beam")?.style;
     const curWidth = override?.flags?.["foundry-beams"]?.beam?.width ?? doc.getFlag(MOD_NAME, "beam")?.width;
@@ -196,10 +191,10 @@ export function updateBeam(token, override = null, forceUpdate = false) {
 
     if (beamInst._lastX === curX && beamInst._lastY === curY && beamInst._lastRot === curRot && !(changedStyle || changedColor || changedWidth || changedOffset || forceUpdate || changedActive)) {
         // No position/rotation change → only lightning jitter needs running
-        console.log(`[foundry-beams] No position change for ${token.name} at ${curX},${curY} rot: ${curRot} color: ${curColor} style: ${curStyle}`);
+        //  console.log(`[foundry-beams] No position change for ${token.name} at ${curX},${curY} rot: ${curRot} color: ${curColor} style: ${curStyle}`);
         return;
     }
-    console.log(`[foundry-beams] updateBeam for ${token.name} at ${curX},${curY} rot: ${curRot} color: ${curColor} style: ${curStyle}`);
+    if (isDebugActive) console.log(`[foundry-beams] updateBeam for ${token.name} at ${curX},${curY} rot: ${curRot} color: ${curColor} style: ${curStyle}`);
     beamInst._lastX = curX;
     beamInst._lastY = curY;
     beamInst._lastRot = curRot;
@@ -209,7 +204,7 @@ export function updateBeam(token, override = null, forceUpdate = false) {
 
     // 1. build fresh geometry list (as before)
     const segments = calculateBeamSegments(token, existing.config, override);
-    console.log("BEAMS - Segments:", segments)
+    //console.log("BEAMS - Segments:", segments)
 
     const next = new Set(segments.map(s => s.wallId).filter(Boolean));
     // enter: in next but not in prev
@@ -238,7 +233,7 @@ export function updateBeam(token, override = null, forceUpdate = false) {
 
     // 3. update / create each segment
     //        beamInst.segments = segments
-    console.log(`[${MOD_NAME}]BEFORE - updateBeam processSegments @@@@@@@@@@@`, segments, beamInst)
+    //console.log(`[${MOD_NAME}]BEFORE - updateBeam processSegments @@@@@@@@@@@`, segments, beamInst)
     existing.containers = style.processSegments(segments, cfg, beamInst, token);
     // 4. Clean up extra segments (if beam shortened this frame) ---------------
     const desired = segments.length;
@@ -272,21 +267,77 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
     const maxBounces = maxBouncesParam;
 
     while (bounces < maxBounces) {
-        const dest = Ray.fromAngle(currentPoint.x, currentPoint.y, direction, maxDistance).B;
+        let dest = Ray.fromAngle(currentPoint.x, currentPoint.y, direction, maxDistance).B;
+        dest.elevation = origin.elevation
+        //  console.log("Computing beam segment|||||||||||||||");
+        //console.log(`Dest: x=${dest.x}, y=${dest.y}`, dest);
+        //console.log(`Current point: x=${currentPoint.x}, y=${currentPoint.y}`, currentPoint);
         // Check for collisions with walls or outer bounds
-        const collisions = CONFIG.Canvas.polygonBackends.move.testCollision(currentPoint, dest, {
+        let collisions = CONFIG.Canvas.polygonBackends.move.testCollision(currentPoint, dest, {
             mode: "all",
             type: "light"
         });
+        if (isDebugActive) console.log("Collisions:", collisions);
+        const elevation = origin.elevation ?? 0;
+
+        const isRelevantEdge = (edge) => {
+            if (!edge) return false;
+
+            // Keep map bounds
+            if (edge.type === "outerBounds") return true;
+
+            // Only consider walls otherwise
+            if (edge.type !== "wall") return false;
+
+            // Read wall-height flag
+            const wh = edge.object?.document?.flags?.["wall-height"];
+
+            // If no wall-height data, treat as global wall (keep)
+            if (!wh) return true;
+
+            const bottom = wh.bottom ?? -Infinity;
+            const top = wh.top ?? Infinity;
+
+            return elevation >= bottom && elevation <= top;
+        };
+
+        const filtered = collisions.filter(c => {
+            const edges = Array.from(c.edges ?? []);
+            // Keep the collision if any edge is relevant
+            return edges.some(isRelevantEdge);
+        });
+        /*
+                const filtered = collisions.filter(c => {
+                    console.log("collision element:", c);
+                    console.log("collision element:", c.edges.values().next().value);
+                    const edge = c.edges.values().next().value;
+                    if (edge.type !== "outerBounds" && edge.type !== "wall") {
+                        console.log("not wall or outerBounds, removing it from the collisions")
+                        return false; // keep outerBounds and walls by default
+                    }
+                    const wallHeight = edge.object?.document?.flags?.["wall-height"];
+                    console.log("got wallHeight:", wallHeight, elevation);
+        
+                    if (!wallHeight) return true; // if no wall-height flags, keep by default
+        
+                    const bottom = wallHeight.bottom ?? -100;
+                    const top = wallHeight.top ?? 900;
+        
+                    return elevation >= bottom && elevation <= top;
+                });
+                */
+//        console.log("Filtered collisions:");
+  //      console.log(filtered);
+        collisions = filtered;
         // TODO: at the moment the collided token is not used, but we keep it for future enhancements
         // if we want to check for collisions with tokens
         // Test for collisions with tokens
         const collidedTk = CONFIG.Canvas.polygonBackends.move.testCollision(currentPoint, dest, { type: "sight", mode: "all" });
 
-        console.log("collidedTk")
-        console.log(collidedTk)
+    //    console.log("collidedTk")
+      //  console.log(collidedTk)
 
-        if (isDebugActive()) console.log(collisions);
+        if (isDebugActive) console.log(collisions);
         if (collisions.length == 0) {
             // No collisions
             break;
@@ -310,18 +361,18 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
                 //                console.log(`OFFSET POINT: x=${currentPoint.x}, y=${currentPoint.y}`);
             }
             // since we hit the outer bounds we need to set the bounces to maxBounces
-            if (isDebugActive()) console.log(`[foundry-beams] Beam hit outer bounds. Stopping bounces.`);
+            if (isDebugActive) console.log(`[foundry-beams] Beam hit outer bounds. Stopping bounces.`);
             bounces = maxBounces;
         }
         let endPoint = collisionElement ?? dest;
         const edgeData = collisionElement.edges.values().next().value;
-        if (isDebugActive()) console.log(edgeData);
+        if (isDebugActive) console.log(edgeData);
 
         const dx = endPoint.x - currentPoint.x;
         const dy = endPoint.y - currentPoint.y;
-        console.log(`dx: ${dx} | dy: ${dy} `)
+        //console.log(`dx: ${dx} | dy: ${dy} `)
         let length = Math.hypot(dx, dy);
-        if (isDebugActive()) console.log(length);
+        if (isDebugActive) console.log(length);
         const normal = [-dy / length, dx / length];
 
         // offset of the starting segment
@@ -337,23 +388,23 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
         }
 
         const wallId = edgeData?.object?.document?.id ?? null;
-        console.log(`[${MOD_NAME} - WALL ID: ${wallId}`);
+        //console.log(`[${MOD_NAME} - WALL ID: ${wallId}`);
         segments.push({ start: currentPoint, end: { x: endPoint.x, y: endPoint.y }, dx, dy, length, normal, wallId });
-        if (isDebugActive()) console.log("after wall check");
+        if (isDebugActive) console.log("after wall check");
         // added to solve the imprecision in the collision
         if (collisionElement == null) break;
 
         const mirror = edgeData?.object?.document.getFlag(MOD_NAME, "mirror")
-        console.log(mirror)
+        //console.log(mirror)
         // looking id the wall is a reactive
         // this part is not needed anymore due to the wall hooks
         //const isReactive = mirror?.isReactive ?? false;
         // TODO: need to check if is really needed to check if the user is GM
         //if (isReactive && game.users.activeGM.isSelf) {
-            // if is reactive we need to execute the macro associated
-          //  reactiveMacro(mirror?.macro);
-            // TODO here there could be the generation of an event for the wall hit
-            // TODO we need to have a structure for saving the wall hit so we can also be able to understand if a beam leaves a reactive wall
+        // if is reactive we need to execute the macro associated
+        //  reactiveMacro(mirror?.macro);
+        // TODO here there could be the generation of an event for the wall hit
+        // TODO we need to have a structure for saving the wall hit so we can also be able to understand if a beam leaves a reactive wall
 
         //}
 
@@ -371,27 +422,27 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
 
         // Normalize incident vector
         const incident = { x: dx / length, y: dy / length };
-        console.log(incident)
+        //console.log(incident)
         const wallLength = Math.hypot(wallDX, wallDY);
-        console.log(wallLength)
+        //console.log(wallLength)
         const wallVec = { x: wallDX / wallLength, y: wallDY / wallLength };
-        console.log(wallVec)
+        //console.log(wallVec)
         const normalW = { x: -wallVec.y, y: wallVec.x }; // perpendicular
-        console.log(normalW)
+        //console.log(normalW)
 
         const dot = incident.x * normalW.x + incident.y * normalW.y;
-        console.log(dot)
+        //console.log(dot)
         const rx = incident.x - 2 * dot * normalW.x;
         const ry = incident.y - 2 * dot * normalW.y;
 
         direction = Math.atan2(ry, rx);
-        if (isDebugActive()) console.log(`[foundry-beams] Reflection #${bounces + 1} at mirror.  in: ${direction.toFixed(3)} `);
+        if (isDebugActive) console.log(`[foundry-beams] Reflection #${bounces + 1} at mirror.  in: ${direction.toFixed(3)} `);
 
         // now direction = reflection;
-        console.log(direction)
+        //console.log(direction)
         currentPoint = endPoint;
         bounces++;
-        if (isDebugActive()) console.log(`[foundry-beams] Beam reflected at mirror wall. Bounce #${bounces}, new angle: ${direction}`);
+        if (isDebugActive) console.log(`[foundry-beams] Beam reflected at mirror wall. Bounce #${bounces}, new angle: ${direction}`);
 
     }
 
@@ -415,6 +466,6 @@ export function destroyBeam(token) {
     beams.delete(token.id);
     // Phase 1 cleanup in new registry
     BeamRegistry.delete(token.id);
-    if (isDebugActive()) console.log(`[foundry-beams] Beam fully destroyed for ${token.name}`);
+    if (isDebugActive) console.log(`[foundry-beams] Beam fully destroyed for ${token.name}`);
 }
 

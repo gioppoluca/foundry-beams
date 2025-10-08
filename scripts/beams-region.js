@@ -2,28 +2,28 @@
 
 import { beams } from './beamManager.js';
 
-export async function disableRegion(token){
+export async function disableRegion(token) {
     console.log("disableRegion")
     console.log(token)
     const regionName = `Beam-${token.name}-Region`;
     let region = game.scenes.viewed.regions.getName(regionName)
     console.log(region)
     if (region) {
-        for (const behavior of region.behaviors){
-            await behavior.update({disabled: true})
+        for (const behavior of region.behaviors) {
+            await behavior.update({ disabled: true })
         }
     }
 }
 
-export async function enableRegion(token){
+export async function enableRegion(token) {
     console.log("enableRegion")
     console.log(token)
     const regionName = `Beam-${token.name}-Region`;
     let region = game.scenes.viewed.regions.getName(regionName)
     console.log(region)
     if (region) {
-        for (const behavior of region.behaviors){
-            await behavior.update({disabled: false})
+        for (const behavior of region.behaviors) {
+            await behavior.update({ disabled: false })
         }
     }
 }
@@ -45,11 +45,12 @@ export async function createRegionFromSegments(segments, token) {
     let region = game.scenes.viewed.regions.getName(regionName)
     if (region) {
         // region exists so we need to update shapes
-        await region.update({ shapes: shapes })
+        await region.update({ shapes: shapes, elevation: { bottom: token.document?.elevation ?? 0, top: token.document?.elevation ?? 0 } })
     } else {
         // is a new region
         const regionData = {
             shapes: shapes,
+            elevation: { bottom: token.document?.elevation ?? 0, top: token.document?.elevation ?? 0 },
             name: `Beam-${token.name}-Region`,
             visibility: 1,
             x: 0,

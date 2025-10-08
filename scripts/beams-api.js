@@ -106,6 +106,13 @@ export async function toggleActivationBeamById(tokenId) {
 }
 
 
+export async function forceUpdateBeamById(tokenId) {
+  const token = await resolveValidBeamTokenById(tokenId);
+  if (token)
+    await updateBeam(token.object, null, true);
+}
+
+
 /**
  * Resolves token instance from ID and ensures it has beam configuration
  * @param {string} tokenId
@@ -113,7 +120,7 @@ export async function toggleActivationBeamById(tokenId) {
  */
 async function resolveValidBeamTokenById(tokenId) {
   const token = await fromUuid(tokenId);
-  if (isDebugActive()) console.log(token);
+  if (isDebugActive) console.log(token);
   if (!token) {
     console.warn(`[foundry-beams] Token not found on canvas: ${tokenId}`);
     return null;

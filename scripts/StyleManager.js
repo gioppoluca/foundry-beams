@@ -11,7 +11,7 @@ export async function loadBuiltIn() {
   const { hexfieldStyle } = await import("./styles/hexfield.js");
   const { lightningfieldStyle } = await import("./styles/lightningfield.js");
   const { tentaclefieldStyle } = await import("./styles/tentaclefield.js");
-  console.log("[foundry-beams] loading built-in styles");
+//  console.log("[foundry-beams] loading built-in styles");
   StyleRegistry.register(laserStyle);
   StyleRegistry.register(lightningStyle);
   StyleRegistry.register(laserSeqStyle);
@@ -27,7 +27,7 @@ export async function loadBuiltIn() {
  */
 export async function loadCustomStyles() {
   const ROOT = "foundry-beams/custom-styles";
-  console.log(`[foundry-beams] loading custom styles from ${ROOT}`);
+//  console.log(`[foundry-beams] loading custom styles from ${ROOT}`);
   const req = await FilePicker.browse("data", ROOT);
   for (const dir of req.dirs) {
     try {
@@ -37,7 +37,7 @@ export async function loadCustomStyles() {
       const mod = await import(/* @vite-ignore */ url);
       const styleObj = mod.default ?? mod[id] ?? mod[Object.keys(mod)[0]];
       StyleRegistry.register(styleObj);
-      console.log(`[foundry-beams] custom style '${id}' loaded`);
+  //    console.log(`[foundry-beams] custom style '${id}' loaded`);
     } catch (err) {
       console.warn(`[foundry-beams] failed to load style from ${dir}`, err);
     }

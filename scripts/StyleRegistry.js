@@ -12,9 +12,9 @@ export const StyleRegistry = {
 
     /** Fetch style or undefined */
     get(id) { 
-        console.log(`[foundry‑beams] fetching style '${id}'`);
-        console.log(this._map);
-        console.log(this._map.get(id));
+//        console.log(`[foundry‑beams] fetching style '${id}'`);
+//        console.log(this._map);
+//        console.log(this._map.get(id));
         return this._map.get(id); },
 
     /** Array of all registered ids */

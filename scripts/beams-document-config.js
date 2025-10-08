@@ -5,7 +5,7 @@ import { StyleRegistry } from "./StyleRegistry.js";
 export function beamWallConfig(app, html, data) {
   const mirrorData = foundry.utils.getProperty(app.document, "flags.foundry-beams.mirror") ?? {};
   console.log(mirrorData)
-  if (isDebugActive()) console.log(app);
+  if (isDebugActive) console.log(app);
   const tabContent = `
     <fieldset class="beam-group" data-tab="beam">
       <legend>${game.i18n.localize("foundry-beams.WallConfigLegend")}</legend>
@@ -104,7 +104,7 @@ export function beamTokenConfig(app, html, data, opts) {
 
   console.log(app)
   console.log(html)
-  if (isDebugActive()) console.log(`[${MOD_NAME}] Rendering TokenConfig UI for token: ${app.token.name} with beam data:`, beamData);
+  if (isDebugActive) console.log(`[${MOD_NAME}] Rendering TokenConfig UI for token: ${app.token.name} with beam data:`, beamData);
 
   // Add Beam tab button to token config tabs
   app.form.querySelector('.sheet-tabs').insertAdjacentHTML('beforeend', `<a class="item" data-action="tab" data-group="sheet"  data-tab="beam"><i class="fas fa-lightbulb"></i> ${game.i18n.localize("foundry-beams.Beam")}</a>`);
