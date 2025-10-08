@@ -1,4 +1,13 @@
 
+## [1.4.8] - 2025-10-08
+### :sparkles: New Features
+- [`bc7d145`](https://github.com/gioppoluca/foundry-beams/commit/bc7d145f9d06fc25210e2462f74d3d7ba074dbe5) - added elevation *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`5676547`](https://github.com/gioppoluca/foundry-beams/commit/56765477f0121c4e371013d6c3850fee8dad4971) - fix for debug not properly using the function
+- [`9199f15`](https://github.com/gioppoluca/foundry-beams/commit/9199f15f5a0b6fe7cfe90de8969a9f91b115972a) - elevation, cleaned up debug *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.4.7] - 2025-09-22
 ### :sparkles: New Features
 - [`0947e52`](https://github.com/gioppoluca/foundry-beams/commit/0947e522bc5fb4221aabe8744af64dab9f21dcc6) - tentaclefield *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -195,3 +204,4 @@
 [1.4.5]: https://github.com/gioppoluca/foundry-beams/compare/1.4.4...1.4.5
 [1.4.6]: https://github.com/gioppoluca/foundry-beams/compare/1.4.5...1.4.6
 [1.4.7]: https://github.com/gioppoluca/foundry-beams/compare/1.4.6...1.4.7
+[1.4.8]: https://github.com/gioppoluca/foundry-beams/compare/1.4.7...1.4.8
