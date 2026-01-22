@@ -1,6 +1,6 @@
 import * as BeamAPI from './beams-api.js';
 import { MOD_NAME, isDebugActive, initDebugFlag } from "./beams-const.js";
-import { toggleBeam, updateBeam, beams } from "./beamManager.js";
+import { toggleBeam, updateBeam, beams, destroyBeam } from "./beamManager.js";
 import { beamTicker } from "./beamTicker.js";
 import { loadBuiltIn, loadCustomStyles } from "./StyleManager.js";
 import { cMATT, isactiveModule } from './utils.js';
@@ -56,6 +56,13 @@ Hooks.on("deleteWall", (wallDoc) => {
   }
 });
 
+Hooks.on("deleteToken", (tokenDoc) => {
+  if (!canvas.scene) return;
+  // if the tokenDoc has beam flags, remove the beam
+  if (!tokenDoc.getFlag(MOD_NAME, "beam")) return;
+  destroyBeam(tokenDoc);
+
+});
 
 Hooks.on("updateWall", (wallDoc, updateData, options, userid) => {
   beamWallUpdate(wallDoc, updateData, options, userid)
