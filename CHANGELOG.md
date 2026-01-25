@@ -1,4 +1,9 @@
 
+## [1.4.9] - 2026-01-22
+### :bug: Bug Fixes
+- [`c8c66cc`](https://github.com/gioppoluca/foundry-beams/commit/c8c66cc36acbe86245089700e38fc1767f185554) - closes [#27](https://github.com/gioppoluca/foundry-beams/pull/27) *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.4.8] - 2025-10-08
 ### :sparkles: New Features
 - [`bc7d145`](https://github.com/gioppoluca/foundry-beams/commit/bc7d145f9d06fc25210e2462f74d3d7ba074dbe5) - added elevation *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -205,3 +210,4 @@
 [1.4.6]: https://github.com/gioppoluca/foundry-beams/compare/1.4.5...1.4.6
 [1.4.7]: https://github.com/gioppoluca/foundry-beams/compare/1.4.6...1.4.7
 [1.4.8]: https://github.com/gioppoluca/foundry-beams/compare/1.4.7...1.4.8
+[1.4.9]: https://github.com/gioppoluca/foundry-beams/compare/1.4.8...1.4.9
