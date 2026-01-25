@@ -1,0 +1,21 @@
+<div class="rune-dial-wrap">
+  <div class="rune-dial-stage">
+    <div class="shadow"></div>
+
+    {{#if runeImg}}
+      <img class="rune-dial-rune" data-role="rune" src="{{runeImg}}" />
+    {{else}}
+      <div class="rune-dial-placeholder rune-dial-rune" data-role="rune">ᚱ</div>
+    {{/if}}
+  </div>
+
+  <div class="rune-dial-controls">
+    <button type="button" data-action="rotate">
+      <i class="fas fa-sync-alt"></i> Rotate {{stepDeg}}°
+    </button>
+
+    <div class="rune-dial-readout">
+      Slot: <b>{{slot}}</b> — Rotations: <b data-role="count">{{steps}}</b> / {{maxSteps}}
+    </div>
+  </div>
+</div>

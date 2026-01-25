@@ -1,180 +1,157 @@
 // scripts/beams-hover-hud.js
 import { MOD_NAME } from "./beams-const.js";
-
-/**
- * Floating hover HUD button that:
- * - appears when hovering a token opted-in via flags
- * - stays visible when you move mouse from token -> button
- * - works regardless of token ownership (visibility-wise)
- *
- * NOTE: The click handler calls your module API. If that API updates Token flags,
- * non-owners will still need a GM-mediated path (socketlib). See explanation below.
- */
+import { openHudDialAppForToken } from "./hud-dial-app.js";
 
 let hudEl = null;
-let hoveredToken = null;
-let isPointerOverHud = false;
-let hideTimer = null;
-let tickerFn = null;
 
-const HIDE_DELAY_MS = 180; // grace time to move token -> button
+// STICKY state
+let activeToken = null;        // token we control while HUD is visible
+let isHoveringToken = false;   // true while mouse over token
+let isHoveringHud = false;     // true while mouse over HUD
+let hideTimer = null;
+
+const HIDE_DELAY_MS = 200;
 
 function tokenOptedIn(token) {
-    const beam = token?.document?.getFlag(MOD_NAME, "beam");
-    return !!(beam?.enabled && beam?.useControlHud);
-}
-
-function ensureHudEl() {
-    if (hudEl) return hudEl;
-
-    hudEl = document.createElement("div");
-    hudEl.id = `${MOD_NAME}-hover-hud`;
-    hudEl.style.position = "fixed";
-    hudEl.style.zIndex = "10000";
-    hudEl.style.width = "28px";
-    hudEl.style.height = "28px";
-    hudEl.style.display = "none";
-    hudEl.style.alignItems = "center";
-    hudEl.style.justifyContent = "center";
-    hudEl.style.borderRadius = "6px";
-    hudEl.style.cursor = "pointer";
-    hudEl.style.userSelect = "none";
-    hudEl.style.pointerEvents = "auto";
-    hudEl.style.boxShadow = "0 2px 10px rgba(0,0,0,.35)";
-    hudEl.style.background = "rgba(20,20,20,.75)";
-    hudEl.style.backdropFilter = "blur(2px)";
-    hudEl.innerHTML = `<i class="fas fa-bolt" style="color: rgba(255,255,255,.9)"></i>`;
-
-    hudEl.title = game.i18n.localize("foundry-beams.HUD.ToggleSequencerEffect");
-
-    hudEl.addEventListener("mouseenter", () => {
-        isPointerOverHud = true;
-        clearHideTimer();
-        hudEl.style.background = "rgba(40,40,40,.85)";
-    });
-
-    hudEl.addEventListener("mouseleave", () => {
-        isPointerOverHud = false;
-        hudEl.style.background = "rgba(20,20,20,.75)";
-        // If token isn't hovered anymore, we can hide after a tiny delay
-        if (!hoveredToken) scheduleHide();
-    });
-
-    hudEl.addEventListener("click", async (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-console.log("HUD clicked");
-        const token = hoveredToken;
-        if (!token?.document) return;
-
-        const api = game.modules.get(MOD_NAME)?.api;
-        if (!api?.toggleActivationBeamById) {
-            ui.notifications?.error(`${MOD_NAME}: api.toggleActivationBeamById not found`);
-            return;
-        }
-
-        // Use UUID so it’s unambiguous
-        await api.toggleActivationBeamById(token.document.uuid);
-
-        // Update visual state (active/not active) after toggle
-        const beam = token.document.getFlag(MOD_NAME, "beam") || {};
-        hudEl.classList.toggle("active", !!beam.active);
-    });
-
-    document.body.appendChild(hudEl);
-    return hudEl;
+  const beam = token?.document?.getFlag(MOD_NAME, "beam");
+  const mode = Number(beam?.controlHudMode ?? 0);
+  return !!(beam?.enabled && mode > 0);
 }
 
 function clearHideTimer() {
-    if (!hideTimer) return;
-    clearTimeout(hideTimer);
-    hideTimer = null;
+  if (!hideTimer) return;
+  clearTimeout(hideTimer);
+  hideTimer = null;
 }
 
 function scheduleHide() {
-    clearHideTimer();
-    hideTimer = setTimeout(() => {
-        // Hide only if we're not hovering the HUD and not hovering any token
-        if (!isPointerOverHud && !hoveredToken) hideHud();
-    }, HIDE_DELAY_MS);
+  clearHideTimer();
+  hideTimer = setTimeout(() => {
+    // hide only if neither token nor HUD is hovered
+    if (!isHoveringToken && !isHoveringHud) {
+      hideHud();
+      activeToken = null;
+    }
+  }, HIDE_DELAY_MS);
 }
 
-function showHud(token) {
-    ensureHudEl();
-    hudEl.style.display = "flex";
-    const beam = token.document.getFlag(MOD_NAME, "beam") || {};
-    hudEl.classList.toggle("active", !!beam.active);
+function ensureHudEl() {
+  if (hudEl) return hudEl;
+
+  hudEl = document.createElement("div");
+  hudEl.id = `${MOD_NAME}-hover-hud`;
+  hudEl.style.position = "fixed";
+  hudEl.style.zIndex = "10000";
+  hudEl.style.width = "28px";
+  hudEl.style.height = "28px";
+  hudEl.style.display = "none";
+  hudEl.style.alignItems = "center";
+  hudEl.style.justifyContent = "center";
+  hudEl.style.borderRadius = "6px";
+  hudEl.style.cursor = "pointer";
+  hudEl.style.userSelect = "none";
+  hudEl.style.boxShadow = "0 2px 10px rgba(0,0,0,.35)";
+  hudEl.style.background = "rgba(20,20,20,.75)";
+  hudEl.style.backdropFilter = "blur(2px)";
+  hudEl.innerHTML = `<i class="fas fa-sliders-h" style="color: rgba(255,255,255,.9)"></i>`;
+
+  hudEl.addEventListener("mouseenter", () => {
+    isHoveringHud = true;
+    clearHideTimer();
+    hudEl.style.background = "rgba(40,40,40,.85)";
+  });
+
+  hudEl.addEventListener("mouseleave", () => {
+    isHoveringHud = false;
+    hudEl.style.background = "rgba(20,20,20,.75)";
+    if (!isHoveringToken) scheduleHide();
+  });
+
+  hudEl.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    // IMPORTANT: use activeToken, not "currently hovered"
+    const token = activeToken;
+    if (!token) return;
+    console.log("[Foundry Beams] Opening HUD Dial App for token", token);
+
+    openHudDialAppForToken(token);
+  });
+
+  document.body.appendChild(hudEl);
+  return hudEl;
+}
+
+function showHud() {
+  ensureHudEl();
+  hudEl.style.display = "flex";
 }
 
 function hideHud() {
-    if (!hudEl) return;
-    hudEl.style.display = "none";
+  if (!hudEl) return;
+  hudEl.style.display = "none";
 }
 
+// Keep your existing positioning logic, but base it on activeToken
 function updateHudPosition() {
-    if (!hoveredToken || !hudEl) return;
+  if (!activeToken || !hudEl || hudEl.style.display === "none") return;
 
-    const { x, y } = hoveredToken.center;          // world coords
-    const t = canvas.stage.worldTransform;         // world -> screen-in-canvas
+  const { x, y } = activeToken.center;
+  const t = canvas.stage.worldTransform;
 
-    const screenX = (t.a * x) + (t.c * y) + t.tx;
-    const screenY = (t.b * x) + (t.d * y) + t.ty;
+  const sx = (t.a * x) + (t.c * y) + t.tx;
+  const sy = (t.b * x) + (t.d * y) + t.ty;
 
-    const rect = canvas.app.view.getBoundingClientRect(); // canvas in browser
+  const rect = canvas.app.view.getBoundingClientRect();
+  const offsetX = 22;
+  const offsetY = -28;
 
-    // Put the button near the token
-    const offsetX = 22;
-    const offsetY = -28;
-
-    hudEl.style.left = `${rect.left + screenX + offsetX}px`;
-    hudEl.style.top = `${rect.top + screenY + offsetY}px`;
+  hudEl.style.left = `${rect.left + sx + offsetX}px`;
+  hudEl.style.top  = `${rect.top + sy + offsetY}px`;
 }
 
+let tickerFn = null;
 function startTicker() {
-    if (tickerFn) return;
-    tickerFn = () => updateHudPosition();
-    canvas.app.ticker.add(tickerFn);
+  if (tickerFn) return;
+  tickerFn = () => updateHudPosition();
+  canvas.app.ticker.add(tickerFn);
 }
-
 function stopTicker() {
-    if (!tickerFn) return;
-    canvas.app.ticker.remove(tickerFn);
-    tickerFn = null;
+  if (!tickerFn) return;
+  canvas.app.ticker.remove(tickerFn);
+  tickerFn = null;
 }
 
 export function initBeamsHoverHud() {
-    if (initBeamsHoverHud._bound) return;
-    initBeamsHoverHud._bound = true;
+  ensureHudEl();
 
-    ensureHudEl();
+  Hooks.on("hoverToken", (token, hovered) => {
+    if (!token) return;
 
-    Hooks.on("hoverToken", (token, hovered) => {
-        if (!token) return;
+    if (hovered) {
+      // entering token
+      if (!tokenOptedIn(token)) return;
 
-        if (hovered) {
-            if (!tokenOptedIn(token)) {
-                hoveredToken = null;
-                if (!isPointerOverHud) hideHud();
-                stopTicker();
-                return;
-            }
-            hoveredToken = token;
-            clearHideTimer();
-            showHud(token);
-            updateHudPosition();
-            startTicker();
-            return;
-        }
+      isHoveringToken = true;
+      activeToken = token;          // STICKY assignment
+      clearHideTimer();
+      showHud();
+      updateHudPosition();
+      startTicker();
+      return;
+    }
 
-        // leaving token: don't instantly hide; allow moving onto HUD
-        if (hoveredToken === token) hoveredToken = null;
-        stopTicker();
+    // leaving token
+    if (activeToken === token) {
+      isHoveringToken = false;
 
-        if (!isPointerOverHud) scheduleHide();
-    });
+      // Do NOT clear activeToken here.
+      // Give time to move mouse onto HUD.
+      if (!isHoveringHud) scheduleHide();
+      stopTicker();
+    }
+  });
 
-    Hooks.on("canvasPan", () => {
-        if (!hudEl || hudEl.style.display === "none") return;
-        updateHudPosition();
-    });
+  Hooks.on("canvasPan", () => updateHudPosition());
 }

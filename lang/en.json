@@ -36,7 +36,25 @@
       "UseProviderStyles": {
         "Name": "Load styles from Styles Hub module",
         "Hint": "If the 'foundry-beams-styles' module is active, import and register all of its styles."
-      }
+      },
+      "ControlHudMode": "HUD mode",
+      "ControlHudModeTooltip": "Select what the hover HUD should allow you to configure for this token.",
+      "ControlHudModeNone": "No HUD",
+      "ControlHudModeColor": "Configure color",
+      "ControlHudModeRotation": "Configure rotation",
+      "ControlHudModeBoth": "Configure both",
+      "HudDialShadowImg": "HUD dial image (shadow)",
+      "HudDialColorImg": "HUD dial image (color)",
+      "HudDialRotationImg": "HUD dial image (rotation)",
+      "HudColorSteps": "Color steps",
+      "HudRotationSteps": "Rotation steps",
+      "HudDialTitle": "Beam HUD",
+      "HudDialForToken": "Token",
+      "HudDialColor": "Color",
+      "HudDialRotation": "Rotation",
+      "HudDialStep": "Step",
+      "HudDialSteps": "Step",
+      "HudDialNoImage": "No image configured"
     },
     "MATT": {
       "GroupName": "Active Beams",
