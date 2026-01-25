@@ -46,20 +46,20 @@ export function beamWallConfig(app, html, data) {
   `;
 
   // Wire dynamic behavior
-  console.log(app,html,data);
+  console.log(app, html, data);
   //const form = app.form;
   //const el = (sel) => form.querySelector(sel);
 
-//  const chkMirror       = el('#fb-isMirror');
+  //  const chkMirror       = el('#fb-isMirror');
   //const fsReactive      = el('#fb-reactive');
-  const chkReactive     = app.form.querySelector('#fb-isReactive');
-  const inpMacro        = app.form.querySelector('#fb-macro');
+  const chkReactive = app.form.querySelector('#fb-isReactive');
+  const inpMacro = app.form.querySelector('#fb-macro');
   console.log("difference in queryselector")
-//console.log(html.querySelector('#fb-macro'))
-//console.log(app.form.querySelector('#fb-macro'))
-//  const fsReactiveExit  = el('#fb-reactive-exit');
+  //console.log(html.querySelector('#fb-macro'))
+  //console.log(app.form.querySelector('#fb-macro'))
+  //  const fsReactiveExit  = el('#fb-reactive-exit');
   const chkReactiveExit = app.form.querySelector('#fbIsReactiveExit');
-  const inpMacroExit    = app.form.querySelector('#fbMacroExit');
+  const inpMacroExit = app.form.querySelector('#fbMacroExit');
   app.form.querySelector('#fbIsReactiveExit')?.addEventListener('change', updateStates);
 
   console.log(chkReactive, inpMacro, chkReactiveExit, inpMacroExit);
@@ -67,11 +67,11 @@ export function beamWallConfig(app, html, data) {
   const updateStates = () => {
     // Enable/disable fieldsets by "Is mirror"
     //const mirrorOn = !!chkMirror?.checked;
-//    if (fsReactive)     fsReactive.disabled     = !mirrorOn;
-//    if (fsReactiveExit) fsReactiveExit.disabled = !mirrorOn;
+    //    if (fsReactive)     fsReactive.disabled     = !mirrorOn;
+    //    if (fsReactiveExit) fsReactiveExit.disabled = !mirrorOn;
 
     // Inside each fieldset, toggle macro editability by its checkbox
-    if (inpMacro)     inpMacro.disabled     = !(chkReactive?.checked);
+    if (inpMacro) inpMacro.disabled = !(chkReactive?.checked);
     if (inpMacroExit) inpMacroExit.disabled = !(chkReactiveExit?.checked);
   };
 
@@ -94,7 +94,8 @@ const defaultBeamData = {
   "colorHex": "#ffffff",
   "active": false,
   "style": "laser",
-  "hasRegion": false
+  "hasRegion": false,
+  "useControlHud": false
 };
 
 export function beamTokenConfig(app, html, data, opts) {
@@ -122,6 +123,10 @@ export function beamTokenConfig(app, html, data, opts) {
       <div class="form-group">
         <label>${game.i18n.localize("foundry-beams.Active")}</label>
         <input type="checkbox" name="flags.foundry-beams.beam.active" ${beamData.active ? "checked" : ""}/>
+      </div>
+      <div class="form-group">
+        <label title="${game.i18n.localize("foundry-beams.UseControlHudTooltip")}">${game.i18n.localize("foundry-beams.UseControlHud")}</label>
+        <input type="checkbox" name="flags.foundry-beams.beam.useControlHud" ${beamData.useControlHud ? "checked" : ""}/>
       </div>
       <div class="form-group">
         <label>${game.i18n.localize("foundry-beams.BeamWidthPx")}</label>

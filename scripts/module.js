@@ -9,6 +9,25 @@ import { registerBeamSettings } from './beams-settings.js';
 import { beamWallConfig, beamTokenConfig } from './beams-document-config.js';
 import { beamWallUpdate, beamTokenUpdate, beamRefreshToken, beamsCanvasReady } from './beams-document-manage.js';
 import { reactiveMacro } from './beams-macro.js';
+import { initBeamsHoverHud } from './beams-hover-hud.js';
+
+export let beamsSocket = null;
+
+
+Hooks.once("socketlib.ready", () => {
+  beamsSocket = socketlib.registerModule(MOD_NAME);
+  
+  //beamsSocket.register("toggleBeamById", game.modules.get(MOD_NAME).api.toggleBeamById);
+  beamsSocket.register("toggleBeamByIdImpl", BeamAPI.toggleBeamByIdImpl);
+  beamsSocket.register("toggleActivationBeamImpl", BeamAPI.toggleActivationBeamImpl);
+  beamsSocket.register("activateBeamImpl", BeamAPI.activateBeamImpl);
+  beamsSocket.register("disactivateBeamImpl", BeamAPI.disactivateBeamImpl);
+  beamsSocket.register("forceUpdateBeamImpl", BeamAPI.forceUpdateBeamImpl);
+  beamsSocket.register("updateBeamColorImpl", BeamAPI.updateBeamColorImpl);
+  beamsSocket.register("rotateBeamToImpl", BeamAPI.rotateBeamToImpl);
+  beamsSocket.register("rotateBeamOfImpl", BeamAPI.rotateBeamOfImpl);
+});
+
 
 Hooks.once("init", async () => {
   // if (isDebugActive) console.log("[foundry-beams] Initializing module and schema injection...");
@@ -29,11 +48,12 @@ Hooks.once("init", async () => {
     }
   }
   //await loadCustomStyles(); // anything under custom-styles/
+
 });
 
 Hooks.once("ready", async () => {
   if (isDebugActive) console.log("[foundry-beams] API registered");
-
+  initBeamsHoverHud();
 });
 
 Hooks.on("renderWallConfig", (app, html, data) => {
@@ -341,41 +361,44 @@ Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
 
     // Only show for tokens that have beam flags
     const beamFlags = token.document.getFlag(MOD_NAME, "beam");
-    if (!beamFlags?.enabled) return;
+    if (beamFlags?.useControlHud) {
 
-    // Find right column and prevent duplicates
-    const rightCol = app.form?.querySelector?.(".col.right");
-    if (!rightCol) return;
-    if (rightCol.querySelector(`#${MOD_NAME}-hud-btn`)) return;
+    }
+    if (beamFlags?.enabled) {
+      // Find right column and prevent duplicates
+      const rightCol = app.form?.querySelector?.(".col.right");
+      if (!rightCol) return;
+      if (rightCol.querySelector(`#${MOD_NAME}-hud-btn`)) return;
 
-    // Build button
-    const btn = document.createElement("div");
-    btn.classList.add("control-icon");
-    btn.id = `${MOD_NAME}-hud-btn`;
-    btn.title = game.i18n.localize("foundry-beams.HUD.ToggleSequencerEffect");
+      // Build button
+      const btn = document.createElement("div");
+      btn.classList.add("control-icon");
+      btn.id = `${MOD_NAME}-hud-btn`;
+      btn.title = game.i18n.localize("foundry-beams.HUD.ToggleSequencerEffect");
 
-    const i = document.createElement("i");
-    i.classList.add("fa-solid", "fa-bolt");
-    btn.appendChild(i);
+      const i = document.createElement("i");
+      i.classList.add("fa-solid", "fa-bolt");
+      btn.appendChild(i);
 
-    const setVisualState = () => {
-      const f = token.document.getFlag(MOD_NAME, "beam") || {};
-      btn.classList.toggle("active", !!f.active);
-      btn.classList.toggle("disabled", !f.enabled);
-      btn.style.opacity = f.enabled ? "" : "0.5";
-    };
-    setVisualState();
-
-    btn.addEventListener("click", async (ev) => {
-      ev.preventDefault();
-      const t = app?.object ?? canvas.tokens?.get?.(data._id) ?? canvas.tokens?.controlled?.[0];
-      if (!t) return;
-      // Use the module API and the token UUID (fromUuid in the API)
-      await game.modules.get(MOD_NAME).api.toggleActivationBeamById(t.document.uuid);
+      const setVisualState = () => {
+        const f = token.document.getFlag(MOD_NAME, "beam") || {};
+        btn.classList.toggle("active", !!f.active);
+        btn.classList.toggle("disabled", !f.enabled);
+        btn.style.opacity = f.enabled ? "" : "0.5";
+      };
       setVisualState();
-    });
 
-    rightCol.append(btn);
+      btn.addEventListener("click", async (ev) => {
+        ev.preventDefault();
+        const t = app?.object ?? canvas.tokens?.get?.(data._id) ?? canvas.tokens?.controlled?.[0];
+        if (!t) return;
+        // Use the module API and the token UUID (fromUuid in the API)
+        await game.modules.get(MOD_NAME).api.toggleActivationBeamById(t.document.uuid);
+        setVisualState();
+      });
+
+      rightCol.append(btn);
+    }
   } catch (err) {
     console.error(`[${MOD_NAME}] Failed to render HUD button`, err);
   }
@@ -433,42 +456,3 @@ Hooks.on("sequencerReady", () => {
   Sequencer.Database.registerEntries(MOD_NAME, database);
 });
 
-/*
-Hooks.on("levelsPerspectiveChanged", (currentToken) => {
-  console.log(`[${MOD_NAME}] ########## levelsPerspectiveChanged detected for token`, currentToken);
-  if (!currentToken) return;
-  //let bounds = WallHeight.getSourceElevationBounds(currentToken.document);
-
-  console.log(`[${MOD_NAME}] levelsPerspectiveChanged bounds`, currentToken.document.elevation);
-  // Update all beam-enabled tokens
-  for (const token of canvas.tokens.placeables.filter(t =>
-    t.document.getFlag(MOD_NAME, "beam")?.enabled
-  )) {
-    // if the token is on the same level as the emitter
-    console.log(`[${MOD_NAME}] levelsPerspectiveChanged checking token`, token);
-    const beamFlags = token.document.getFlag(MOD_NAME, "beam");
-    console.log(`[${MOD_NAME}] levelsPerspectiveChanged beamFlags`, beamFlags);
-    if (token.document.elevation !== currentToken.document.elevation) {
-      console.log(`[${MOD_NAME}] levelsPerspectiveChanged disable beam for token`, token);
-      // if there has already a saved state use that or false
-      const lvBkActive = beamFlags?.lvBkActive ?? false;
-      let activeState = lvBkActive || (beamFlags?.active);
-      console.log(`[${MOD_NAME}] levelsPerspectiveChanged activeState`, activeState, lvBkActive, beamFlags);
-      // save current active state for the level purpose only
-      token.document.setFlag(MOD_NAME, "beam", { lvBkActive:  activeState});
-      // now disable the emitter
-      token.document.setFlag(MOD_NAME, "beam", { active: false });
-    } else {
-      console.log(`[${MOD_NAME}] levelsPerspectiveChanged ENABLE beam for token`, token);
-      // if there has already a saved state use that or false
-      const lvBkActive = beamFlags?.lvBkActive ?? false;
-      // restore the saved state only if the saved state is true
-      if (lvBkActive) {
-        token.document.setFlag(MOD_NAME, "beam", { active: lvBkActive });
-      }
-    }
-
-
-  };
-});
-*/

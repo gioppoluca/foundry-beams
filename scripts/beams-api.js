@@ -1,11 +1,35 @@
 import { MOD_NAME, isDebugActive } from "./beams-const.js";
 import { BeamRegistry, BeamVisualStyle } from "./beamData.js";
 import { StyleRegistry } from "./StyleRegistry.js";
+import { beamsSocket } from "./module.js";
+
 
 export { BeamRegistry, BeamVisualStyle }; // expose via module.api
 // beams-api.js — API for external control of beam tokens (by token.id only)
 
 import { toggleBeam, updateBeam } from './beamManager.js';
+
+
+function canUpdateToken(tokenDoc) {
+  return game.user.isGM || tokenDoc.isOwner;
+}
+
+async function execAsGM(fnName, ...args) {
+  if (!beamsSocket) {
+    ui.notifications?.error("socketlib not ready/active (or no GM connected).");
+    return null;
+  }
+  return beamsSocket.executeAsGM(fnName, ...args);
+}
+
+async function resolveTokenDocByUuid(tokenUuid) {
+  const tokenDoc = await fromUuid(tokenUuid);
+  if (!tokenDoc) {
+    console.warn(`[foundry-beams] Token not found: ${tokenUuid}`);
+    return null;
+  }
+  return tokenDoc;
+}
 
 /** Enable a beam for a token by ID */
 export async function enableBeamById(tokenId) {
@@ -20,16 +44,22 @@ export async function disableBeamById(tokenId) {
 }
 
 /** Update beam color for a token by ID */
-export async function updateBeamColorById(tokenId, colorHex) {
-  const token = await resolveValidBeamTokenById(tokenId);
-  if (!token) return;
+export async function updateBeamColorImpl(tokenUuid, colorHex) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
 
-  const flag = token.getFlag(MOD_NAME, "beam") || {};
-  flag.colorHex = colorHex;
-  await token.setFlag(MOD_NAME, "beam", flag);
-
-  if (flag.enabled) await updateBeam(token);
+  const flag = tokenDoc.getFlag(MOD_NAME, "beam") || {};
+  await tokenDoc.setFlag(MOD_NAME, "beam", { ...flag, colorHex });
 }
+
+export async function updateBeamColorById(tokenUuid, colorHex) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
+
+  if (canUpdateToken(tokenDoc)) return updateBeamColorImpl(tokenUuid, colorHex);
+  return execAsGM("updateBeamColorImpl", tokenUuid, colorHex);
+}
+
 
 /** Get beam state (enabled + color) by token ID */
 export async function getBeamStateById(tokenId) {
@@ -43,73 +73,135 @@ export async function getBeamStateById(tokenId) {
 }
 
 /** Rotate the beam by setting the token's rotation */
-export async function rotateBeamByIdTo(tokenId, degrees) {
-  const token = await resolveValidBeamTokenById(tokenId);
-  if (!token) return;
-  const flag = token.getFlag(MOD_NAME, "beam") || {};
-  if (flag.enabled) {
-    await token.update({ rotation: degrees });
-  }
+export async function rotateBeamToImpl(tokenUuid, degrees) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
+
+  const flag = tokenDoc.getFlag(MOD_NAME, "beam") || {};
+  if (!flag.enabled) return;
+
+  await tokenDoc.update({ rotation: degrees });
 }
 
-/** Rotate the beam by setting the token's rotation */
-export async function rotateBeamByIdOf(tokenId, degrees) {
-  console.log("rotateBeamByIdOf")
-  console.log(tokenId)
-  const token = await resolveValidBeamTokenById(tokenId);
-  console.log(token)
-  if (!token) return null;
-  const flag = token.getFlag(MOD_NAME, "beam") || {};
-  console.log(flag)
-  if (flag.enabled) {
-    await token.update({ rotation: token.rotation + degrees });
-    return token.rotation + degrees;
-  }
-  return null;
+export async function rotateBeamByIdTo(tokenUuid, degrees) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
+
+  if (canUpdateToken(tokenDoc)) return rotateBeamToImpl(tokenUuid, degrees);
+  return execAsGM("rotateBeamToImpl", tokenUuid, degrees);
 }
+
+export async function rotateBeamOfImpl(tokenUuid, degrees) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return null;
+
+  const flag = tokenDoc.getFlag(MOD_NAME, "beam") || {};
+  if (!flag.enabled) return null;
+
+  const newRot = (tokenDoc.rotation + degrees);
+  await tokenDoc.update({ rotation: newRot });
+  return newRot;
+}
+
+export async function rotateBeamByIdOf(tokenUuid, degrees) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return null;
+
+  if (canUpdateToken(tokenDoc)) return rotateBeamOfImpl(tokenUuid, degrees);
+  return execAsGM("rotateBeamOfImpl", tokenUuid, degrees);
+}
+
 
 /** Toggle the beam (enable/disable) by token ID */
-export async function toggleBeamById(tokenId) {
+// pure implementation – NO socketlib routing in here
+export async function toggleBeamByIdImpl(tokenId) {
   const token = await resolveValidBeamTokenById(tokenId);
-  if (!token) return;
+  if (!token) {
+    console.warn(`[foundry-beams] Token not found: ${tokenId}`);
+    return;
+  }
 
   const flag = token.getFlag(MOD_NAME, "beam") || {};
   const newState = !flag.enabled;
-
-  //  await token.setFlag(MOD_NAME, "beam", { ...flag, enabled: newState });
-
   await toggleBeam(token, newState);
 }
 
-export async function activateBeamById(tokenId) {
-  const token = await resolveValidBeamTokenById(tokenId);
-  if (token)
-    await token.setFlag(MOD_NAME, "beam", { active: true });
+// public API is a router.
+// It calls the SAME impl locally when allowed, otherwise asks GM.
+export async function toggleBeamById(tokenId) {
+  const tokenDoc = await fromUuid(tokenId);
+  if (!tokenDoc) return;
+
+  // Owner/GM can do it directly
+  if (canUpdateToken(tokenDoc)) return toggleBeamByIdImpl(tokenId);
+
+  // Non-owner: ask GM via socketlib
+  return execAsGM("toggleBeamByIdImpl", tokenId);
 }
 
-export async function disactivateBeamById(tokenId) {
-  const token = await resolveValidBeamTokenById(tokenId);
-  if (token)
-    await token.setFlag(MOD_NAME, "beam", { active: false });
+/** Activate the beam for a token by ID */
+export async function activateBeamImpl(tokenUuid) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (tokenDoc)
+    await tokenDoc.setFlag(MOD_NAME, "beam", { active: true });
+}
+
+export async function activateBeamById(tokenUuid) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
+
+  if (canUpdateToken(tokenDoc)) return activateBeamImpl(tokenUuid);
+  return execAsGM("activateBeamImpl", tokenUuid);
+}
+
+export async function disactivateBeamImpl(tokenUuid) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (tokenDoc)
+    await tokenDoc.setFlag(MOD_NAME, "beam", { active: false });
+}
+
+export async function disactivateBeamById(tokenUuid) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
+
+  if (canUpdateToken(tokenDoc)) return disactivateBeamImpl(tokenUuid);
+  return execAsGM("disactivateBeamImpl", tokenUuid);
 }
 
 /** Toggle the beam activation (activate/disactivate) by token ID */
-export async function toggleActivationBeamById(tokenId) {
-  const token = await resolveValidBeamTokenById(tokenId);
-  if (!token) return;
+// GM-safe implementation
+export async function toggleActivationBeamImpl(tokenUuid) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
 
-  const flag = token.getFlag(MOD_NAME, "beam") || {};
+  const flag = tokenDoc.getFlag(MOD_NAME, "beam") || {};
   const newState = !flag.active;
-
-  await token.setFlag(MOD_NAME, "beam", { ...flag, active: newState });
-
+  await tokenDoc.setFlag(MOD_NAME, "beam", { ...flag, active: newState });
 }
 
+// Public API router
+export async function toggleActivationBeamById(tokenUuid) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
 
-export async function forceUpdateBeamById(tokenId) {
-  const token = await resolveValidBeamTokenById(tokenId);
-  if (token)
-    await updateBeam(token.object, null, true);
+  if (canUpdateToken(tokenDoc)) return toggleActivationBeamImpl(tokenUuid);
+  return execAsGM("toggleActivationBeamImpl", tokenUuid);
+}
+
+/** Force update beam rendering for a token by ID */
+export async function forceUpdateBeamImpl(tokenUuid) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc?.object) return;
+  await updateBeam(tokenDoc.object, null, true);
+}
+
+export async function forceUpdateBeamById(tokenUuid) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
+
+  // forceUpdate is a "world-visible" action; route non-owners via GM
+  if (canUpdateToken(tokenDoc)) return forceUpdateBeamImpl(tokenUuid);
+  return execAsGM("forceUpdateBeamImpl", tokenUuid);
 }
 
 
