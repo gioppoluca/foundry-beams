@@ -1,6 +1,6 @@
 import { MOD_NAME, isDebugActive } from "./beams-const.js";
 import { StyleRegistry } from "./StyleRegistry.js";
-
+import { openBeamColorsEditor } from "./hud-colors-editor-app.js";
 
 export function beamWallConfig(app, html, data) {
   const mirrorData = foundry.utils.getProperty(app.document, "flags.foundry-beams.mirror") ?? {};
@@ -99,16 +99,22 @@ const defaultBeamData = {
   "hudDialShadowImg": "",          // optional override
   "hudDialColorImg": "",
   "hudDialRotationImg": "",
-  "hudColorSteps": 12,
+  "colors": ["#ffffff"],
   "hudRotationSteps": 12,
   "hudColorStep": 0,
   "hudRotationStep": 0
 };
 
+
+/*
 export function beamTokenConfig(app, html, data, opts) {
   //    const beamData = foundry.utils.getProperty(app.token, "flags.foundry-beams.beam") ?? {};
   const storedBeamData = foundry.utils.getProperty(app.token, "flags.foundry-beams.beam") ?? {};
   const beamData = foundry.utils.mergeObject(defaultBeamData, storedBeamData, { inplace: false });
+
+  // ✅ FIX: remove previous injection if TokenConfig re-rendered
+  app.form.querySelectorAll('.sheet-tabs a[data-tab="beam"]').forEach(e => e.remove());
+  app.form.querySelectorAll('.tab[data-tab="beam"][data-application-part="beam"]').forEach(e => e.remove());
 
   console.log(app)
   console.log(html)
@@ -159,10 +165,15 @@ export function beamTokenConfig(app, html, data, opts) {
       </div>
 
       <div class="form-group">
-        <label>${game.i18n.localize("foundry-beams.Settings.HudColorSteps")}</label>
-        <input type="number" min="1" max="360" name="flags.foundry-beams.beam.hudColorSteps" value="${beamData.hudColorSteps ?? 12}"/>
+        
+        <button type="button" id="fb-editColors">
+          ${game.i18n.localize("foundry-beams.Settings.EditColors")}
+        </button>
+        <p class="notes">
+          ${game.i18n.localize("foundry-beams.Settings.EditColorsHint")}
+        </p>
       </div>
-
+      
       <div class="form-group">
         <label>${game.i18n.localize("foundry-beams.Settings.HudRotationSteps")}</label>
         <input type="number" min="1" max="360" name="flags.foundry-beams.beam.hudRotationSteps" value="${beamData.hudRotationSteps ?? 12}"/>
@@ -196,8 +207,153 @@ export function beamTokenConfig(app, html, data, opts) {
 
   app.form.querySelector('footer').insertAdjacentHTML('beforebegin', tabContent);
   app.form.querySelector('#regionConfigButton')?.addEventListener('click', () => { regionConfig(app.token) });
+  app.form.querySelector("#fb-editColors")?.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    openBeamColorsEditor(app.token); // you’ll implement this small editor app
+  });
 
 }
+*/
+
+export function beamTokenConfig(app, html, data, opts) {
+  // Use the *current* rendered DOM, not app.form (can be stale across re-renders)
+  const root = html?.[0] ?? html;                 // html is usually a jQuery object
+  const form = root?.querySelector?.("form") ?? app.form;
+  if (!form) return;
+
+  const storedBeamData = foundry.utils.getProperty(app.token, "flags.foundry-beams.beam") ?? {};
+  const beamData = foundry.utils.mergeObject(defaultBeamData, storedBeamData, { inplace: false });
+  const dataGroup = game.release.generation < 13 ? "main" : "sheet";
+
+  // --- DEDUPE: remove previously injected beam tab + tab panel (idempotent)
+  form.querySelectorAll('.sheet-tabs a[data-tab="beam"]').forEach(e => e.remove());
+  form.querySelectorAll('.tab[data-tab="beam"][data-application-part="beam"]').forEach(e => e.remove());
+
+  // Find tabs container robustly (V12/V13 changes)
+  const tabsEl =
+    form.querySelector(".sheet-tabs") ??
+    form.querySelector('nav.tabs') ??
+    form.querySelector(".tabs");
+
+  if (!tabsEl) {
+    console.warn("foundry-beams | TokenConfig tabs container not found; skipping beam injection");
+    return;
+  }
+  const options = StyleRegistry.ids().map(id => `<option value="${id}" ${beamData.style === id ? 'selected' : ''}>${id}</option>`).join("");
+
+  // Insert Beam tab button
+  tabsEl.insertAdjacentHTML(
+    "beforeend",
+    `<a class="item" data-action="tab" data-group="${dataGroup}" data-tab="beam">
+       <i class="fas fa-lightbulb"></i> ${game.i18n.localize("foundry-beams.Beam")}
+     </a>`
+  );
+
+  // Insert tab content
+  const tabContent = `
+    <div class="tab scrollable" data-group="${dataGroup}" data-tab="beam" data-application-part="beam">
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.EnableBeam")}</label>
+        <input type="checkbox" name="flags.foundry-beams.beam.enabled" ${beamData.enabled ? "checked" : ""}/>
+      </div>
+      <fieldset class="fb-fields" >
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.Active")}</label>
+        <input type="checkbox" name="flags.foundry-beams.beam.active" ${beamData.active ? "checked" : ""}/>
+      </div>
+      <div class="form-group">
+        <label title="${game.i18n.localize("foundry-beams.Settings.ControlHudModeTooltip")}">
+          ${game.i18n.localize("foundry-beams.Settings.ControlHudMode")}
+        </label>
+        <select name="flags.foundry-beams.beam.controlHudMode">
+          <option value="0" ${Number(beamData.controlHudMode) === 0 ? "selected" : ""}>${game.i18n.localize("foundry-beams.Settings.ControlHudModeNone")}</option>
+          <option value="1" ${Number(beamData.controlHudMode) === 1 ? "selected" : ""}>${game.i18n.localize("foundry-beams.Settings.ControlHudModeColor")}</option>
+          <option value="2" ${Number(beamData.controlHudMode) === 2 ? "selected" : ""}>${game.i18n.localize("foundry-beams.Settings.ControlHudModeRotation")}</option>
+          <option value="3" ${Number(beamData.controlHudMode) === 3 ? "selected" : ""}>${game.i18n.localize("foundry-beams.Settings.ControlHudModeBoth")}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.Settings.HudDialShadowImg")}</label>
+        <input type="text" name="flags.foundry-beams.beam.hudDialShadowImg" value="${beamData.hudDialShadowImg ?? ""}" placeholder="modules/.../shadow.webp"/>
+      </div>
+
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.Settings.HudDialColorImg")}</label>
+        <input type="text" name="flags.foundry-beams.beam.hudDialColorImg" value="${beamData.hudDialColorImg ?? ""}" placeholder="modules/.../dial-color.webp"/>
+      </div>
+
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.Settings.HudDialRotationImg")}</label>
+        <input type="text" name="flags.foundry-beams.beam.hudDialRotationImg" value="${beamData.hudDialRotationImg ?? ""}" placeholder="modules/.../dial-rot.webp"/>
+      </div>
+
+      <div class="form-group">
+        
+        <button type="button" id="fb-editColors">
+          ${game.i18n.localize("foundry-beams.Settings.EditColors")}
+        </button>
+        <p class="notes">
+          ${game.i18n.localize("foundry-beams.Settings.EditColorsHint")}
+        </p>
+      </div>
+      
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.Settings.HudRotationSteps")}</label>
+        <input type="number" min="1" max="360" name="flags.foundry-beams.beam.hudRotationSteps" value="${beamData.hudRotationSteps ?? 12}"/>
+      </div>
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.BeamWidthPx")}</label>
+        <input type="number" name="flags.foundry-beams.beam.width" value="${beamData.width ?? 30}" min="1"/>
+      </div>
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.BeamOffsetPx")}</label>
+        <input type="number" name="flags.foundry-beams.beam.offset" value="${beamData.offset ?? 30}" min="0"/>
+      </div>
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.BeamColor")}</label>
+        <input type="color" name="flags.foundry-beams.beam.colorHex" value="${beamData.colorHex ?? "#ffe699"}"/>
+      </div>
+      <div class="form-group">
+      <label>${game.i18n.localize("foundry-beams.BeamStyle")}</label>
+      <select name="flags.foundry-beams.beam.style">${options}</select>
+    </div>
+      <div class="form-group">
+        <label>${game.i18n.localize("foundry-beams.ActivateRegionOnBeam")}</label>
+        <input type="checkbox" name="flags.foundry-beams.beam.hasRegion" ${beamData.hasRegion ? "checked" : ""}/>
+      </div>
+      <div class="form-group">
+        <button type="button"  id="regionConfigButton" >${game.i18n.localize("foundry-beams.ConfigureRegion")}</button>
+      </div>
+      </fieldset>
+    </div>
+  `;
+
+  const footer = form.querySelector("footer");
+  if (!footer) {
+    console.warn("foundry-beams | TokenConfig footer not found; skipping beam injection");
+    return;
+  }
+
+  footer.insertAdjacentHTML("beforebegin", tabContent);
+
+  // Wire handlers using `form` (current DOM)
+  form.querySelector('#regionConfigButton')?.addEventListener('click', (ev) => {
+    ev.preventDefault();
+    regionConfig(app.token);
+  });
+  form.querySelector("#fb-editColors")?.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    openBeamColorsEditor(app.token); // you’ll implement this small editor app
+  });
+  try {
+    // Rebind tabs so Foundry recognizes the newly injected tab
+    app._tabs?.[0]?.bind?.(app.element?.[0] ?? app.form);
+  } catch (e) {
+    // safe no-op
+  }
+}
+
 
 // this function could go to the proper file
 async function regionConfig(token) {

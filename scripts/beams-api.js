@@ -243,3 +243,23 @@ export function registerExternalStyle(style) {
 export function registerExternalStyles(styles) {
   for (const s of styles) StyleRegistry.register(s);
 }
+
+
+/** Update beam color for a token by ID */
+export async function updateHudImpl(tokenUuid, colorHex, rotation, hudColorStep, hudRotationStep) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
+
+  const flag = tokenDoc.getFlag(MOD_NAME, "beam") || {};
+  console.log("updateHudImpl", { colorHex, rotation, hudColorStep, hudRotationStep });
+  await tokenDoc.setFlag(MOD_NAME, "beam", { ...flag, colorHex, hudColorStep, hudRotationStep });
+  await tokenDoc.update({ rotation });
+}
+
+export async function updateHud(tokenUuid, colorHex, rotation, hudColorStep, hudRotationStep) {
+  const tokenDoc = await resolveTokenDocByUuid(tokenUuid);
+  if (!tokenDoc) return;
+
+  if (canUpdateToken(tokenDoc)) return updateHudImpl(tokenUuid, colorHex, rotation, hudColorStep, hudRotationStep);
+  return execAsGM("updateHudImpl", tokenUuid, colorHex, rotation, hudColorStep, hudRotationStep);
+}

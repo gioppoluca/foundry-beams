@@ -1,0 +1,35 @@
+<div class="fb-colors-editor">
+    <div class="fb-colors-toolbar">
+        <button type="button" data-action="add">
+            <i class="fas fa-plus"></i> Add
+        </button>
+
+        <div class="fb-colors-count">
+            Colors: <b>{{count}}</b>
+        </div>
+    </div>
+
+    <div class="fb-colors-list">
+        {{#each colors}}
+        <div class="fb-color-row" data-index="{{index}}">
+            {{!-- Foundry HTMLColorPickerElement (custom element tagName "color-picker") --}}
+            <color-picker data-index="{{index}}" value="{{value}}"></color-picker>
+
+            <span class="fb-color-hex" data-role="hex">{{value}}</span>
+
+            <button type="button" class="fb-danger" data-action="delete" data-index="{{index}}" title="Delete">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        {{/each}}
+    </div>
+
+    <footer class="fb-colors-footer">
+        <button type="button" data-action="save">
+            <i class="fas fa-save"></i> Save
+        </button>
+        <button type="button" data-action="cancel">
+            Cancel
+        </button>
+    </footer>
+</div>

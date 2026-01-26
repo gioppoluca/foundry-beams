@@ -26,6 +26,7 @@ Hooks.once("socketlib.ready", () => {
   beamsSocket.register("updateBeamColorImpl", BeamAPI.updateBeamColorImpl);
   beamsSocket.register("rotateBeamToImpl", BeamAPI.rotateBeamToImpl);
   beamsSocket.register("rotateBeamOfImpl", BeamAPI.rotateBeamOfImpl);
+  beamsSocket.register("updateHudImpl", BeamAPI.updateHudImpl);
 });
 
 
@@ -117,6 +118,7 @@ Hooks.on("preMoveToken", (token, movement, _options) => {
 
 // Watch for token updates and react based on beam flags or movement
 Hooks.on("updateToken", (tokenDoc, updateData, options, userid) => {
+  console.log(updateData)
   beamTokenUpdate(tokenDoc, updateData, options, userid)
 });
 

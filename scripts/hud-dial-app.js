@@ -15,7 +15,7 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
     id: "foundry-beams-hud-dial-app",
     window: { title: "Rune Dial", resizable: true },
-    position: { width: 420, height: "auto" },
+    position: { width: 800, height: "auto" },
     actions: {
       rotatecolor: HudDialApp.rotateColor,
       rotaterotation: HudDialApp.rotateRotation,
@@ -29,16 +29,25 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
     },
   };
 
-  constructor({ token, slot = 1, runeImg = null, steps = 0, angle = 0 } = {}) {
+  constructor({ token} = {}) {
     super();
-    console.log(token, slot, runeImg, steps, angle)
+    console.log(token)
     this.token = token;
-    this.slot = slot;
-    this.runeImg = runeImg;
-    this.stepsColor = 0;
-    this.stepsRotation = 0;
-    this.angleColor = 0;
-    this.angleRotation = 0;
+    const beam = this.token.document.getFlag(MOD_NAME, "beam") || {};
+    this.colors = Array.isArray(beam?.colors) ? beam.colors : [];
+    const { mode, radials } = buildHudDialModel(beam);
+    console.log(mode, radials)
+    //this.slot = slot;
+    //this.runeImg = runeImg;
+    this.stepColor =  radials.find(r => r.kind === "color")?.step ?? 0;
+    this.stepRotation = radials.find(r => r.kind === "rotation")?.step ?? 0;
+    this.stepsColor =  radials.find(r => r.kind === "color")?.steps ?? 0;
+    this.stepsRotation = radials.find(r => r.kind === "rotation")?.steps ?? 0;
+    this.angleColorStep = 360/(this.stepsColor || 1);
+    this.angleRotationStep = 360/(this.stepsRotation || 1);
+
+    this.angleColor = radials.find(r => r.kind === "color")?.angleDeg ?? 0;
+    this.angleRotation = radials.find(r => r.kind === "rotation")?.angleDeg ?? 0;
 
     // Optional: stable ID per token/slot
     //this.options.id = `foundry-beams-hud-dial-app-${tokenUuid ?? "no-token"}-slot-${slot}`;
@@ -49,11 +58,12 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const beam = this.token.document.getFlag(MOD_NAME, "beam") || {};
     const { mode, radials } = buildHudDialModel(beam);
 
-    this.stepsColor=radials.find(r => r.kind==="color")?.step ?? 0;
-    this.stepsRotation=radials.find(r => r.kind==="rotation")?.step ?? 0;
-    this.angleColor=(this.stepsColor * (360 / (radials.find(r => r.kind==="color")?.steps ?? 12))) % 360;
-    this.angleRotation=(this.stepsRotation * (360 / (radials.find(r => r.kind==="rotation")?.steps ?? 12))) % 360;
-
+    /*
+    this.stepColor = radials.find(r => r.kind === "color")?.step ?? 0;
+    this.stepRotation = radials.find(r => r.kind === "rotation")?.step ?? 0;
+    this.angleColor = (this.stepColor * (360 / (radials.find(r => r.kind === "color")?.steps ?? 12))) % 360;
+    this.angleRotation = (this.stepsRotation * (360 / (radials.find(r => r.kind === "rotation")?.steps ?? 12))) % 360;
+*/
 
     return {
       controlHudMode: mode,
@@ -81,18 +91,20 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   _updateUI() {
     if (this._runeColorEl?.style) this._runeColorEl.style.transform = `rotate(${this.angleColor}deg)`;
-    if (this._countColorEl) this._countColorEl.textContent = String(this.stepsColor);
+    if (this._countColorEl) this._countColorEl.textContent = String(this.stepColor);
     if (this._runeRotateEl?.style) this._runeRotateEl.style.transform = `rotate(${this.angleRotation}deg)`;
-    if (this._countRotateEl) this._countRotateEl.textContent = String(this.stepsRotation);
+    if (this._countRotateEl) this._countRotateEl.textContent = String(this.stepRotation);
   }
 
   static async rotateColor() {
     console.log("rotateColor");
+    /*
     const STEP_DEG = 30;
     const MAX_STEPS = 12;
+    */
 
-    this.stepsColor = (this.stepsColor + 1) % (MAX_STEPS + 1);
-    this.angleColor = (this.angleColor + STEP_DEG) % 360;
+    this.stepColor = (this.stepColor + 1) % (this.stepsColor);
+    this.angleColor = (this.angleColor + this.angleColorStep) % 360;
     this._updateUI();
     await this._persist();
   }
@@ -102,8 +114,8 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const STEP_DEG = 30;
     const MAX_STEPS = 12;
 
-    this.stepsRotation = (this.stepsRotation + 1) % (MAX_STEPS + 1);
-    this.angleRotation = (this.angleRotation + STEP_DEG) % 360;
+    this.stepRotation = (this.stepRotation + 1) % (this.stepsRotation);
+    this.angleRotation = (this.angleRotation + this.angleRotationStep) % 360;
 
     this._updateUI();
     await this._persist();
@@ -113,12 +125,19 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
   async _persist() {
     if (!this.token) return;
 
-    const beam = this.token.document.getFlag(MOD_NAME, "beam") || {};
-    const next = foundry.utils.deepClone(beam);
-    next.hudColorStep = this.stepsColor;
-    next.hudRotationStep = this.stepsRotation;
+    //const beam = this.token.document.getFlag(MOD_NAME, "beam") || {};
+    //const next = foundry.utils.deepClone(beam);
+    //next.hudColorStep = this.stepColor;
+    //next.hudRotationStep = this.stepRotation;
+    await game.modules.get(MOD_NAME).api.updateHud(
+      this.token.document.uuid,
+      this.colors[this.stepColor],
+      this.angleRotation,
+      this.stepColor,
+      this.stepRotation
+    );
     //next.dial = { slot: this.slot, steps: this.steps, angle: this.angle, runeImg: this.runeImg ?? null };
-    await this.token.document.setFlag(MOD_NAME, "beam", next);
+    //await this.token.document.setFlag(MOD_NAME, "beam", next);
   }
 
 
@@ -135,8 +154,13 @@ export function buildHudDialModel(beam) {
 
   // Bit 1 => color
   if (mode & 1) {
-    const steps = clampInt(beam?.hudColorSteps, 1, 360, 12);
+    //const steps = clampInt(beam?.hudColorSteps, 1, 360, 12);
+    //const step = clampInt(beam?.hudColorStep, 0, steps - 1, 0);
+    const colors = Array.isArray(beam?.colors) ? beam.colors : [];
+    const steps = Math.max(1, colors.length);
     const step = clampInt(beam?.hudColorStep, 0, steps - 1, 0);
+    const angleDeg = (step / steps) * 360;
+    console.log("buildHudDialModel - color", steps, step, angleDeg);
     radials.push({
       id: "color",
       kind: "color",
@@ -146,6 +170,7 @@ export function buildHudDialModel(beam) {
       steps,
       step,
       canIncrement: true,
+      angleDeg
     });
   }
 
@@ -153,6 +178,7 @@ export function buildHudDialModel(beam) {
   if (mode & 2) {
     const steps = clampInt(beam?.hudRotationSteps, 1, 360, 12);
     const step = clampInt(beam?.hudRotationStep, 0, steps - 1, 0);
+    const angleDeg = (step / steps) * 360;
     radials.push({
       id: "rotation",
       kind: "rotation",
@@ -162,6 +188,7 @@ export function buildHudDialModel(beam) {
       steps,
       step,
       canIncrement: true,
+      angleDeg
     });
   }
 

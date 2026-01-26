@@ -48,6 +48,8 @@
       "HudDialRotationImg": "HUD dial image (rotation)",
       "HudColorSteps": "Color steps",
       "HudRotationSteps": "Rotation steps",
+      "EditColors": "Edit Hud Colors",
+      "EditColorsHint": "Click to open the Beam Hud Colors Editor, where you can add, remove, and modify the colors available for beam tokens.",
       "HudDialTitle": "Beam HUD",
       "HudDialForToken": "Token",
       "HudDialColor": "Color",

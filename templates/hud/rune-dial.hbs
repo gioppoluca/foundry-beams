@@ -2,8 +2,11 @@
   {{#each radials}}
   <div class="rune-dial-wrap" data-kind="{{kind}}">
     <div class="rune-dial-stage">
+      {{#if shadowImg}}
+      <img class="shadow" src="{{shadowImg}}" />
+      {{else}}
       <div class="shadow"></div>
-      {{#if shadowImg}}<img class="shadow" src="{{shadowImg}}" />{{/if}}
+      {{/if}}
 
       {{#if img}}
       <img class="rune-dial-rune" data-role="rune{{kind}}" src="{{img}}" />
@@ -14,12 +17,8 @@
 
     <div class="rune-dial-controls" data-kind="{{kind}}">
       <button type="button" data-action="rotate{{kind}}">
-        <i class="fas fa-sync-alt"></i> {{label}} +1 ({{step}} / {{steps}})
+        <i class="fas fa-sync-alt"></i> {{label}} +1 (<b data-role="count{{kind}}">{{step}}</b> / {{steps}})
       </button>
-
-      <div class="rune-dial-readout">
-        Step: <b>{{step}}</b> — {{label}}: <b data-role="count{{kind}}">{{step}}</b> / {{steps}}
-      </div>
     </div>
   </div>
   {{/each}}

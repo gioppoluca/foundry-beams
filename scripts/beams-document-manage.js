@@ -62,7 +62,10 @@ export function beamTokenUpdate(tokenDoc, updateData, options, userid) {
         // Handle updating the beam: beam is in beams cache and the user changed some settings
         if (isDebugActive) console.log(`[${MOD_NAME}] Updating beam for ${tokenDoc.name}`);
         // If the token has moved or rotated, cache the update and let refreshToken do the job
+        console.log(updateData)
+        //console.log(updateData?.flags?.[MOD_NAME]?.beam)
         const moved = "x" in updateData || "y" in updateData || "rotation" in updateData;
+        console.log(moved)
         const changedStyle = updateData?.flags?.[MOD_NAME]?.beam?.style !== undefined;
         const changedColor = updateData?.flags?.[MOD_NAME]?.beam?.colorHex !== undefined;
         const changedWidth = updateData?.flags?.[MOD_NAME]?.beam?.width !== undefined;
@@ -80,6 +83,7 @@ export function beamTokenUpdate(tokenDoc, updateData, options, userid) {
 
                 const flagStyle = beam.config?.style;
                 const style = StyleRegistry.get(flagStyle);
+                console.log(style)
                 style.deleteAllSegments(tokenDoc)
             }
             if (isDebugActive) console.log(`[${MOD_NAME}] Applying beam config update after refresh for ${tokenDoc.name}`);
