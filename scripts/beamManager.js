@@ -173,6 +173,7 @@ export function updateBeam(token, override = null, forceUpdate = false) {
         if (inst?.hitWalls) {
             for (const wallId of inst.hitWalls) {
                 const wall = canvas.scene?.walls?.get(wallId);
+                console.log("[foundry-beams] Firing wall hook:", wall, wallId, token, inst, Hooks);
                 Hooks.callAll("foundry-beams.wall-enter", { wall, wallId, token, beam: inst });
             }
         }
@@ -326,16 +327,16 @@ function computeBeamSegmentsWithNormals(origin, initialDirectionRad, maxDistance
                     return elevation >= bottom && elevation <= top;
                 });
                 */
-//        console.log("Filtered collisions:");
-  //      console.log(filtered);
+        //        console.log("Filtered collisions:");
+        //      console.log(filtered);
         collisions = filtered;
         // TODO: at the moment the collided token is not used, but we keep it for future enhancements
         // if we want to check for collisions with tokens
         // Test for collisions with tokens
         const collidedTk = CONFIG.Canvas.polygonBackends.move.testCollision(currentPoint, dest, { type: "sight", mode: "all" });
 
-    //    console.log("collidedTk")
-      //  console.log(collidedTk)
+        //    console.log("collidedTk")
+        //  console.log(collidedTk)
 
         if (isDebugActive) console.log(collisions);
         if (collisions.length == 0) {

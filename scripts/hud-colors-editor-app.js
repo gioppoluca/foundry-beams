@@ -17,11 +17,11 @@ export function openBeamColorsEditor(token, options = {}) {
 }
 
 class BeamColorsEditorApp extends HandlebarsApplicationMixin(ApplicationV2) {
-    static DEFAULT_OPTIONS = foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
+    static DEFAULT_OPTIONS = {
         id: "foundry-beams-colors-editor",
         window: { title: "Beam Colors", resizable: true },
         position: { width: 520, height: "auto" },
-    });
+    };
 
     static PARTS = {
         main: {
