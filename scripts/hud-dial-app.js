@@ -32,29 +32,32 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   constructor({ token } = {}) {
     super();
-    console.log(token)
+    console.log("CONSTRUCTOR", token);
     this.token = token;
-    const beam = this.token.document.getFlag(MOD_NAME, "beam") || {};
+    this.beam = this.token.document.getFlag(MOD_NAME, "beam") || {};
 
     // If an activator button is enabled, dials start inactive until the user presses it.
-    this.useHudActivatorButton = !!beam?.hudUseActivatorButton;
-    this.hudActivatorOffImg = beam?.hudActivatorOffImg || null;
-    this.hudActivatorOnImg = beam?.hudActivatorOnImg || null;
+    this.useHudActivatorButton = !!this.beam?.hudUseActivatorButton;
+    this.hudActivatorOffImg = this.beam?.hudActivatorOffImg || null;
+    this.hudActivatorOnImg = this.beam?.hudActivatorOnImg || null;
     this.hudActive = !this.useHudActivatorButton;
 
-    this.colors = Array.isArray(beam?.colors) ? beam.colors : [];
-    const { mode, radials } = buildHudDialModel(beam);
+    this.colors = Array.isArray(this.beam?.colors) ? this.beam.colors : [];
+    const { mode, radials } = buildHudDialModel(this.beam);
     console.log(mode, radials)
     this.stepColor = radials.find(r => r.kind === "color")?.step ?? 0;
     this.stepRotation = radials.find(r => r.kind === "rotation")?.step ?? 0;
     this.stepsColor = radials.find(r => r.kind === "color")?.steps ?? 0;
+    this.initialRotation = this.token.document.rotation || 0;
     this.stepsRotation = radials.find(r => r.kind === "rotation")?.steps ?? 0;
     this.angleColorStep = 360 / (this.stepsColor || 1);
     this.angleRotationStep = 360 / (this.stepsRotation || 1);
 
     this.angleColor = radials.find(r => r.kind === "color")?.angleDeg ?? 0;
-    this.angleRotation = radials.find(r => r.kind === "rotation")?.angleDeg ?? 0;
-
+    this.angleRotation = radials.find(r => r.kind === "rotation")?.angleDeg ?? this.initialRotation;
+console.log("constructor angles", this.angleColor, this.angleRotation);
+console.log("constructor steps", this.stepsColor, this.stepsRotation);
+console.log("constructor initialRotation", this.initialRotation);
   }
 
   async _prepareContext(_options) {
@@ -125,7 +128,7 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async rotateColor() {
     console.log("rotateColor");
-
+    console.log("this.stepsColor", this.stepsColor, this.token, this.token.rotation, this.beam, this.angleColor, this.angleRotation);
     this.stepColor = (this.stepColor + 1) % (this.stepsColor);
     this.angleColor = (this.angleColor + this.angleColorStep) % 360;
     this._updateUI();
@@ -135,8 +138,14 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static async rotateRotation() {
     console.log("rotateRotation");
 
-    this.stepRotation = (this.stepRotation + 1) % (this.stepsRotation);
-    this.angleRotation = (this.angleRotation + this.angleRotationStep) % 360;
+    // if stepRotation is 1 we not rotate so we keep rotation as it is
+    console.log("this.stepsRotation", this.stepsRotation, this.beam.rotation);
+    if (this.stepsRotation > 1) {
+      this.stepRotation = (this.stepRotation + 1) % (this.stepsRotation);
+      this.angleRotation = ((this.angleRotation + this.angleRotationStep) + this.initialRotation) % 360;
+    } else {
+      this.angleRotation = this.initialRotation;
+    }
 
     this._updateUI();
     await this._persist();
@@ -151,7 +160,7 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _persist() {
     if (!this.token) return;
-
+    console.log("persist", this.stepColor, this.stepRotation, this.colors[this.stepColor], this.angleRotation);
     //const beam = this.token.document.getFlag(MOD_NAME, "beam") || {};
     //const next = foundry.utils.deepClone(beam);
     //next.hudColorStep = this.stepColor;
@@ -205,7 +214,7 @@ export function buildHudDialModel(beam) {
   if (mode & 2) {
     const steps = clampInt(beam?.hudRotationSteps, 1, 360, 12);
     const step = clampInt(beam?.hudRotationStep, 0, steps - 1, 0);
-    const angleDeg = (step / steps) * 360;
+    const angleDeg = ((step / steps) * 360 + this.initialRotation) % 360;
     radials.push({
       id: "rotation",
       kind: "rotation",
