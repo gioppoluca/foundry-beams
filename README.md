@@ -19,6 +19,7 @@ As shown in the image a beam is emitted from the statue it bounces on 2 walls an
 - 📐 Generates Foundry v12 Region polygons matching the beam's path
 - 🔌 Provides API methods for other modules to control beam behavior
 - Integrated with Monk's Active Tiles with both actions dedicated and the capability to trigger tiles
+- Player hud to control emitter rotation and beam color
 
 ## 📦 Installation
 
@@ -66,6 +67,11 @@ The selected tile (at the moment UUID) will trigger a MATT action to a specific 
 
 - Regions are created to match the full path of a beam and move with the beam.
 - Useful for triggering effects, hazards, etc.
+
+### Player's HUD
+![Player's HUD](doc/playerHud.png)
+There is the option to enable the player's HUD to give players the opportunity to control the emitter and the beam color.
+It is possible to choose to show 2 dials and customize the image for the shadow and each dial. Also the button to activate the dial can be customized (in case you want to use the concept of having to find something to activate it - at the moment it is only a graphical commodity, no real control present - will be added in future)
 
 ## 🧪 API
 
