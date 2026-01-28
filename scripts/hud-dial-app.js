@@ -12,15 +12,16 @@ export function openHudDialAppForToken(token) {
 
 
 class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
-  static DEFAULT_OPTIONS = foundry.utils.mergeObject(super.DEFAULT_OPTIONS, {
+  static DEFAULT_OPTIONS = {
     id: "foundry-beams-hud-dial-app",
     window: { title: "Rune Dial", resizable: true },
-    position: { width: 800, height: "auto" },
+    position: { width: 800, height: 600 },
     actions: {
       rotatecolor: HudDialApp.rotateColor,
       rotaterotation: HudDialApp.rotateRotation,
+      togglehudactive: HudDialApp.toggleHudActive,
     }
-  });
+  };
 
   static PARTS = {
     main: {
@@ -29,28 +30,31 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
     },
   };
 
-  constructor({ token} = {}) {
+  constructor({ token } = {}) {
     super();
     console.log(token)
     this.token = token;
     const beam = this.token.document.getFlag(MOD_NAME, "beam") || {};
+
+    // If an activator button is enabled, dials start inactive until the user presses it.
+    this.useHudActivatorButton = !!beam?.hudUseActivatorButton;
+    this.hudActivatorOffImg = beam?.hudActivatorOffImg || null;
+    this.hudActivatorOnImg = beam?.hudActivatorOnImg || null;
+    this.hudActive = !this.useHudActivatorButton;
+
     this.colors = Array.isArray(beam?.colors) ? beam.colors : [];
     const { mode, radials } = buildHudDialModel(beam);
     console.log(mode, radials)
-    //this.slot = slot;
-    //this.runeImg = runeImg;
-    this.stepColor =  radials.find(r => r.kind === "color")?.step ?? 0;
+    this.stepColor = radials.find(r => r.kind === "color")?.step ?? 0;
     this.stepRotation = radials.find(r => r.kind === "rotation")?.step ?? 0;
-    this.stepsColor =  radials.find(r => r.kind === "color")?.steps ?? 0;
+    this.stepsColor = radials.find(r => r.kind === "color")?.steps ?? 0;
     this.stepsRotation = radials.find(r => r.kind === "rotation")?.steps ?? 0;
-    this.angleColorStep = 360/(this.stepsColor || 1);
-    this.angleRotationStep = 360/(this.stepsRotation || 1);
+    this.angleColorStep = 360 / (this.stepsColor || 1);
+    this.angleRotationStep = 360 / (this.stepsRotation || 1);
 
     this.angleColor = radials.find(r => r.kind === "color")?.angleDeg ?? 0;
     this.angleRotation = radials.find(r => r.kind === "rotation")?.angleDeg ?? 0;
 
-    // Optional: stable ID per token/slot
-    //this.options.id = `foundry-beams-hud-dial-app-${tokenUuid ?? "no-token"}-slot-${slot}`;
   }
 
   async _prepareContext(_options) {
@@ -58,16 +62,23 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const beam = this.token.document.getFlag(MOD_NAME, "beam") || {};
     const { mode, radials } = buildHudDialModel(beam);
 
-    /*
-    this.stepColor = radials.find(r => r.kind === "color")?.step ?? 0;
-    this.stepRotation = radials.find(r => r.kind === "rotation")?.step ?? 0;
-    this.angleColor = (this.stepColor * (360 / (radials.find(r => r.kind === "color")?.steps ?? 12))) % 360;
-    this.angleRotation = (this.stepsRotation * (360 / (radials.find(r => r.kind === "rotation")?.steps ?? 12))) % 360;
-*/
+    // Refresh settings in case the config was changed while the app is open.
+    this.useHudActivatorButton = !!beam?.hudUseActivatorButton;
+    this.hudActivatorOffImg = beam?.hudActivatorOffImg || null;
+    this.hudActivatorOnImg = beam?.hudActivatorOnImg || null;
+    if (!this.useHudActivatorButton) this.hudActive = true;
+
+    const activatorImg = this.hudActive ? this.hudActivatorOnImg : this.hudActivatorOffImg;
+
 
     return {
       controlHudMode: mode,
       radials,
+      showActivator: this.useHudActivatorButton && radials.length > 0,
+      hudActive: this.hudActive,
+      hudActivatorOffImg: this.hudActivatorOffImg,
+      hudActivatorOnImg: this.hudActivatorOnImg,
+      hudActivatorImg: activatorImg,
     };
   }
 
@@ -86,6 +97,9 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this._runeRotateEl = root.querySelector('[data-role="runerotation"]');
     this._countRotateEl = root.querySelector('[data-role="countrotation"]');
 
+    this._dialGridEl = root.querySelector('.hud-dial-grid');
+    this._activatorImgEl = root.querySelector('[data-role="hud-activator-img"]');
+
     this._updateUI();
   }
 
@@ -94,14 +108,23 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if (this._countColorEl) this._countColorEl.textContent = String(this.stepColor);
     if (this._runeRotateEl?.style) this._runeRotateEl.style.transform = `rotate(${this.angleRotation}deg)`;
     if (this._countRotateEl) this._countRotateEl.textContent = String(this.stepRotation);
+
+    // Toggle interactive state for the dials.
+    if (this._dialGridEl) {
+      this._dialGridEl.classList.toggle('fb-inactive', this.useHudActivatorButton && !this.hudActive);
+    }
+    if (this._activatorImgEl) {
+      const nextImg = this.hudActive ? this.hudActivatorOnImg : this.hudActivatorOffImg;
+      if (nextImg) this._activatorImgEl.setAttribute('src', nextImg);
+    }
+  }
+
+  _canUseDials() {
+    return !this.useHudActivatorButton || !!this.hudActive;
   }
 
   static async rotateColor() {
     console.log("rotateColor");
-    /*
-    const STEP_DEG = 30;
-    const MAX_STEPS = 12;
-    */
 
     this.stepColor = (this.stepColor + 1) % (this.stepsColor);
     this.angleColor = (this.angleColor + this.angleColorStep) % 360;
@@ -111,8 +134,6 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async rotateRotation() {
     console.log("rotateRotation");
-    const STEP_DEG = 30;
-    const MAX_STEPS = 12;
 
     this.stepRotation = (this.stepRotation + 1) % (this.stepsRotation);
     this.angleRotation = (this.angleRotation + this.angleRotationStep) % 360;
@@ -121,6 +142,12 @@ class HudDialApp extends HandlebarsApplicationMixin(ApplicationV2) {
     await this._persist();
   }
 
+
+  static async toggleHudActive() {
+    if (!this.useHudActivatorButton) return;
+    this.hudActive = !this.hudActive;
+    this._updateUI();
+  }
 
   async _persist() {
     if (!this.token) return;

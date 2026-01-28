@@ -135,3 +135,41 @@
   color: var(--color-text-light-0);
   background: rgba(255, 0, 0, 0.15);
 }
+
+/* When an activator button is used, the HUD dials can start inactive */
+.hud-dial-grid.fb-inactive .rune-dial-controls button {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.hud-dial-grid.fb-inactive .rune-dial-stage {
+  opacity: 0.75;
+}
+
+.fb-hud-activator-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 45px;
+}
+
+.fb-hud-activator {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.fb-hud-activator img {
+  width: 128px;
+  height: 128px;
+}
+
+.fb-hud-activator-fallback {
+  display: inline-block;
+  font-size: 32px;
+  line-height: 64px;
+  width: 128px;
+  height: 128px;
+  text-align: center;
+}

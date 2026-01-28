@@ -100,6 +100,9 @@ const defaultBeamData = {
   "hudDialColorImg": "",
   "hudDialRotationImg": "",
   "colors": ["#ffffff"],
+  "hudUseActivatorButton": false,
+  "hudActivatorOffImg": "",
+  "hudActivatorOnImg": "",
   "hudRotationSteps": 12,
   "hudColorStep": 0,
   "hudRotationStep": 0
@@ -274,32 +277,43 @@ export function beamTokenConfig(app, html, data, opts) {
       </div>
 
       <div class="form-group">
-        <label>${game.i18n.localize("foundry-beams.Settings.HudDialShadowImg")}</label>
-        <input type="text" name="flags.foundry-beams.beam.hudDialShadowImg" value="${beamData.hudDialShadowImg ?? ""}" placeholder="modules/.../shadow.webp"/>
+        <label title="${game.i18n.localize("foundry-beams.Settings.HudDialShadowImgTooltip")}">${game.i18n.localize("foundry-beams.Settings.HudDialShadowImg")}</label>
+        <file-picker id="flags.foundry-beams.beam.hudDialShadowImg" type="image" name="flags.foundry-beams.beam.hudDialShadowImg" value="${beamData.hudDialShadowImg ?? ""}" placeholder="modules/.../shadow.webp"/>
       </div>
 
       <div class="form-group">
-        <label>${game.i18n.localize("foundry-beams.Settings.HudDialColorImg")}</label>
-        <input type="text" name="flags.foundry-beams.beam.hudDialColorImg" value="${beamData.hudDialColorImg ?? ""}" placeholder="modules/.../dial-color.webp"/>
+        <label title="${game.i18n.localize("foundry-beams.Settings.HudDialColorImgTooltip")}">${game.i18n.localize("foundry-beams.Settings.HudDialColorImg")}</label>
+        <file-picker id="flags.foundry-beams.beam.hudDialColorImg" type="image" name="flags.foundry-beams.beam.hudDialColorImg" value="${beamData.hudDialColorImg ?? ""}" placeholder="modules/.../dial-color.webp"/>
       </div>
 
       <div class="form-group">
-        <label>${game.i18n.localize("foundry-beams.Settings.HudDialRotationImg")}</label>
-        <input type="text" name="flags.foundry-beams.beam.hudDialRotationImg" value="${beamData.hudDialRotationImg ?? ""}" placeholder="modules/.../dial-rot.webp"/>
+        <label title="${game.i18n.localize("foundry-beams.Settings.HudDialRotationImgTooltip")}">${game.i18n.localize("foundry-beams.Settings.HudDialRotationImg")}</label>
+        <file-picker id="flags.foundry-beams.beam.hudDialRotationImg" type="image" name="flags.foundry-beams.beam.hudDialRotationImg" value="${beamData.hudDialRotationImg ?? ""}" placeholder="modules/.../dial-rot.webp"/>
+      </div>
+       <div class="form-group">
+        <label title="${game.i18n.localize("foundry-beams.Settings.HudUseActivatorButtonTooltip")}">${game.i18n.localize("foundry-beams.Settings.HudUseActivatorButton")}</label>
+        <input type="checkbox" name="flags.foundry-beams.beam.hudUseActivatorButton" ${beamData.hudUseActivatorButton ? "checked" : ""}/>
       </div>
 
       <div class="form-group">
-        
+        <label title="${game.i18n.localize("foundry-beams.Settings.HudActivatorOffImgTooltip")}">${game.i18n.localize("foundry-beams.Settings.HudActivatorOffImg")}</label>
+        <file-picker id="flags.foundry-beams.beam.hudActivatorOffImg" type="image" name="flags.foundry-beams.beam.hudActivatorOffImg" value="${beamData.hudActivatorOffImg ?? ""}" placeholder="modules/.../hud-off.webp"/>
+      </div>
+
+      <div class="form-group">
+        <label title="${game.i18n.localize("foundry-beams.Settings.HudActivatorOnImgTooltip")}">${game.i18n.localize("foundry-beams.Settings.HudActivatorOnImg")}</label>
+        <file-picker id="flags.foundry-beams.beam.hudActivatorOnImg" type="image" name="flags.foundry-beams.beam.hudActivatorOnImg" value="${beamData.hudActivatorOnImg ?? ""}" placeholder="modules/.../hud-on.webp"/>
+      </div>
+
+      <div class="form-group">
+        <label title="${game.i18n.localize("foundry-beams.Settings.EditColorsTooltip")}">${game.i18n.localize("foundry-beams.Settings.EditColorsLabel")}</label>
         <button type="button" id="fb-editColors">
           ${game.i18n.localize("foundry-beams.Settings.EditColors")}
         </button>
-        <p class="notes">
-          ${game.i18n.localize("foundry-beams.Settings.EditColorsHint")}
-        </p>
       </div>
       
       <div class="form-group">
-        <label>${game.i18n.localize("foundry-beams.Settings.HudRotationSteps")}</label>
+        <label title="${game.i18n.localize("foundry-beams.Settings.HudRotationStepsTooltip")}">${game.i18n.localize("foundry-beams.Settings.HudRotationSteps")}</label>
         <input type="number" min="1" max="360" name="flags.foundry-beams.beam.hudRotationSteps" value="${beamData.hudRotationSteps ?? 12}"/>
       </div>
       <div class="form-group">
@@ -311,7 +325,7 @@ export function beamTokenConfig(app, html, data, opts) {
         <input type="number" name="flags.foundry-beams.beam.offset" value="${beamData.offset ?? 30}" min="0"/>
       </div>
       <div class="form-group">
-        <label>${game.i18n.localize("foundry-beams.BeamColor")}</label>
+        <label title="${game.i18n.localize("foundry-beams.Settings.BeamColorTooltip")}">${game.i18n.localize("foundry-beams.BeamColor")}</label>
         <input type="color" name="flags.foundry-beams.beam.colorHex" value="${beamData.colorHex ?? "#ffe699"}"/>
       </div>
       <div class="form-group">

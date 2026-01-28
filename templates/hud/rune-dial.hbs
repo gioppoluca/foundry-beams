@@ -1,25 +1,38 @@
-<div class="hud-dial-grid {{#if (eq radials.length 1)}}one{{else}}two{{/if}}">
-  {{#each radials}}
-  <div class="rune-dial-wrap" data-kind="{{kind}}">
-    <div class="rune-dial-stage">
-      {{#if shadowImg}}
-      <img class="shadow" src="{{shadowImg}}" />
-      {{else}}
-      <div class="shadow"></div>
-      {{/if}}
+<div>
+  <div class="hud-dial-grid {{#if (eq radials.length 1)}}one{{else}}two{{/if}}">
+    {{#each radials}}
+    <div class="rune-dial-wrap" data-kind="{{kind}}">
+      <div class="rune-dial-stage">
+        {{#if shadowImg}}
+        <img class="shadow" src="{{shadowImg}}" />
+        {{else}}
+        <div class="shadow"></div>
+        {{/if}}
 
-      {{#if img}}
-      <img class="rune-dial-rune" data-role="rune{{kind}}" src="{{img}}" />
-      {{else}}
-      <div class="rune-dial-placeholder rune-dial-rune" data-role="rune{{kind}}">ᚱ</div>
-      {{/if}}
-    </div>
+        {{#if img}}
+        <img class="rune-dial-rune" data-role="rune{{kind}}" src="{{img}}" />
+        {{else}}
+        <div class="rune-dial-placeholder rune-dial-rune" data-role="rune{{kind}}">ᚱ</div>
+        {{/if}}
+      </div>
 
-    <div class="rune-dial-controls" data-kind="{{kind}}">
-      <button type="button" data-action="rotate{{kind}}">
-        <i class="fas fa-sync-alt"></i> {{label}} +1 (<b data-role="count{{kind}}">{{step}}</b> / {{steps}})
-      </button>
+      <div class="rune-dial-controls" data-kind="{{kind}}">
+        <button type="button" data-action="rotate{{kind}}">
+          <i class="fas fa-sync-alt"></i> {{label}} +1 (<b data-role="count{{kind}}">{{step}}</b> / {{steps}})
+        </button>
+      </div>
     </div>
+    {{/each}}
   </div>
-  {{/each}}
+  {{#if showActivator}}
+  <div class="fb-hud-activator-wrap">
+    <button type="button" class="fb-hud-activator" data-action="togglehudactive" aria-pressed="{{hudActive}}">
+      {{#if hudActivatorImg}}
+      <img data-role="hud-activator-img" src="{{hudActivatorImg}}" />
+      {{else}}
+      <span class="fb-hud-activator-fallback">⏻</span>
+      {{/if}}
+    </button>
+  </div>
+  {{/if}}
 </div>
