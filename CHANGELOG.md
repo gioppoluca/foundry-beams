@@ -1,4 +1,19 @@
 
+## [1.5.0] - 2026-01-29
+### :sparkles: New Features
+- [`1516a01`](https://github.com/gioppoluca/foundry-beams/commit/1516a0148b6dc4dd3428656f0f20e92392084a86) - noe API works also on player and start to implement HUD *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`670ae20`](https://github.com/gioppoluca/foundry-beams/commit/670ae201846eda6fe1b8c6157f28482634c032ae) - player hud - beta *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`f538c50`](https://github.com/gioppoluca/foundry-beams/commit/f538c502a80bc564387ec93cf7af24a4f3c44316) - bonus rune image *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`24ddade`](https://github.com/gioppoluca/foundry-beams/commit/24ddade40ee558bdee8a1e9314160d60c1a36299) - player control hud for controlling laser *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`a41926f`](https://github.com/gioppoluca/foundry-beams/commit/a41926f126d4b07bc58916fac71d55050a477cd3) - hub dial activator *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+### :bug: Bug Fixes
+- [`537be6d`](https://github.com/gioppoluca/foundry-beams/commit/537be6d6ff28caf68f9f281c9dbeb7fe79c2dd34) - activate socketlib *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`d8440a4`](https://github.com/gioppoluca/foundry-beams/commit/d8440a45fe3b06a1b4c7faab676ed735e5af29d5) - better implementation *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`ef6cfc8`](https://github.com/gioppoluca/foundry-beams/commit/ef6cfc8be08dae39681cb01f59f0be0b0396a324) - error on macro on wall and on css *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+- [`21dd422`](https://github.com/gioppoluca/foundry-beams/commit/21dd42229c627ae1d616a4aacd32ad1343ac6cf0) - error on rotation when initial not 0 *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.4.9] - 2026-01-22
 ### :bug: Bug Fixes
 - [`c8c66cc`](https://github.com/gioppoluca/foundry-beams/commit/c8c66cc36acbe86245089700e38fc1767f185554) - closes [#27](https://github.com/gioppoluca/foundry-beams/pull/27) *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -211,3 +226,4 @@
 [1.4.7]: https://github.com/gioppoluca/foundry-beams/compare/1.4.6...1.4.7
 [1.4.8]: https://github.com/gioppoluca/foundry-beams/compare/1.4.7...1.4.8
 [1.4.9]: https://github.com/gioppoluca/foundry-beams/compare/1.4.8...1.4.9
+[1.5.0]: https://github.com/gioppoluca/foundry-beams/compare/1.4.9...1.5.0
