@@ -16,7 +16,7 @@ export let beamsSocket = null;
 
 Hooks.once("socketlib.ready", () => {
   beamsSocket = socketlib.registerModule(MOD_NAME);
-  
+
   //beamsSocket.register("toggleBeamById", game.modules.get(MOD_NAME).api.toggleBeamById);
   beamsSocket.register("toggleBeamByIdImpl", BeamAPI.toggleBeamByIdImpl);
   beamsSocket.register("toggleActivationBeamImpl", BeamAPI.toggleActivationBeamImpl);
@@ -364,7 +364,7 @@ Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
     // Only show for tokens that have beam flags
     const beamFlags = token.document.getFlag(MOD_NAME, "beam");
 
-    console.log(token,beamFlags)
+    console.log(token, beamFlags)
     if (beamFlags?.useControlHud) {
 
     }
@@ -410,11 +410,14 @@ Hooks.on("renderTokenHUD", async (app, html /* jQuery/HTMLElement */, data) => {
 });
 
 
-Hooks.on("foundry-beams.wall-enter", ({ wall, wallId, token, beam }) => {
+Hooks.on("foundry-beams.wall-enter", ({ wall, token, beam, mirrorData }) => {
   //  ui.notifications.info(`enter ${wall.id}`);
-  console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${wall.id}`);
-  if (!beam?.macro) return;
-  const targetObject = foundry.utils.fromUuidSync(beam?.macro)
+  console.log(`[${MOD_NAME}] Wall Enter detected for token ${token.id} and wall ${mirrorData} and beam ${beam} and wallId ${mirrorData}`);
+  console.log(beam, mirrorData)
+  
+
+  if (!mirrorData?.macro) return;
+  const targetObject = foundry.utils.fromUuidSync(mirrorData?.macro)
   console.log(`[${MOD_NAME}]`, targetObject)
   if (targetObject.documentName === "Tile") {
     targetObject.trigger({ tokens: [], method: 'trigger', options: { landing: `Beam-${token.name}-enter` } });
@@ -423,7 +426,7 @@ Hooks.on("foundry-beams.wall-enter", ({ wall, wallId, token, beam }) => {
     targetObject.execute({});
   } else {
     // last chance it could be a legacy macro call
-    reactiveMacro(beam?.macro);
+    reactiveMacro(mirrorData?.macro);
   }
 
 });
