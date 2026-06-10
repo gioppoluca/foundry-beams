@@ -1,4 +1,9 @@
 
+## [1.5.1] - 2026-06-10
+### :bug: Bug Fixes
+- [`c19de81`](https://github.com/gioppoluca/foundry-beams/commit/c19de81bb1b51bcc4085421fc55219fdf0569c6c) - fixed on enter wall macro bug *(commit by [@gioppoluca](https://github.com/gioppoluca))*
+
+
 ## [1.5.0] - 2026-01-29
 ### :sparkles: New Features
 - [`1516a01`](https://github.com/gioppoluca/foundry-beams/commit/1516a0148b6dc4dd3428656f0f20e92392084a86) - noe API works also on player and start to implement HUD *(commit by [@gioppoluca](https://github.com/gioppoluca))*
@@ -227,3 +232,4 @@
 [1.4.8]: https://github.com/gioppoluca/foundry-beams/compare/1.4.7...1.4.8
 [1.4.9]: https://github.com/gioppoluca/foundry-beams/compare/1.4.8...1.4.9
 [1.5.0]: https://github.com/gioppoluca/foundry-beams/compare/1.4.9...1.5.0
+[1.5.1]: https://github.com/gioppoluca/foundry-beams/compare/1.5.0...1.5.1
